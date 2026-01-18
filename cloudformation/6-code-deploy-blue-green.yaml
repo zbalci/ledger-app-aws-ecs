@@ -1,0 +1,83 @@
+Parameters:
+  AppName:
+    Type: String
+    Description: App name
+
+  Environment:
+    Type: String
+    Description: Environment name
+    
+Resources:
+  CodeDeployRoleForECSBlueGreen:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: CodeDeployRoleForECSBlueGreen
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: codedeploy.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AWSCodeDeployRoleForECS
+
+  CodeDeployApplication:
+    Type: AWS::CodeDeploy::Application
+    Properties:
+      ApplicationName: !Sub "${AppName}-${Environment}"
+      ComputePlatform: ECS
+  
+  CodeDeployDeploymentGroup:
+    Type: AWS::CodeDeploy::DeploymentGroup
+    Properties:
+      ApplicationName: !Ref CodeDeployApplication
+      DeploymentGroupName: !Sub "${AppName}-${Environment}-dg"
+      DeploymentConfigName: CodeDeployDefault.ECSAllAtOnce
+      ServiceRoleArn: !GetAtt CodeDeployRoleForECSBlueGreen.Arn
+      DeploymentStyle:
+        DeploymentType: BLUE_GREEN
+        DeploymentOption: WITH_TRAFFIC_CONTROL
+      BlueGreenDeploymentConfiguration:
+        TerminateBlueInstancesOnDeploymentSuccess:
+          Action: TERMINATE
+          TerminationWaitTimeInMinutes: 5
+        DeploymentReadyOption:
+          ActionOnTimeout: CONTINUE_DEPLOYMENT
+          WaitTimeInMinutes: 0
+      LoadBalancerInfo:
+        TargetGroupPairInfoList:
+          - TargetGroups:
+              - Name: !ImportValue TargetGroupBlue-Export
+              - Name: !ImportValue TargetGroupGreen-Export
+            ProdTrafficRoute:
+              ListenerArns:
+                - !ImportValue ALBListener-Export
+            TestTrafficRoute:
+              ListenerArns:
+                - !ImportValue ALBTestListener-Export
+      ECSServices:
+        - ClusterName: !ImportValue ECSCluster-Export
+          ServiceName: !ImportValue ECSService-Export
+
+Outputs:
+  CodeDeployApplicationName:
+    Description: "CodeDeploy Application Name"
+    Value: !Ref CodeDeployApplication
+    Export:
+      Name: CodeDeployApplicationName-Export
+  CodeDeployApplicationArn:
+    Description: "CodeDeploy Application ARN"
+    Value: !GetAtt CodeDeployApplication.Arn
+    Export:
+      Name: CodeDeployApplicationArn-Export
+  CodeDeployDeploymentGroupName:
+    Description: "CodeDeploy Deployment Group Name"
+    Value: !Ref CodeDeployDeploymentGroup
+    Export:
+      Name: CodeDeployDeploymentGroupName-Export
+  CodeDeployDeploymentGroupArn:
+    Description: "CodeDeploy Deployment Group ARN"
+    Value: !GetAtt CodeDeployDeploymentGroup.Arn
+    Export:
+      Name: CodeDeployDeploymentGroupArn-Export

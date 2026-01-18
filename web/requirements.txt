@@ -1,0 +1,6 @@
+Flask==2.2.5
+Werkzeug==3.0.3
+mysql-connector-python
+unittest2
+beautifulsoup4
+gunicorn==22.0.0

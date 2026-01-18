@@ -1,0 +1,247 @@
+# main-stack.yaml
+Parameters:
+  AppName:
+    Type: String
+    Description: App name
+    Default: sample-app-web
+
+  Environment:
+    Type: String
+    Description: Environment name
+    AllowedValues:
+      - prod
+      - dev
+    Default: prod
+
+  DeploymentType:
+    Type: String
+    Description: Deployment tipi (BlueGreen veya Rolling)
+    AllowedValues:
+      - BlueGreen
+      - Rolling
+    Default: Rolling
+
+  GithubConnectionArn:
+    Type: String
+    Description: Github Connection ARN
+    Default: arn:aws:codeconnections:eu-central-1:253712034003:connection/b3dd3d8b-a942-49a2-8b42-6ae4b13d3ef3
+
+  GitRepoId:
+    Type: String
+    Description: owner/repo biçiminde GitHub repo ID'si
+    Default: zbalci/sample-app-web-build
+
+  GitBranch:
+    Type: String
+    Default: main
+
+  InstanceType:
+    Type: String
+    Description: EC2 instance tipi
+    Default: t2.micro
+
+  KeyName:
+    Type: String
+    Default: server
+    Description: Key-pair
+
+  AmiId:
+    Type: AWS::EC2::Image::Id
+    Description: ECS-uyumlu AMI ID
+    Default: ami-01ec60eada4b0bafa
+    
+  ContainerName:
+    Type: String
+    Default: sample-app-web-prod
+
+  ContainerPort:
+    Type: Number
+    Default: 5000
+
+  ListenerPort:
+    Type: Number
+    Default: 80
+
+  TestListenerPort:
+    Type: Number
+    Default: 8080
+
+  ArtifactBucket:
+    Type: String
+    Description: S3 bucket name used by CodePipeline
+    Default: codepipeline-eu-central-1-prod-artifact-bucket
+
+Conditions:
+  IsRolling: !Equals [ !Ref DeploymentType, "Rolling" ]
+  IsBlueGreen: !Equals [ !Ref DeploymentType, "BlueGreen" ]
+
+Resources:
+  ECR:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: https://cf-sample-app-prod-iac.s3.eu-central-1.amazonaws.com/1-ecr-repo.yaml
+      Parameters:
+        AppName: !Ref AppName
+        Environment: !Ref Environment
+
+  VPCStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: https://cf-sample-app-prod-iac.s3.eu-central-1.amazonaws.com/2-vpc.yaml
+      Parameters:
+        AppName: !Ref AppName
+        Environment: !Ref Environment
+
+  ALBStack:
+    Type: AWS::CloudFormation::Stack
+    DependsOn:
+      - VPCStack
+    Properties:
+      TemplateURL: https://cf-sample-app-prod-iac.s3.eu-central-1.amazonaws.com/3-alb-conditional.yaml
+      Parameters:
+        AppName: !Ref AppName
+        Environment: !Ref Environment
+        DeploymentType: !Ref DeploymentType
+        ContainerPort: !Ref ContainerPort
+        ListenerPort: !Ref ListenerPort
+        TestListenerPort: !Ref TestListenerPort
+
+  CodeBuild:
+    Type: AWS::CloudFormation::Stack
+    DependsOn:
+      - ECR
+    Properties:
+      TemplateURL: https://cf-sample-app-prod-iac.s3.eu-central-1.amazonaws.com/4-1-code-build.yaml
+      Parameters:
+        AppName: !Ref AppName
+        Environment: !Ref Environment
+        DeploymentType: !Ref DeploymentType
+        GitRepoId: !Ref GitRepoId
+        GithubConnectionArn: !Ref GithubConnectionArn
+        ArtifactBucket: !Ref ArtifactBucket
+        ContainerName: !Ref ContainerName
+        ContainerPort: !Ref ContainerPort
+
+  StartBuild:
+    Type: AWS::CloudFormation::Stack
+    DependsOn:
+      - CodeBuild
+    Properties:
+      TemplateURL: https://cf-sample-app-prod-iac.s3.eu-central-1.amazonaws.com/4-2-build-start.yaml
+      Parameters:
+        AppName: !Ref AppName
+        Environment: !Ref Environment
+
+  ECSTask:
+    Type: AWS::CloudFormation::Stack
+    DependsOn:
+      - StartBuild
+    Properties:
+      TemplateURL: https://cf-sample-app-prod-iac.s3.eu-central-1.amazonaws.com/5-1-ecs-task.yaml
+      Parameters:
+        AppName: !Ref AppName
+        Environment: !Ref Environment
+        ContainerPort: !Ref ContainerPort
+
+  ECSCluster:
+    Type: AWS::CloudFormation::Stack
+    DependsOn:
+      - ECSTask
+      - VPCStack
+    Properties:
+      TemplateURL: https://cf-sample-app-prod-iac.s3.eu-central-1.amazonaws.com/5-2-ecs-cluster.yaml
+      Parameters:
+        AppName: !Ref AppName
+        Environment: !Ref Environment
+        InstanceType: !Ref InstanceType
+        KeyName: !Ref KeyName
+        AmiId: !Ref AmiId
+        ContainerPort: !Ref ContainerPort
+
+  ECSService:
+    Type: AWS::CloudFormation::Stack
+    DependsOn:
+      - ECSCluster
+      - ALBStack
+    Properties:
+      TemplateURL: https://cf-sample-app-prod-iac.s3.eu-central-1.amazonaws.com/5-3-ecs-service.yaml
+      Parameters:
+        AppName: !Ref AppName
+        Environment: !Ref Environment
+        DeploymentType: !Ref DeploymentType
+        ContainerName: !Ref ContainerName
+        ContainerPort: !Ref ContainerPort
+
+  CodePipelineServiceRoleRolling:
+    Condition: IsRolling
+    Type: AWS::CloudFormation::Stack
+    DependsOn:
+      - ECSService
+    Properties:
+      TemplateURL: https://cf-sample-app-prod-iac.s3.eu-central-1.amazonaws.com/7-1-codepipeline-service-role.yaml
+      Parameters:
+        AppName: !Ref AppName
+        Environment: !Ref Environment
+        DeploymentType: !Ref DeploymentType
+        ArtifactBucket: !Ref ArtifactBucket
+        GithubConnectionArn: !Ref GithubConnectionArn
+
+  CodePipelineRolling:
+    Type: AWS::CloudFormation::Stack
+    Condition: IsRolling
+    DependsOn:
+      - CodePipelineServiceRoleRolling
+    Properties:
+      TemplateURL: https://cf-sample-app-prod-iac.s3.eu-central-1.amazonaws.com/7-2-codepipeline-rolling.yaml
+      Parameters:
+        AppName: !Ref AppName
+        Environment: !Ref Environment
+        DeploymentType: !Ref DeploymentType
+        GitRepoId: !Ref GitRepoId
+        GitBranch: !Ref GitBranch
+        ArtifactBucket: !Ref ArtifactBucket
+        ContainerName: !Ref ContainerName
+        ContainerPort: !Ref ContainerPort
+
+  CodeDeploy:
+    Condition: IsBlueGreen
+    Type: AWS::CloudFormation::Stack
+    DependsOn:
+      - ECSService
+    Properties:
+      TemplateURL: https://cf-sample-app-prod-iac.s3.eu-central-1.amazonaws.com/6-code-deploy-blue-green.yaml
+      Parameters:
+        AppName: !Ref AppName
+        Environment: !Ref Environment
+
+  CodePipelineServiceRoleBlueGreen:
+    Condition: IsBlueGreen
+    Type: AWS::CloudFormation::Stack
+    DependsOn:
+      - CodeDeploy
+    Properties:
+      TemplateURL: https://cf-sample-app-prod-iac.s3.eu-central-1.amazonaws.com/7-1-codepipeline-service-role.yaml
+      Parameters:
+        AppName: !Ref AppName
+        Environment: !Ref Environment
+        DeploymentType: !Ref DeploymentType
+        ArtifactBucket: !Ref ArtifactBucket
+        CodeDeployApplication: !Sub "${AppName}-${Environment}"
+        CodeDeployDeploymentGroup: !Sub "${AppName}-${Environment}-dg"
+
+  CodePipelineBlueGreen:
+    Type: AWS::CloudFormation::Stack
+    Condition: IsBlueGreen
+    DependsOn:
+      - CodePipelineServiceRoleBlueGreen
+    Properties:
+      TemplateURL: https://cf-sample-app-prod-iac.s3.eu-central-1.amazonaws.com/7-2-codepipeline-rolling.yaml
+      Parameters:
+        AppName: !Ref AppName
+        Environment: !Ref Environment
+        DeploymentType: !Ref DeploymentType
+        GitRepoId: !Ref GitRepoId
+        GitBranch: !Ref GitBranch
+        ArtifactBucket: !Ref ArtifactBucket
+        ContainerName: !Ref ContainerName
+        ContainerPort: !Ref ContainerPort

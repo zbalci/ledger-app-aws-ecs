@@ -1,0 +1,179 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: ALB, Target Group ve Listener kurulumu (Blue/Green veya Rolling)
+
+Parameters:
+  AppName:
+    Type: String
+    Description: App name
+
+  Environment:
+    Type: String
+    Description: Environment name
+
+  DeploymentType:
+    Type: String
+    Description: Deployment tipi (BlueGreen veya Rolling)
+
+  ContainerPort:
+    Type: Number
+
+  ListenerPort:
+    Type: Number
+
+  TestListenerPort:
+    Type: Number
+
+Conditions:
+  IsBlueGreen: !Equals [ !Ref DeploymentType, BlueGreen ]
+  IsRolling: !Equals [ !Ref DeploymentType, Rolling ]
+
+Resources:
+
+  ALBSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allow HTTP inbound and all outbound
+      VpcId: !ImportValue VPC-Export
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: !Ref ListenerPort
+          ToPort: !Ref ListenerPort
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: !Ref TestListenerPort
+          ToPort: !Ref TestListenerPort
+          CidrIp: 0.0.0.0/0
+      SecurityGroupEgress:
+        - IpProtocol: -1
+          FromPort: 0
+          ToPort: 0
+          CidrIp: 0.0.0.0/0
+      Tags:
+        - Key: Name
+          Value: !Sub "${AppName}-${Environment}-alb-sg"
+
+  ALB:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Name: !Sub "${AppName}-${Environment}-alb"
+      Subnets:
+        - !ImportValue PublicSubnet1-Export
+        - !ImportValue PublicSubnet2-Export
+      SecurityGroups:
+        - !Ref ALBSecurityGroup
+      Scheme: internet-facing
+      Type: application
+      IpAddressType: ipv4
+
+  # Blue Target Group (only if BlueGreen)
+  TargetGroupBlue:
+    Condition: IsBlueGreen
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Name: !Sub "${AppName}-blue-tg"
+      Port: !Ref ContainerPort
+      Protocol: HTTP
+      VpcId: !ImportValue VPC-Export
+      TargetType: instance
+      HealthCheckPath: /
+      Matcher:
+        HttpCode: 200
+
+  # Green Target Group (only if BlueGreen)
+  TargetGroupGreen:
+    Condition: IsBlueGreen
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Name: !Sub "${AppName}-green-tg"
+      Port: !Ref ContainerPort
+      Protocol: HTTP
+      VpcId: !ImportValue VPC-Export
+      TargetType: instance
+      HealthCheckPath: /
+      Matcher:
+        HttpCode: 200
+
+  # Single Target Group (only if Rolling)
+  TargetGroupRolling:
+    Condition: IsRolling
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Name: !Sub "${AppName}-rolling-tg"
+      Port: !Ref ContainerPort
+      Protocol: HTTP
+      VpcId: !ImportValue VPC-Export
+      TargetType: instance
+      HealthCheckPath: /
+      Matcher:
+        HttpCode: 200
+
+  # Listener (always present, default forwards to active TG)
+  Listener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn: !If
+            - IsRolling
+            - !Ref TargetGroupRolling
+            - !Ref TargetGroupBlue
+      LoadBalancerArn: !Ref ALB
+      Port: !Ref ListenerPort
+      Protocol: HTTP
+
+  # Test Listener (only BlueGreen)
+  TestListener:
+    Condition: IsBlueGreen
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn: !Ref TargetGroupGreen
+      LoadBalancerArn: !Ref ALB
+      Port: !Ref TestListenerPort
+      Protocol: HTTP
+
+Outputs:
+  LoadBalancerDNS:
+    Description: ALB DNS Name
+    Value: !GetAtt ALB.DNSName
+
+  ListenerExport:
+    Description: ALB Listener ARN
+    Value: !Ref Listener
+    Export:
+      Name: ALBListener-Export
+
+  SecurityGroupExport:
+    Description: ALBSecurityGroup ID
+    Value: !Ref ALBSecurityGroup
+    Export:
+      Name: ALBSecurityGroup-Export
+
+  TargetGroupBlueExport:
+    Condition: IsBlueGreen
+    Description: Blue target group ARN
+    Value: !Ref TargetGroupBlue
+    Export:
+      Name: TargetGroupBlue-Export
+
+  TargetGroupGreenExport:
+    Condition: IsBlueGreen
+    Description: Green target group ARN
+    Value: !Ref TargetGroupGreen
+    Export:
+      Name: TargetGroupGreen-Export
+
+  TestListenerExport:
+    Condition: IsBlueGreen
+    Description: Test listener ARN
+    Value: !Ref TestListener
+    Export:
+      Name: ALBTestListener-Export
+
+  TargetGroupRollingExport:
+    Condition: IsRolling
+    Description: Rolling target group ARN
+    Value: !Ref TargetGroupRolling
+    Export:
+      Name: TargetGroupRolling-Export

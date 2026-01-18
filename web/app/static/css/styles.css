@@ -1,0 +1,112 @@
+@import "https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css";
+
+/* ---------- Global ---------- */
+
+body {
+    background: linear-gradient(
+        135deg,
+        #F8FAFC 0%,
+        #EEF2FF 100%
+    );
+    color: #111827;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
+                 Roboto, Helvetica, Arial, sans-serif;
+}
+
+/* ---------- Container / Card ---------- */
+
+.container {
+    max-width: 900px;
+    background-color: #FFFFFF;
+    border-radius: 14px;
+    padding: 24px 28px;
+    margin: 40px auto;
+    border: 1px solid #E5E7EB;
+    box-shadow:
+        0 10px 20px rgba(0, 0, 0, 0.06),
+        0 2px 6px rgba(0, 0, 0, 0.04);
+}
+
+/* ---------- Headings ---------- */
+
+h1, h2, h3 {
+    font-weight: 600;
+    color: #111827;
+}
+
+/* ---------- Table ---------- */
+
+.transaction-table {
+    margin-top: 20px;
+}
+
+.table thead th {
+    border-bottom: 2px solid #E5E7EB;
+    color: #374151;
+    font-weight: 600;
+}
+
+.table td {
+    vertical-align: middle;
+    color: #374151;
+}
+
+.table tbody tr:hover {
+    background-color: #F9FAFB;
+}
+
+/* ---------- Actions ---------- */
+
+.transaction-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* ---------- Buttons (Soft Pastel) ---------- */
+
+.btn {
+    border-radius: 8px;
+    font-weight: 500;
+    padding: 6px 14px;
+    transition: all 0.15s ease-in-out;
+}
+
+/* Edit / Primary (Neutral Gray) */
+.btn-primary {
+    background-color: #9CA3AF;   /* soft neutral gray */
+    border-color: #9CA3AF;
+    color: #111827;
+}
+
+.btn-primary:hover {
+    background-color: #6B7280;
+    border-color: #6B7280;
+    color: #FFFFFF;
+}
+
+/* Add */
+.btn-add {
+    background-color: #9BBFA7;   /* pastel sage green */
+    border-color: #9BBFA7;
+    color: #1F2933;
+}
+
+.btn-add:hover {
+    background-color: #88AD95;
+    border-color: #88AD95;
+    color: #111827;
+}
+
+/* Delete */
+.btn-delete {
+    background-color: #D4A5A5;   /* dusty rose */
+    border-color: #D4A5A5;
+    color: #3F1D1D;
+}
+
+.btn-delete:hover {
+    background-color: #C08E8E;
+    border-color: #C08E8E;
+    color: #2A1414;
+}

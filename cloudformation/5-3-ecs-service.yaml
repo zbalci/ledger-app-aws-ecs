@@ -1,0 +1,80 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: ECS Service Template (Blue/Green & Rolling Update)
+
+Parameters:
+  AppName:
+    Type: String
+    Description: App name
+
+  Environment:
+    Type: String
+    Description: Environment name
+
+  DeploymentType:
+    Type: String
+    Description: Deployment Type (BlueGreen or Rolling)
+
+  ContainerName:
+    Type: String
+
+  ContainerPort:
+    Type: Number
+
+Conditions:
+  IsBlueGreen: !Equals [ !Ref DeploymentType, BlueGreen ]
+  IsRolling: !Equals [ !Ref DeploymentType, Rolling ]
+
+Resources:
+
+  ECSService:
+    Type: AWS::ECS::Service
+    Properties:
+      ServiceName: !Sub "${AppName}-${Environment}-service"
+      Cluster: !ImportValue ECSCluster-Export
+      TaskDefinition: !ImportValue TaskDefinition-Export
+      LaunchType: !If
+        - IsRolling
+        - !Ref "AWS::NoValue"
+        - EC2
+
+      DeploymentController: !If
+        - IsBlueGreen
+        - { Type: CODE_DEPLOY }
+        - !Ref "AWS::NoValue"
+
+      DeploymentConfiguration: !If
+        - IsRolling
+        - 
+          MaximumPercent: 200
+          MinimumHealthyPercent: 100
+        - !Ref "AWS::NoValue"
+
+      LoadBalancers:
+        - ContainerName: !Ref ContainerName
+          ContainerPort: !Ref ContainerPort
+          TargetGroupArn: !If
+            - IsBlueGreen
+            - !ImportValue TargetGroupBlue-Export
+            - !ImportValue TargetGroupRolling-Export
+
+      CapacityProviderStrategy: !If
+        - IsRolling
+        - 
+          - CapacityProvider: !ImportValue CapacityProvider-Export
+            Base: 0
+            Weight: 1
+        - !Ref "AWS::NoValue"
+      DesiredCount: 1
+
+Outputs:
+  ECSServiceExport:
+    Description: ECSService ***
+    Value: !Ref ECSService
+    Export:
+      Name: ECSService-Export
+
+  ECSServiceArnExport:
+    Description: ECSService ARN ***
+    Value: !GetAtt ECSService.Arn
+    Export:
+      Name: ECSServiceArn-Export
