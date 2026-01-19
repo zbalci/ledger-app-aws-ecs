@@ -143,8 +143,10 @@ Resources:
         Location: !Ref ArtifactBucket
         Packaging: ZIP
       Source:
-        Type: GITHUB
-        Location: !Sub "https://github.com/${GitRepoId}"
+        Type: CODESTAR
+        Location: !Ref GithubConnectionArn
+        # Type: GITHUB
+        # Location: !Sub "https://github.com/${GitRepoId}"
         GitCloneDepth: 1
         GitSubmodulesConfig:
           FetchSubmodules: false

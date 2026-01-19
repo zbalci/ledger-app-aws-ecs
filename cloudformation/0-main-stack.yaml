@@ -3,7 +3,7 @@ Parameters:
   AppName:
     Type: String
     Description: App name
-    Default: ledger-app-prod
+    Default: ledger-app
 
   Environment:
     Type: String
@@ -38,7 +38,7 @@ Parameters:
   InstanceType:
     Type: String
     Description: EC2 instance tipi
-    Default: t2.micro
+    Default: t3.micro
 
   KeyName:
     Type: String
@@ -132,31 +132,31 @@ Resources:
         AppName: !Ref AppName
         Environment: !Ref Environment
 
-  ECSTask:
-    Type: AWS::CloudFormation::Stack
-    DependsOn:
-      - StartBuild
-    Properties:
-      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/5-1-ecs-task.yaml
-      Parameters:
-        AppName: !Ref AppName
-        Environment: !Ref Environment
-        ContainerPort: !Ref ContainerPort
+  # ECSTask:
+  #   Type: AWS::CloudFormation::Stack
+  #   DependsOn:
+  #     - StartBuild
+  #   Properties:
+  #     TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/5-1-ecs-task.yaml
+  #     Parameters:
+  #       AppName: !Ref AppName
+  #       Environment: !Ref Environment
+  #       ContainerPort: !Ref ContainerPort
 
-  ECSCluster:
-    Type: AWS::CloudFormation::Stack
-    DependsOn:
-      - ECSTask
-      - VPCStack
-    Properties:
-      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/5-2-ecs-cluster.yaml
-      Parameters:
-        AppName: !Ref AppName
-        Environment: !Ref Environment
-        InstanceType: !Ref InstanceType
-        KeyName: !Ref KeyName
-        AmiId: !Ref AmiId
-        ContainerPort: !Ref ContainerPort
+  # ECSCluster:
+  #   Type: AWS::CloudFormation::Stack
+  #   DependsOn:
+  #     - ECSTask
+  #     - VPCStack
+  #   Properties:
+  #     TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/5-2-ecs-cluster.yaml
+  #     Parameters:
+  #       AppName: !Ref AppName
+  #       Environment: !Ref Environment
+  #       InstanceType: !Ref InstanceType
+  #       KeyName: !Ref KeyName
+  #       AmiId: !Ref AmiId
+  #       ContainerPort: !Ref ContainerPort
 
   # ECSService:
   #   Type: AWS::CloudFormation::Stack
