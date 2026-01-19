@@ -1,0 +1,13 @@
+version: 0.0
+Resources:
+  - TargetService:
+      Type: AWS::ECS::Service
+      Properties:
+        TaskDefinition: <TASK_DEFINITION>
+        LoadBalancerInfo:
+          ContainerName: "_CONTAINER_NAME_"
+          ContainerPort: _CONTAINER_PORT_
+        CapacityProviderStrategy:
+          - CapacityProvider: "_CONTAINER_NAME_-capacity-provider"
+            Base: 0
+            Weight: 1

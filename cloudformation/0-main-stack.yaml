@@ -3,7 +3,7 @@ Parameters:
   AppName:
     Type: String
     Description: App name
-    Default: sample-app-web
+    Default: ledger-app-prod
 
   Environment:
     Type: String
@@ -24,7 +24,7 @@ Parameters:
   GithubConnectionArn:
     Type: String
     Description: Github Connection ARN
-    Default: arn:aws:codeconnections:eu-central-1:253712034003:connection/b3dd3d8b-a942-49a2-8b42-6ae4b13d3ef3
+    Default: arn:aws:codeconnections:eu-north-1:253712034003:connection/2c02ecd9-b115-4cec-967f-a0e4445ecfaa
 
   GitRepoId:
     Type: String
@@ -42,17 +42,17 @@ Parameters:
 
   KeyName:
     Type: String
-    Default: server
+    Default: zekib
     Description: Key-pair
 
   AmiId:
     Type: AWS::EC2::Image::Id
     Description: ECS-uyumlu AMI ID
-    Default: ami-01ec60eada4b0bafa
+    Default: ami-0683ee28af6610487
     
   ContainerName:
     Type: String
-    Default: sample-app-web-prod
+    Default: ledger-app-prod
 
   ContainerPort:
     Type: Number
@@ -69,7 +69,7 @@ Parameters:
   ArtifactBucket:
     Type: String
     Description: S3 bucket name used by CodePipeline
-    Default: codepipeline-eu-central-1-prod-artifact-bucket
+    Default: ledger-app-artifacts-bucket
 
 Conditions:
   IsRolling: !Equals [ !Ref DeploymentType, "Rolling" ]
@@ -79,7 +79,7 @@ Resources:
   ECR:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: https://cf-sample-app-prod-iac.s3.eu-central-1.amazonaws.com/1-ecr-repo.yaml
+      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/1-ecr-repo.yaml
       Parameters:
         AppName: !Ref AppName
         Environment: !Ref Environment
@@ -87,7 +87,7 @@ Resources:
   VPCStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: https://cf-sample-app-prod-iac.s3.eu-central-1.amazonaws.com/2-vpc.yaml
+      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/2-vpc.yaml
       Parameters:
         AppName: !Ref AppName
         Environment: !Ref Environment
@@ -97,7 +97,7 @@ Resources:
     DependsOn:
       - VPCStack
     Properties:
-      TemplateURL: https://cf-sample-app-prod-iac.s3.eu-central-1.amazonaws.com/3-alb-conditional.yaml
+      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/3-alb-conditional.yaml
       Parameters:
         AppName: !Ref AppName
         Environment: !Ref Environment
@@ -111,7 +111,7 @@ Resources:
     DependsOn:
       - ECR
     Properties:
-      TemplateURL: https://cf-sample-app-prod-iac.s3.eu-central-1.amazonaws.com/4-1-code-build.yaml
+      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/4-1-code-build.yaml
       Parameters:
         AppName: !Ref AppName
         Environment: !Ref Environment
@@ -127,7 +127,7 @@ Resources:
     DependsOn:
       - CodeBuild
     Properties:
-      TemplateURL: https://cf-sample-app-prod-iac.s3.eu-central-1.amazonaws.com/4-2-build-start.yaml
+      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/4-2-build-start.yaml
       Parameters:
         AppName: !Ref AppName
         Environment: !Ref Environment
@@ -137,7 +137,7 @@ Resources:
     DependsOn:
       - StartBuild
     Properties:
-      TemplateURL: https://cf-sample-app-prod-iac.s3.eu-central-1.amazonaws.com/5-1-ecs-task.yaml
+      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/5-1-ecs-task.yaml
       Parameters:
         AppName: !Ref AppName
         Environment: !Ref Environment
@@ -149,7 +149,7 @@ Resources:
       - ECSTask
       - VPCStack
     Properties:
-      TemplateURL: https://cf-sample-app-prod-iac.s3.eu-central-1.amazonaws.com/5-2-ecs-cluster.yaml
+      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/5-2-ecs-cluster.yaml
       Parameters:
         AppName: !Ref AppName
         Environment: !Ref Environment
@@ -158,90 +158,90 @@ Resources:
         AmiId: !Ref AmiId
         ContainerPort: !Ref ContainerPort
 
-  ECSService:
-    Type: AWS::CloudFormation::Stack
-    DependsOn:
-      - ECSCluster
-      - ALBStack
-    Properties:
-      TemplateURL: https://cf-sample-app-prod-iac.s3.eu-central-1.amazonaws.com/5-3-ecs-service.yaml
-      Parameters:
-        AppName: !Ref AppName
-        Environment: !Ref Environment
-        DeploymentType: !Ref DeploymentType
-        ContainerName: !Ref ContainerName
-        ContainerPort: !Ref ContainerPort
+  # ECSService:
+  #   Type: AWS::CloudFormation::Stack
+  #   DependsOn:
+  #     - ECSCluster
+  #     - ALBStack
+  #   Properties:
+  #     TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/5-3-ecs-service.yaml
+  #     Parameters:
+  #       AppName: !Ref AppName
+  #       Environment: !Ref Environment
+  #       DeploymentType: !Ref DeploymentType
+  #       ContainerName: !Ref ContainerName
+  #       ContainerPort: !Ref ContainerPort
 
-  CodePipelineServiceRoleRolling:
-    Condition: IsRolling
-    Type: AWS::CloudFormation::Stack
-    DependsOn:
-      - ECSService
-    Properties:
-      TemplateURL: https://cf-sample-app-prod-iac.s3.eu-central-1.amazonaws.com/7-1-codepipeline-service-role.yaml
-      Parameters:
-        AppName: !Ref AppName
-        Environment: !Ref Environment
-        DeploymentType: !Ref DeploymentType
-        ArtifactBucket: !Ref ArtifactBucket
-        GithubConnectionArn: !Ref GithubConnectionArn
+  # CodePipelineServiceRoleRolling:
+  #   Condition: IsRolling
+  #   Type: AWS::CloudFormation::Stack
+  #   DependsOn:
+  #     - ECSService
+  #   Properties:
+  #     TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/7-1-codepipeline-service-role.yaml
+  #     Parameters:
+  #       AppName: !Ref AppName
+  #       Environment: !Ref Environment
+  #       DeploymentType: !Ref DeploymentType
+  #       ArtifactBucket: !Ref ArtifactBucket
+  #       GithubConnectionArn: !Ref GithubConnectionArn
 
-  CodePipelineRolling:
-    Type: AWS::CloudFormation::Stack
-    Condition: IsRolling
-    DependsOn:
-      - CodePipelineServiceRoleRolling
-    Properties:
-      TemplateURL: https://cf-sample-app-prod-iac.s3.eu-central-1.amazonaws.com/7-2-codepipeline-rolling.yaml
-      Parameters:
-        AppName: !Ref AppName
-        Environment: !Ref Environment
-        DeploymentType: !Ref DeploymentType
-        GitRepoId: !Ref GitRepoId
-        GitBranch: !Ref GitBranch
-        ArtifactBucket: !Ref ArtifactBucket
-        ContainerName: !Ref ContainerName
-        ContainerPort: !Ref ContainerPort
+  # CodePipelineRolling:
+  #   Type: AWS::CloudFormation::Stack
+  #   Condition: IsRolling
+  #   DependsOn:
+  #     - CodePipelineServiceRoleRolling
+  #   Properties:
+  #     TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/7-2-codepipeline-rolling.yaml
+  #     Parameters:
+  #       AppName: !Ref AppName
+  #       Environment: !Ref Environment
+  #       DeploymentType: !Ref DeploymentType
+  #       GitRepoId: !Ref GitRepoId
+  #       GitBranch: !Ref GitBranch
+  #       ArtifactBucket: !Ref ArtifactBucket
+  #       ContainerName: !Ref ContainerName
+  #       ContainerPort: !Ref ContainerPort
 
-  CodeDeploy:
-    Condition: IsBlueGreen
-    Type: AWS::CloudFormation::Stack
-    DependsOn:
-      - ECSService
-    Properties:
-      TemplateURL: https://cf-sample-app-prod-iac.s3.eu-central-1.amazonaws.com/6-code-deploy-blue-green.yaml
-      Parameters:
-        AppName: !Ref AppName
-        Environment: !Ref Environment
+  # CodeDeploy:
+  #   Condition: IsBlueGreen
+  #   Type: AWS::CloudFormation::Stack
+  #   DependsOn:
+  #     - ECSService
+  #   Properties:
+  #     TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/6-code-deploy-blue-green.yaml
+  #     Parameters:
+  #       AppName: !Ref AppName
+  #       Environment: !Ref Environment
 
-  CodePipelineServiceRoleBlueGreen:
-    Condition: IsBlueGreen
-    Type: AWS::CloudFormation::Stack
-    DependsOn:
-      - CodeDeploy
-    Properties:
-      TemplateURL: https://cf-sample-app-prod-iac.s3.eu-central-1.amazonaws.com/7-1-codepipeline-service-role.yaml
-      Parameters:
-        AppName: !Ref AppName
-        Environment: !Ref Environment
-        DeploymentType: !Ref DeploymentType
-        ArtifactBucket: !Ref ArtifactBucket
-        CodeDeployApplication: !Sub "${AppName}-${Environment}"
-        CodeDeployDeploymentGroup: !Sub "${AppName}-${Environment}-dg"
+  # CodePipelineServiceRoleBlueGreen:
+  #   Condition: IsBlueGreen
+  #   Type: AWS::CloudFormation::Stack
+  #   DependsOn:
+  #     - CodeDeploy
+  #   Properties:
+  #     TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/7-1-codepipeline-service-role.yaml
+  #     Parameters:
+  #       AppName: !Ref AppName
+  #       Environment: !Ref Environment
+  #       DeploymentType: !Ref DeploymentType
+  #       ArtifactBucket: !Ref ArtifactBucket
+  #       CodeDeployApplication: !Sub "${AppName}-${Environment}"
+  #       CodeDeployDeploymentGroup: !Sub "${AppName}-${Environment}-dg"
 
-  CodePipelineBlueGreen:
-    Type: AWS::CloudFormation::Stack
-    Condition: IsBlueGreen
-    DependsOn:
-      - CodePipelineServiceRoleBlueGreen
-    Properties:
-      TemplateURL: https://cf-sample-app-prod-iac.s3.eu-central-1.amazonaws.com/7-2-codepipeline-rolling.yaml
-      Parameters:
-        AppName: !Ref AppName
-        Environment: !Ref Environment
-        DeploymentType: !Ref DeploymentType
-        GitRepoId: !Ref GitRepoId
-        GitBranch: !Ref GitBranch
-        ArtifactBucket: !Ref ArtifactBucket
-        ContainerName: !Ref ContainerName
-        ContainerPort: !Ref ContainerPort
+  # CodePipelineBlueGreen:
+  #   Type: AWS::CloudFormation::Stack
+  #   Condition: IsBlueGreen
+  #   DependsOn:
+  #     - CodePipelineServiceRoleBlueGreen
+  #   Properties:
+  #     TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/7-2-codepipeline-rolling.yaml
+  #     Parameters:
+  #       AppName: !Ref AppName
+  #       Environment: !Ref Environment
+  #       DeploymentType: !Ref DeploymentType
+  #       GitRepoId: !Ref GitRepoId
+  #       GitBranch: !Ref GitBranch
+  #       ArtifactBucket: !Ref ArtifactBucket
+  #       ContainerName: !Ref ContainerName
+  #       ContainerPort: !Ref ContainerPort

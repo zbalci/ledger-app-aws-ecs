@@ -1,0 +1,113 @@
+{
+    "taskDefinitionArn": "_TASK_DEFINITION_ARN_",
+    "containerDefinitions": [
+        {
+            "name": "_CONTAINER_NAME_",
+            "image": "<IMAGE1_NAME>",
+            "cpu": 0,
+            "links": [],
+            "portMappings": [
+                {
+                    "name": "_APP_NAME_-_ENVIRONMENT_-_CONTAINER_PORT_-tcp",
+                    "containerPort": _CONTAINER_PORT_,
+                    "hostPort": _CONTAINER_PORT_,
+                    "protocol": "tcp",
+                    "appProtocol": "http"
+                }
+            ],
+            "essential": true,
+            "entryPoint": [],
+            "command": [],
+            "environment": [
+
+            ],
+            "environmentFiles": [],
+            "mountPoints": [],
+            "volumesFrom": [],
+            "secrets": [
+                {
+                    "name": "DATABASE_HOST",
+                    "valueFrom": "arn:aws:ssm:_AWS_REGION_:_ACCOUNT_ID_:parameter/_APP_NAME_/_ENVIRONMENT_/db/host"
+                },
+                {
+                    "name": "DATABASE_HOST_PORT",
+                    "valueFrom": "arn:aws:ssm:_AWS_REGION_:_ACCOUNT_ID_:parameter/_APP_NAME_/_ENVIRONMENT_/db/port"
+                },
+                {
+                    "name": "DATABASE_USER",
+                    "valueFrom": "arn:aws:ssm:_AWS_REGION_:_ACCOUNT_ID_:parameter/_APP_NAME_/_ENVIRONMENT_/db/user"
+                },
+		{
+		    "name": "DATABASE_PASS",
+                    "valueFrom": "arn:aws:ssm:_AWS_REGION_:_ACCOUNT_ID_:parameter/_APP_NAME_/_ENVIRONMENT_/db/pass"
+                }
+            ],
+            "dnsServers": [],
+            "dnsSearchDomains": [],
+            "extraHosts": [],
+            "dockerSecurityOptions": [],
+            "dockerLabels": {},
+            "ulimits": [],
+            "logConfiguration": {
+                "logDriver": "awslogs",
+                "options": {
+                    "awslogs-group": "/ecs/_CONTAINER_NAME_",
+                    "awslogs-create-group": "true",
+                    "awslogs-region": "_AWS_REGION_",
+                    "awslogs-stream-prefix": "ecs"
+                },
+                "secretOptions": []
+            },
+            "systemControls": [],
+            "credentialSpecs": []
+        }
+    ],
+    "family": "_TASK_DEFINITION_FAMILY_",
+    "taskRoleArn": "_TASK_EXECUTION_ROLE_",
+    "executionRoleArn": "_TASK_EXECUTION_ROLE_",
+    "networkMode": "bridge",
+    "revision": 19,
+    "volumes": [],
+    "status": "ACTIVE",
+    "requiresAttributes": [
+        {
+            "name": "com.amazonaws.ecs.capability.logging-driver.awslogs"
+        },
+        {
+            "name": "ecs.capability.execution-role-awslogs"
+        },
+        {
+            "name": "com.amazonaws.ecs.capability.ecr-auth"
+        },
+        {
+            "name": "com.amazonaws.ecs.capability.docker-remote-api.1.19"
+        },
+        {
+            "name": "com.amazonaws.ecs.capability.docker-remote-api.1.17"
+        },
+        {
+            "name": "com.amazonaws.ecs.capability.task-iam-role"
+        },
+        {
+            "name": "ecs.capability.execution-role-ecr-pull"
+        },
+        {
+            "name": "ecs.capability.secrets.ssm.environment-variables"
+        },
+        {
+            "name": "com.amazonaws.ecs.capability.docker-remote-api.1.18"
+        },
+        {
+            "name": "com.amazonaws.ecs.capability.docker-remote-api.1.29"
+        }
+    ],
+    "placementConstraints": [],
+    "compatibilities": [
+        "EC2"
+    ],
+    "requiresCompatibilities": [
+        "EC2"
+    ],
+    "cpu": "200",
+    "memory": "150"
+}

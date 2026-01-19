@@ -75,6 +75,10 @@ Resources:
       SubnetId: !Ref PublicSubnet2
       RouteTableId: !Ref RouteTable
 Outputs:
+  AZsSeenByCF:
+    Value: !Join [ ",", !GetAZs "" ]
+    Export:
+      Name: AZsSeenByCF-Export
   PublicSubnet1Export:
     Description: PublicSubnet1 ARN
     Value: !Ref PublicSubnet1

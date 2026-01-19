@@ -127,7 +127,7 @@ Resources:
             Type: PLAINTEXT              
 
           - Name: TASK_EXECUTION_ROLE 
-            Value: !ImportValue TaskExecutionRoleArn-Export
+            Value: !Sub "arn:aws:iam::${AWS::AccountId}:role/${AppName}-${Environment}-task-execution-role"
             Type: PLAINTEXT
       
           - Name: CONTAINER_NAME
