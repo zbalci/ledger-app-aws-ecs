@@ -139,18 +139,10 @@ Resources:
             Type: PLAINTEXT
 
       Artifacts:
-        Type: S3
-        Location: !Ref ArtifactBucket
+        Type: CODEPIPELINE 
         Packaging: ZIP
       Source:
-        Type: CODESTAR
-        Location: !Ref GithubConnectionArn
-        # Type: GITHUB
-        # Location: !Sub "https://github.com/${GitRepoId}"
-        GitCloneDepth: 1
-        GitSubmodulesConfig:
-          FetchSubmodules: false
-        ReportBuildStatus: true
+        Type: CODEPIPELINE
         BuildSpec: !If
           - IsRolling
           - ecs/rolling-update/buildspec.yml

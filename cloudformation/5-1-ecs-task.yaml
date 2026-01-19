@@ -56,7 +56,7 @@ Resources:
       TaskRoleArn: !Ref TaskExecutionRole
       ContainerDefinitions:
         - Name: !Sub "${AppName}-${Environment}"
-          Image: !Sub "${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${AppName}/${Environment}:latest"
+          Image: IMAGE_URI_PLACEHOLDER
           Cpu: 0
           Essential: true
           PortMappings:

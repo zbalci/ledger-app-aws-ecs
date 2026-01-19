@@ -1,15 +1,17 @@
 version: 0.2
 
 env:
-  variables:
-    IMAGE_TAG: latest
+  exported-variables:
+    - IMAGE_TAG
 
 phases:
   pre_build:
     commands:
       - echo Logging in to Amazon ECR...
       - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin "$ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com"
-
+      # Unique & deterministic tag
+      - IMAGE_TAG=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
+      - echo "IMAGE_TAG=$IMAGE_TAG"
   build:
     commands:
       - echo Build Docker image...
@@ -39,6 +41,7 @@ phases:
             -e "s|_TASK_EXECUTION_ROLE_|$TASK_EXECUTION_ROLE|g" \
             -e "s|_CONTAINER_NAME_|$CONTAINER_NAME|g" \
             -e "s|_CONTAINER_PORT_|$CONTAINER_PORT|g" \
+            -e "s|IMAGE_URI_PLACEHOLDER|$ECR_URI:$IMAGE_TAG|g" \
             ecs/blue-green/taskdef.json > taskdef.json
 
 artifacts:

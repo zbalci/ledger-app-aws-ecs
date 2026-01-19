@@ -122,15 +122,15 @@ Resources:
         ContainerName: !Ref ContainerName
         ContainerPort: !Ref ContainerPort
 
-  StartBuild:
-    Type: AWS::CloudFormation::Stack
-    DependsOn:
-      - CodeBuild
-    Properties:
-      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/4-2-build-start.yaml
-      Parameters:
-        AppName: !Ref AppName
-        Environment: !Ref Environment
+  # StartBuild:
+  #   Type: AWS::CloudFormation::Stack
+  #   DependsOn:
+  #     - CodeBuild
+  #   Properties:
+  #     TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/4-2-build-start.yaml
+  #     Parameters:
+  #       AppName: !Ref AppName
+  #       Environment: !Ref Environment
 
   # ECSTask:
   #   Type: AWS::CloudFormation::Stack

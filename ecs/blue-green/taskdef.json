@@ -3,7 +3,7 @@
     "containerDefinitions": [
         {
             "name": "_CONTAINER_NAME_",
-            "image": "<IMAGE1_NAME>",
+            "image": "_IMAGE_URI_PLACEHOLDER_",
             "cpu": 0,
             "links": [],
             "portMappings": [
