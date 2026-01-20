@@ -1,6 +1,6 @@
 # Import libraries
 from flask import Flask, redirect, request, render_template, url_for
-from .connector import get, add, edit, delete, search
+from connector import get, add, edit, delete, search
 # Instantiate Flask functionality
 #app = Flask(__name__)
 
