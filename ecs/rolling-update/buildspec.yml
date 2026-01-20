@@ -41,10 +41,7 @@ phases:
 
       # ---------- IMAGE SECURITY SCAN ----------
       - echo "Running Trivy image vulnerability scan..."
-      - trivy image \
-          --severity CRITICAL,HIGH \
-          --exit-code 1 \
-          $ECR_URI:$IMAGE_TAG2
+      - trivy image --severity CRITICAL,HIGH --exit-code 1 $ECR_URI:$IMAGE_TAG2
 
   post_build:
     commands:
