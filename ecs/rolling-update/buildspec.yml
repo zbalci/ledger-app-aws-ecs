@@ -24,8 +24,6 @@ phases:
       - docker push $ECR_URI:$IMAGE_TAG2
       - echo Writing image definitions file...
       - printf '[{"name":"%s","imageUri":"%s"}]' "$CONTAINER_NAME" "$ECR_URI:$IMAGE_TAG2" > imagedefinitions.json
-      - echo Replacing placeholders in taskdef.json
-      - sed -i "s|IMAGE_URI_PLACEHOLDER|$ECR_URI:$IMAGE_TAG2|g" taskdef.json
 
 artifacts:
   files: 
