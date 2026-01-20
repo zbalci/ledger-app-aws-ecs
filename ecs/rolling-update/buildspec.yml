@@ -2,29 +2,29 @@ version: 0.2
 
 env:
   exported-variables:
-    - IMAGE_TAG
+    - IMAGE_TAG2
 phases:
   pre_build:
     commands:
       - echo Logging in to Amazon ECR...
       - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin "$ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com"
       # Unique & deterministic tag
-      - IMAGE_TAG=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
-      - echo "IMAGE_TAG=$IMAGE_TAG"
+      - IMAGE_TAG2=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
+      - echo "IMAGE_TAG2=$IMAGE_TAG2"
   build:
     commands:
       - echo Build Docker image...
       - docker build -t $REPO_NAME .
-      - docker tag $REPO_NAME:$IMAGE_TAG $ECR_URI:$IMAGE_TAG
+      - docker tag $REPO_NAME:$IMAGE_TAG2 $ECR_URI:$IMAGE_TAG2
 
   post_build:
     commands:
       - echo Pushing the Docker image to Amazon ECR...
-      - docker push $ECR_URI:$IMAGE_TAG
+      - docker push $ECR_URI:$IMAGE_TAG2
       - echo Writing image definitions file...
-      - printf '[{"name":"%s","imageUri":"%s"}]' "$CONTAINER_NAME" "$ECR_URI:$IMAGE_TAG" > imagedefinitions.json
+      - printf '[{"name":"%s","imageUri":"%s"}]' "$CONTAINER_NAME" "$ECR_URI:$IMAGE_TAG2" > imagedefinitions.json
       - echo Replacing placeholders in taskdef.json
-      - sed -i "s|IMAGE_URI_PLACEHOLDER|$ECR_URI:$IMAGE_TAG|g" taskdef.json
+      - sed -i "s|IMAGE_URI_PLACEHOLDER|$ECR_URI:$IMAGE_TAG2|g" taskdef.json
 
 artifacts:
   files: 

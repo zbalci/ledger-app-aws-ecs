@@ -76,6 +76,6 @@ Outputs:
 
   ECSServiceArnExport:
     Description: ECSService ARN ***
-    Value: !GetAtt ECSService.Arn
+    Value: !GetAtt ECSService.ServiceArn
     Export:
       Name: ECSServiceArn-Export

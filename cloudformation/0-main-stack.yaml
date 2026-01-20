@@ -56,7 +56,7 @@ Parameters:
 
   ContainerPort:
     Type: Number
-    Default: 8081
+    Default: 80
 
   ListenerPort:
     Type: Number
@@ -172,36 +172,37 @@ Resources:
         ContainerName: !Ref ContainerName
         ContainerPort: !Ref ContainerPort
 
-  # CodePipelineServiceRoleRolling:
-  #   Condition: IsRolling
-  #   Type: AWS::CloudFormation::Stack
-  #   DependsOn:
-  #     - ECSService
-  #   Properties:
-  #     TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/7-1-codepipeline-service-role.yaml
-  #     Parameters:
-  #       AppName: !Ref AppName
-  #       Environment: !Ref Environment
-  #       DeploymentType: !Ref DeploymentType
-  #       ArtifactBucket: !Ref ArtifactBucket
-  #       GithubConnectionArn: !Ref GithubConnectionArn
+  CodePipelineServiceRoleRolling:
+    Condition: IsRolling
+    Type: AWS::CloudFormation::Stack
+    DependsOn:
+      - ECSService
+    Properties:
+      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/7-1-codepipeline-service-role.yaml
+      Parameters:
+        AppName: !Ref AppName
+        Environment: !Ref Environment
+        DeploymentType: !Ref DeploymentType
+        ArtifactBucket: !Ref ArtifactBucket
+        GithubConnectionArn: !Ref GithubConnectionArn
 
-  # CodePipelineRolling:
-  #   Type: AWS::CloudFormation::Stack
-  #   Condition: IsRolling
-  #   DependsOn:
-  #     - CodePipelineServiceRoleRolling
-  #   Properties:
-  #     TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/7-2-codepipeline-rolling.yaml
-  #     Parameters:
-  #       AppName: !Ref AppName
-  #       Environment: !Ref Environment
-  #       DeploymentType: !Ref DeploymentType
-  #       GitRepoId: !Ref GitRepoId
-  #       GitBranch: !Ref GitBranch
-  #       ArtifactBucket: !Ref ArtifactBucket
-  #       ContainerName: !Ref ContainerName
-  #       ContainerPort: !Ref ContainerPort
+  CodePipelineRolling:
+    Type: AWS::CloudFormation::Stack
+    Condition: IsRolling
+    DependsOn:
+      - CodePipelineServiceRoleRolling
+    Properties:
+      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/7-2-codepipeline-rolling.yaml
+      Parameters:
+        AppName: !Ref AppName
+        Environment: !Ref Environment
+        DeploymentType: !Ref DeploymentType
+        GitRepoId: !Ref GitRepoId
+        GithubConnectionArn: !Ref GithubConnectionArn
+        GitBranch: !Ref GitBranch
+        ArtifactBucket: !Ref ArtifactBucket
+        ContainerName: !Ref ContainerName
+        ContainerPort: !Ref ContainerPort
 
   # CodeDeploy:
   #   Condition: IsBlueGreen
