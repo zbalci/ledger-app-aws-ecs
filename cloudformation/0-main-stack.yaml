@@ -29,7 +29,7 @@ Parameters:
   GitRepoId:
     Type: String
     Description: owner/repo biçiminde GitHub repo ID'si
-    Default: zbalci/sample-app-web-build
+    Default: zbalci/ledger-app-aws-ecs
 
   GitBranch:
     Type: String

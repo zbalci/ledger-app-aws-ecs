@@ -14,6 +14,7 @@ phases:
   build:
     commands:
       - echo Build Docker image...
+      - cd web
       - docker build -t $REPO_NAME .
       - docker tag $REPO_NAME:$IMAGE_TAG2 $ECR_URI:$IMAGE_TAG2
 
