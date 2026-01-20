@@ -66,6 +66,8 @@ Resources:
               Name: !Sub "${AppName}-${Environment}-${ContainerPort}-tcp"
               AppProtocol: http
           Secrets:
+            - Name: DATABASE
+              ValueFrom: !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${AppName}/${Environment}/db/database"
             - Name: DATABASE_HOST
               ValueFrom: !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${AppName}/${Environment}/db/host"
             - Name: DATABASE_HOST_PORT

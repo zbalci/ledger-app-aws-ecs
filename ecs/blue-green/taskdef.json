@@ -26,6 +26,10 @@
             "volumesFrom": [],
             "secrets": [
                 {
+                    "name": "DATABASE",
+                    "valueFrom": "arn:aws:ssm:_AWS_REGION_:_ACCOUNT_ID_:parameter/_APP_NAME_/_ENVIRONMENT_/db/database"
+                },
+                {
                     "name": "DATABASE_HOST",
                     "valueFrom": "arn:aws:ssm:_AWS_REGION_:_ACCOUNT_ID_:parameter/_APP_NAME_/_ENVIRONMENT_/db/host"
                 },
