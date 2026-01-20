@@ -14,8 +14,7 @@ phases:
   build:
     commands:
       - echo Build Docker image...
-      - cd web
-      - docker build -t $REPO_NAME .
+      - docker build -t $REPO_NAME web/Dockerfile
       - docker tag $REPO_NAME:latest $ECR_URI:$IMAGE_TAG2
 
   post_build:
@@ -27,4 +26,4 @@ phases:
 
 artifacts:
   files: 
-    - web/imagedefinitions.json
+    - imagedefinitions.json
