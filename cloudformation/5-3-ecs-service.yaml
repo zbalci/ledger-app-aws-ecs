@@ -32,6 +32,7 @@ Resources:
       ServiceName: !Sub "${AppName}-${Environment}-service"
       Cluster: !ImportValue ECSCluster-Export
       TaskDefinition: !ImportValue TaskDefinition-Export
+      DesiredCount: 0
       LaunchType: !If
         - IsRolling
         - !Ref "AWS::NoValue"

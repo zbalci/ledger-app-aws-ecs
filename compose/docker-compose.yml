@@ -30,7 +30,7 @@ services:
       DATABASE_HOST: db
       DATABASE_HOST_PORT: 3306
     ports:
-      - "8081:8081"
+      - "80:80"
     depends_on:
       - db
 

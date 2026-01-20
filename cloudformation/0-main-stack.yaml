@@ -48,15 +48,15 @@ Parameters:
   AmiId:
     Type: AWS::EC2::Image::Id
     Description: ECS-uyumlu AMI ID
-    Default: ami-0683ee28af6610487
-    
+    Default: ami-0f3092a09bb5324c4
+
   ContainerName:
     Type: String
     Default: ledger-app-prod
 
   ContainerPort:
     Type: Number
-    Default: 5000
+    Default: 8081
 
   ListenerPort:
     Type: Number

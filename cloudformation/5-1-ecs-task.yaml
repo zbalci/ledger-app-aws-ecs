@@ -56,7 +56,7 @@ Resources:
       TaskRoleArn: !Ref TaskExecutionRole
       ContainerDefinitions:
         - Name: !Sub "${AppName}-${Environment}"
-          Image: IMAGE_URI_PLACEHOLDER
+          Image: "public.ecr.aws/docker/library/nginx:stable"
           Cpu: 0
           Essential: true
           PortMappings:

@@ -21,6 +21,6 @@ COPY app/ ./app/
 RUN adduser -D appuser
 USER appuser
 
-EXPOSE 8081
+EXPOSE 80
 
-CMD ["gunicorn", "-b", "0.0.0.0:8081", "app.run:app"]
+CMD ["gunicorn", "-b", "0.0.0.0:80", "app.run:app"]
