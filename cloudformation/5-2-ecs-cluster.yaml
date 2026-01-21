@@ -39,7 +39,9 @@ Resources:
     Type: AWS::EC2::SecurityGroup
     Properties:
       GroupDescription: ECS container host security group
-      VpcId: !ImportValue VPC-Export
+      VpcId:
+        Fn::ImportValue:
+          Fn::Sub: ${AppName}-${Environment}-VpcId
       SecurityGroupIngress:
         - IpProtocol: tcp
           FromPort: !Ref ContainerPort
@@ -107,8 +109,10 @@ Resources:
       - EC2Role
     Properties:
       VPCZoneIdentifier:
-        - !ImportValue PublicSubnet1-Export
-        - !ImportValue PublicSubnet2-Export
+        - Fn::ImportValue:
+            Fn::Sub: ${AppName}-${Environment}-PublicSubnet1Id
+        - Fn::ImportValue:
+            Fn::Sub: ${AppName}-${Environment}-PublicSubnet2Id
       LaunchTemplate:
         LaunchTemplateId: !Ref ContainerInstances
         Version: !GetAtt ContainerInstances.LatestVersionNumber
@@ -145,18 +149,13 @@ Resources:
           CapacityProvider: !Ref CapacityProvider
           Weight: 1
 Outputs:
-  CapacityProviderExport:
+  CapacityProvider:
     Description: The cluster capacity provider that the service should use
     Value: !Ref CapacityProvider
     Export:
-      Name: CapacityProvider-Export
-  ECSClusterExport:
+      Name: !Sub ${AppName}-${Environment}-CapacityProvider
+  ECSCluster:
     Description: ECS Cluster ***
     Value: !Ref ECSCluster
     Export:
-      Name: ECSCluster-Export
-  ECSClusterArnExport:
-    Description: ECS Cluster ARN ***
-    Value: !GetAtt ECSCluster.Arn
-    Export:
-      Name: ECSClusterArn-Export
+      Name: !Sub ${AppName}-${Environment}-ECSCluster

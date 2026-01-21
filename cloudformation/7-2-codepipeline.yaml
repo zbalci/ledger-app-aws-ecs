@@ -43,7 +43,9 @@ Resources:
     Type: AWS::CodePipeline::Pipeline
     Properties:
       Name: !Sub "${AppName}-${Environment}-${DeploymentType}-Pipeline"
-      RoleArn: !ImportValue CodePipelineServiceRoleArn-Export
+      RoleArn:
+        Fn::ImportValue:
+          Fn::Sub: ${AppName}-${Environment}-CodePipelineServiceRoleArn
       ArtifactStore:
         Type: S3
         Location: !Ref ArtifactBucket
@@ -74,7 +76,9 @@ Resources:
                 Provider: CodeBuild
                 Version: '1'
               Configuration:
-                ProjectName: !ImportValue CodeBuildProjectName-Export
+                ProjectName:
+                  Fn::ImportValue:
+                    Fn::Sub: ${AppName}-${Environment}-CodeBuildProjectName
               InputArtifacts:
                 - Name: SourceArtifact
               OutputArtifacts:
@@ -92,8 +96,12 @@ Resources:
                   Provider: ECS
                   Version: '1'
                 Configuration:
-                  ClusterName: !ImportValue ECSCluster-Export
-                  ServiceName: !ImportValue ECSService-Export
+                  ClusterName:
+                    Fn::ImportValue:
+                      Fn::Sub: ${AppName}-${Environment}-ECSCluster
+                  ServiceName:
+                    Fn::ImportValue:
+                      Fn::Sub: ${AppName}-${Environment}--ECSService
                 InputArtifacts:
                   - Name: BuildArtifact
                 RunOrder: 1
@@ -108,8 +116,12 @@ Resources:
                   Provider: CodeDeployToECS
                   Version: '1'
                 Configuration:
-                  ApplicationName: !ImportValue CodeDeployApplicationName-Export
-                  DeploymentGroupName: !ImportValue CodeDeployDeploymentGroupName-Export
+                  ApplicationName:
+                    Fn::ImportValue:
+                      Fn::Sub: ${AppName}-${Environment}-CodeDeployAppName
+                  DeploymentGroupName:
+                    Fn::ImportValue:
+                      Fn::Sub: ${AppName}-${Environment}-CodeDeployDGName
                   AppSpecTemplateArtifact: BuildArtifact
                   TaskDefinitionTemplateArtifact: BuildArtifact
                   Image1ArtifactName: BuildArtifact

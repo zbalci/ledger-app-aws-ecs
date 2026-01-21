@@ -48,36 +48,44 @@ Resources:
       LoadBalancerInfo:
         TargetGroupPairInfoList:
           - TargetGroups:
-              - Name: !ImportValue TargetGroupBlue-Export
-              - Name: !ImportValue TargetGroupGreen-Export
+              - Name:
+                  Fn::ImportValue:
+                    Fn::Sub: ${AppName}-${Environment}-BlueTG
+                  Fn::ImportValue:
+                    Fn::Sub: ${AppName}-${Environment}-GreenTG
             ProdTrafficRoute:
               ListenerArns:
-                - !ImportValue ALBListener-Export
+                Fn::ImportValue:
+                  Fn::Sub: ${AppName}-${Environment}-Listener
             TestTrafficRoute:
               ListenerArns:
-                - !ImportValue ALBTestListener-Export
+                Fn::ImportValue:
+                  Fn::Sub: ${AppName}-${Environment}-TestListener
       ECSServices:
-        - ClusterName: !ImportValue ECSCluster-Export
-          ServiceName: !ImportValue ECSService-Export
-
+        - ClusterName:
+            Fn::ImportValue:
+              Fn::Sub: ${AppName}-${Environment}-ECSCluster
+          ServiceName:
+            Fn::ImportValue:
+              Fn::Sub: ${AppName}-${Environment}--ECSService
 Outputs:
-  CodeDeployApplicationName:
+  CodeDeployAppName:
     Description: "CodeDeploy Application Name"
     Value: !Ref CodeDeployApplication
     Export:
-      Name: CodeDeployApplicationName-Export
-  CodeDeployApplicationArn:
+      Name: !Sub ${AppName}-${Environment}-CodeDeployAppName
+  CodeDeployAppArn:
     Description: "CodeDeploy Application ARN"
     Value: !GetAtt CodeDeployApplication.Arn
     Export:
-      Name: CodeDeployApplicationArn-Export
-  CodeDeployDeploymentGroupName:
+      Name: !Sub ${AppName}-${Environment}-CodeDeployAppArn
+  CodeDeployDGName:
     Description: "CodeDeploy Deployment Group Name"
     Value: !Ref CodeDeployDeploymentGroup
     Export:
-      Name: CodeDeployDeploymentGroupName-Export
-  CodeDeployDeploymentGroupArn:
+      Name: !Sub ${AppName}-${Environment}-CodeDeployDGName
+  CodeDeployDGArn:
     Description: "CodeDeploy Deployment Group ARN"
     Value: !GetAtt CodeDeployDeploymentGroup.Arn
     Export:
-      Name: CodeDeployDeploymentGroupArn-Export
+      Name: !Sub ${AppName}-${Environment}-CodeDeployDGArn

@@ -10,6 +10,10 @@ Parameters:
     Type: String
     Description: Environment name
 
+  DeploymentType:
+    Type: String
+    Description: Deployment tipi (BlueGreen veya Rolling)
+
   GitRepoId:
     Type: String
     Description: owner/repo biçiminde GitHub repo ID'si
@@ -17,10 +21,6 @@ Parameters:
   GithubConnectionArn:
     Type: String
     Description: Github Connection ARN
-
-  DeploymentType:
-    Type: String
-    Description: Deployment tipi (BlueGreen veya Rolling)
 
   ArtifactBucket:
     Type: String
@@ -112,7 +112,9 @@ Resources:
             Type: PLAINTEXT
 
           - Name: ECR_URI
-            Value: !ImportValue ECRUri-Export
+            Value: 
+              Fn::ImportValue:
+                Fn::Sub: ${AppName}-${Environment}-ECRUri
             Type: PLAINTEXT
 
           - Name: TASK_DEFINITION_ARN
@@ -150,13 +152,13 @@ Resources:
           Value: !Ref Environment
 
 Outputs:
-  CodeBuildProjectNameExport:
+  CodeBuildProjectName:
     Description: CodeBuildProjectName ***
     Value: !Ref CodeBuildProject
     Export:
-      Name: CodeBuildProjectName-Export
-  CodeBuildProjectArnExport:
+      Name: !Sub ${AppName}-${Environment}-CodeBuildProjectName
+  CodeBuildProjectArn:
     Description: CodeBuildProjectArn ***
     Value: !GetAtt CodeBuildProject.Arn
     Export:
-      Name: CodeBuildProjectArn-Export
+      Name: !Sub ${AppName}-${Environment}-CodeBuildProjectArn

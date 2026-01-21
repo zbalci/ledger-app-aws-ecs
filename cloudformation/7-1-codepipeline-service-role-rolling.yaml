@@ -1,0 +1,63 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: CodePipeline IAM Role with Conditional IAM Policies for ECS Deployment
+
+Parameters:
+  AppName:
+    Type: String
+    Description: App name
+
+  Environment:
+    Type: String
+    Description: Environment name
+
+Resources:
+  ### Rolling Policy
+  RollingEcsPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: RollingECSAccess
+      Roles:
+        Fn::ImportValue:
+          Fn::Sub: ${AppName}-${Environment}-CodePipelineServiceRoleName
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: TaskDefinitionPermissions
+            Effect: Allow
+            Action:
+              - ecs:DescribeTaskDefinition
+              - ecs:RegisterTaskDefinition
+            Resource: "*"
+
+          - Sid: ECSServicePermissions
+            Effect: Allow
+            Action:
+              - ecs:DescribeServices
+              - ecs:UpdateService
+            Resource:
+              Fn::ImportValue:
+                Fn::Sub: ${AppName}-${Environment}-ECSServiceArn
+
+          - Sid: ECSTaskDefinitionRegistration
+            Effect: Allow
+            Action:
+              - ecs:RegisterTaskDefinition
+              - ecs:TagResource
+            Resource: "*"
+            Condition:
+              StringEquals:
+                ecs:CreateAction:
+                  - RegisterTaskDefinition
+
+          - Sid: IamPassRolePermissions
+            Effect: Allow
+            Action: iam:PassRole
+            Resource:
+              Fn::ImportValue:
+                Fn::Sub: ${AppName}-${Environment}-TaskExecutionRoleArn
+
+            Condition:
+              StringEquals:
+                iam:PassedToService:
+                  - ecs.amazonaws.com
+                  - ecs-tasks.amazonaws.com

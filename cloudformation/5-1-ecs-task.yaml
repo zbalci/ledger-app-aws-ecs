@@ -85,14 +85,14 @@ Resources:
               awslogs-stream-prefix: ecs
 
 Outputs:
-  TaskExecutionRoleExport:
+  TaskExecutionRole:
     Description: TaskExecutionRole ***
     Value: !GetAtt TaskExecutionRole.Arn
     Export:
-      Name: TaskExecutionRoleArn-Export
+      Name: !Sub ${AppName}-${Environment}-TaskExecutionRoleArn
 
-  TaskDefinitionExport:
+  TaskDefinition:
     Description: TaskDefinition ***
     Value: !Ref TaskDefinition
     Export:
-      Name: TaskDefinition-Export
+      Name: !Sub ${AppName}-${Environment}-TaskDefinition

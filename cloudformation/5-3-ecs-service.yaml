@@ -27,8 +27,12 @@ Resources:
     Type: AWS::ECS::Service
     Properties:
       ServiceName: !Sub "${AppName}-${Environment}-service"
-      Cluster: !ImportValue ECSCluster-Export
-      TaskDefinition: !ImportValue TaskDefinition-Export
+      Cluster:
+        Fn::ImportValue:
+          Fn::Sub: ${AppName}-${Environment}-ECSCluster
+      TaskDefinition:
+        Fn::ImportValue:
+          Fn::Sub: ${AppName}-${Environment}-TaskDefinition
       DesiredCount: 0
       LaunchType: !If
         - IsRolling
@@ -52,27 +56,31 @@ Resources:
           ContainerPort: !Ref ContainerPort
           TargetGroupArn: !If
             - IsBlueGreen
-            - !ImportValue TargetGroupBlue-Export
-            - !ImportValue TargetGroupRolling-Export
+            - Fn::ImportValue:
+                Fn::Sub: ${AppName}-${Environment}-BlueTG
+            - Fn::ImportValue:
+                Fn::Sub: ${AppName}-${Environment}-RollingTG
 
       CapacityProviderStrategy: !If
         - IsRolling
         - 
-          - CapacityProvider: !ImportValue CapacityProvider-Export
+          - CapacityProvider:
+              Fn::ImportValue:
+                Fn::Sub: ${AppName}-${Environment}--CapacityProvider
             Base: 0
             Weight: 1
         - !Ref "AWS::NoValue"
       DesiredCount: 1
 
 Outputs:
-  ECSServiceExport:
+  ECSService:
     Description: ECSService ***
     Value: !Ref ECSService
     Export:
-      Name: ECSService-Export
+      Name: !Sub ${AppName}-${Environment}-ECSService
 
-  ECSServiceArnExport:
+  ECSServiceArn:
     Description: ECSService ARN ***
     Value: !GetAtt ECSService.ServiceArn
     Export:
-      Name: ECSServiceArn-Export
+      Name: !Sub ${AppName}-${Environment}-ECSServiceArn

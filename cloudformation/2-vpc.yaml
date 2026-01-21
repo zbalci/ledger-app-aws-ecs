@@ -75,22 +75,18 @@ Resources:
       SubnetId: !Ref PublicSubnet2
       RouteTableId: !Ref RouteTable
 Outputs:
-  AZsSeenByCF:
-    Value: !Join [ ",", !GetAZs "" ]
-    Export:
-      Name: AZsSeenByCF-Export
-  PublicSubnet1Export:
-    Description: PublicSubnet1 ARN
+  PublicSubnet1Id:
+    Description: Public Subnet 1 ID
     Value: !Ref PublicSubnet1
     Export:
-      Name: PublicSubnet1-Export
-  PublicSubnet2Export:
-    Description: PublicSubnet2 ARN
+      Name: !Sub ${AppName}-${Environment}-PublicSubnet1Id
+  PublicSubnet2Id:
+    Description: Public Subnet 2 ID
     Value: !Ref PublicSubnet2
     Export:
-      Name: PublicSubnet2-Export
-  VPCExport:
-    Description: VPC ARN
+      Name: !Sub ${AppName}-${Environment}-PublicSubnet2Id
+  VpcId:
+    Description: VPC Name
     Value: !Ref VPC
     Export:
-      Name: VPC-Export
+      Name: !Sub ${AppName}-${Environment}-VpcId
