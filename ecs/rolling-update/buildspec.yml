@@ -3,6 +3,7 @@ version: 0.2
 env:
   exported-variables:
     - IMAGE_TAG2
+
 phases:
   install:
     commands:

@@ -30,9 +30,6 @@ Parameters:
     Type: String
     Description: S3 bucket name used by CodePipeline
 
-  ContainerName:
-    Type: String
-
   ContainerPort:
     Type: Number
 
@@ -116,7 +113,7 @@ Resources:
                   AppSpecTemplateArtifact: BuildArtifact
                   TaskDefinitionTemplateArtifact: BuildArtifact
                   Image1ArtifactName: BuildArtifact
-                  Image1ContainerName: !Ref ContainerName
+                  Image1ContainerName: !Sub "${AppName}-${Environment}"
                 InputArtifacts:
                   - Name: BuildArtifact
                 RunOrder: 1

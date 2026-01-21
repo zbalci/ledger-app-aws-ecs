@@ -25,9 +25,6 @@ Parameters:
   ArtifactBucket:
     Type: String
 
-  ContainerName:
-    Type: String
-
   ContainerPort:
     Type: Number
 
@@ -131,7 +128,7 @@ Resources:
             Type: PLAINTEXT
       
           - Name: CONTAINER_NAME
-            Value: !Ref ContainerName
+            Value: !Sub "${AppName}-${Environment}"
             Type: PLAINTEXT             
 
           - Name: CONTAINER_PORT

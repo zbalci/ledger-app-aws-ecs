@@ -50,10 +50,6 @@ Parameters:
     Description: ECS-uyumlu AMI ID
     Default: ami-0f3092a09bb5324c4
 
-  ContainerName:
-    Type: String
-    Default: ledger-app-prod
-
   ContainerPort:
     Type: Number
     Default: 80
@@ -119,23 +115,12 @@ Resources:
         GitRepoId: !Ref GitRepoId
         GithubConnectionArn: !Ref GithubConnectionArn
         ArtifactBucket: !Ref ArtifactBucket
-        ContainerName: !Ref ContainerName
         ContainerPort: !Ref ContainerPort
-
-  # StartBuild:
-  #   Type: AWS::CloudFormation::Stack
-  #   DependsOn:
-  #     - CodeBuild
-  #   Properties:
-  #     TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/4-2-build-start.yaml
-  #     Parameters:
-  #       AppName: !Ref AppName
-  #       Environment: !Ref Environment
 
   ECSTask:
     Type: AWS::CloudFormation::Stack
-    # DependsOn:
-    #   - StartBuild
+    DependsOn:
+      - CodeBuild
     Properties:
       TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/5-1-ecs-task.yaml
       Parameters:
@@ -169,7 +154,6 @@ Resources:
         AppName: !Ref AppName
         Environment: !Ref Environment
         DeploymentType: !Ref DeploymentType
-        ContainerName: !Ref ContainerName
         ContainerPort: !Ref ContainerPort
 
   CodePipelineServiceRoleRolling:
@@ -201,7 +185,6 @@ Resources:
         GithubConnectionArn: !Ref GithubConnectionArn
         GitBranch: !Ref GitBranch
         ArtifactBucket: !Ref ArtifactBucket
-        ContainerName: !Ref ContainerName
         ContainerPort: !Ref ContainerPort
 
   # CodeDeploy:
@@ -244,5 +227,4 @@ Resources:
   #       GitRepoId: !Ref GitRepoId
   #       GitBranch: !Ref GitBranch
   #       ArtifactBucket: !Ref ArtifactBucket
-  #       ContainerName: !Ref ContainerName
   #       ContainerPort: !Ref ContainerPort
