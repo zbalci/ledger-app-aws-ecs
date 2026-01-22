@@ -48,12 +48,14 @@ Resources:
       LoadBalancerInfo:
         TargetGroupPairInfoList:
           - TargetGroups:
-            - Name:
-                Fn::ImportValue:
-                  Fn::Sub: ${AppName}-${Environment}-alb-blue-tg
-            - Name:
-                Fn::ImportValue:
-                  Fn::Sub: ${AppName}-${Environment}-alb-green-tg
+            - Name: !Sub "${AppName}-blue-tg"
+            - Name: !Sub "${AppName}-green-tg"
+            # - Name:
+            #     Fn::ImportValue:
+            #       Fn::Sub: ${AppName}-${Environment}-alb-blue-tg
+            # - Name:
+            #     Fn::ImportValue:
+            #       Fn::Sub: ${AppName}-${Environment}-alb-green-tg
             ProdTrafficRoute:
               ListenerArns:
                 - Fn::ImportValue:
@@ -90,7 +92,7 @@ Outputs:
   CodeDeployDGArn:
     Description: "CodeDeploy Deployment Group ARN (manually constructed)"
     Value: !Sub
-      - arn:aws:codedeploy:${AWS::Region}:${AWS::AccountId}:deploymentgroup:${AppName}/${DGName}
+      - arn:aws:codedeploy:${AWS::Region}:${AWS::AccountId}:deploymentgroup:${AppName}-${Environment}/${DGName}
       - DGName: !Ref CodeDeployDeploymentGroup
     Export:
       Name: !Sub ${AppName}-${Environment}-codedeploy-dg-arn

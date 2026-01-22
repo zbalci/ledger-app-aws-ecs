@@ -121,11 +121,9 @@ Resources:
                       Fn::Sub: ${AppName}-${Environment}-codedeploy-app-name
                   DeploymentGroupName:
                     Fn::ImportValue:
-                      Fn::Sub: ${AppName}-${Environment}-codedeploy-dg-arn
+                      Fn::Sub: ${AppName}-${Environment}-codedeploy-dg-name
                   AppSpecTemplateArtifact: BuildArtifact
                   TaskDefinitionTemplateArtifact: BuildArtifact
-                  Image1ArtifactName: BuildArtifact
-                  Image1ContainerName: !Sub "${AppName}-${Environment}"
                 InputArtifacts:
                   - Name: BuildArtifact
                 RunOrder: 1
