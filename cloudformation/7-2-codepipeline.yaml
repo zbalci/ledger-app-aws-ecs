@@ -76,9 +76,7 @@ Resources:
                 Provider: CodeBuild
                 Version: '1'
               Configuration:
-                ProjectName:
-                  Fn::ImportValue:
-                    Fn::Sub: ${AppName}-${Environment}-codebuild-project-name
+                ProjectName: !Sub "${AppName}-${Environment}-codebuild-project"
               InputArtifacts:
                 - Name: SourceArtifact
               OutputArtifacts:
@@ -112,12 +110,8 @@ Resources:
                   Provider: CodeDeployToECS
                   Version: '1'
                 Configuration:
-                  ApplicationName:
-                    Fn::ImportValue:
-                      Fn::Sub: ${AppName}-${Environment}-codedeploy-app-name
-                  DeploymentGroupName:
-                    Fn::ImportValue:
-                      Fn::Sub: ${AppName}-${Environment}-codedeploy-dg-name
+                  ApplicationName: !Sub "${AppName}-${Environment}-codedeploy-app"
+                  DeploymentGroupName: !Sub "${AppName}-${Environment}-dg"
                   AppSpecTemplateArtifact: BuildArtifact
                   TaskDefinitionTemplateArtifact: BuildArtifact
                 InputArtifacts:

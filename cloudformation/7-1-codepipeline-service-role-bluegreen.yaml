@@ -16,9 +16,8 @@ Resources:
     Type: AWS::IAM::Policy
     Properties:
       PolicyName: !Sub ${AppName}-${Environment}-codedeploy-ecs-accesss
-      Roles:
-      - Fn::ImportValue:
-          Fn::Sub: ${AppName}-${Environment}-codepipeline-servicerole-name
+      Roles: 
+        - !Sub ${AppName}-${Environment}-codepipeline-servicerole
       PolicyDocument:
         Version: "2012-10-17"
         Statement:

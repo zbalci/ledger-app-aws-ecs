@@ -30,7 +30,7 @@ Resources:
   ECSCluster:
     Type: AWS::ECS::Cluster
     Properties:
-      ClusterName: !Sub "${AppName}-${Environment}-cluster"
+      ClusterName: !Sub "${AppName}-${Environment}-ecs-cluster"
       ClusterSettings:
         - Name: containerInsights
           Value: enabled
@@ -148,14 +148,3 @@ Resources:
         - Base: 0
           CapacityProvider: !Ref CapacityProvider
           Weight: 1
-Outputs:
-  CapacityProvider:
-    Description: The cluster capacity provider that the service should use
-    Value: !Ref CapacityProvider
-    Export:
-      Name: !Sub ${AppName}-${Environment}-capacity-provider
-  ECSCluster:
-    Description: ECS Cluster ***
-    Value: !Ref ECSCluster
-    Export:
-      Name: !Sub ${AppName}-${Environment}-ecs-cluster

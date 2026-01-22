@@ -27,12 +27,10 @@ Resources:
     Type: AWS::ECS::Service
     Properties:
       ServiceName: !Sub "${AppName}-${Environment}-service"
-      Cluster:
-        Fn::ImportValue:
-          Fn::Sub: ${AppName}-${Environment}-ecs-cluster
+      Cluster: !Sub "${AppName}-${Environment}-ecs-cluster"
       TaskDefinition:
         Fn::ImportValue:
-          Fn::Sub: ${AppName}-${Environment}-task-definition
+          Fn::Sub: ${AppName}-${Environment}-task-definition-arn
       LaunchType: !If
         - IsRolling
         - !Ref "AWS::NoValue"
@@ -63,21 +61,13 @@ Resources:
       CapacityProviderStrategy: !If
         - IsRolling
         - 
-          - CapacityProvider:
-              Fn::ImportValue:
-                Fn::Sub: ${AppName}-${Environment}-capacity-provider
+          - CapacityProvider: !Sub ${AppName}-${Environment}-capacity-provider
             Base: 0
             Weight: 1
         - !Ref "AWS::NoValue"
       DesiredCount: 1
 
 Outputs:
-  ECSService:
-    Description: ECSService Name
-    Value: !Ref ECSService
-    Export:
-      Name: !Sub ${AppName}-${Environment}-ecs-service
-
   ECSServiceArn:
     Description: ECSService ARN ***
     Value: !GetAtt ECSService.ServiceArn

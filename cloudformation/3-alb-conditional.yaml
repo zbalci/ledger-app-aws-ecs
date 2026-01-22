@@ -148,12 +148,6 @@ Outputs:
     Description: ALB DNS Name
     Value: !GetAtt ALB.DNSName
 
-  Listener:
-    Description: ALB Listener ARN
-    Value: !Ref Listener
-    Export:
-      Name: !Sub ${AppName}-${Environment}-alb-listener-arn
-
   BlueTGArn:
     Condition: IsBlueGreen
     Description: Blue target group ARN
@@ -161,19 +155,18 @@ Outputs:
     Export:
       Name: !Sub ${AppName}-${Environment}-alb-blue-tg-arn
 
-  GreenTGArn:
-    Condition: IsBlueGreen
-    Description: Green target group ARN
-    Value: !Ref GreenTargetGroup
-    Export:
-      Name: !Sub ${AppName}-${Environment}-alb-green-tg-arn
-
   RollingTGArn:
     Condition: IsRolling
     Description: Rolling target group ARN
     Value: !Ref RollingTargetGroup
     Export:
       Name: !Sub ${AppName}-${Environment}-alb-rolling-tg-arn
+
+  ListenerArn:
+    Description: ALB Listener ARN
+    Value: !Ref Listener
+    Export:
+      Name: !Sub ${AppName}-${Environment}-alb-listener-arn
 
   TestListenerArn:
     Condition: IsBlueGreen

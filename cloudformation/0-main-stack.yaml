@@ -102,12 +102,21 @@ Resources:
         ListenerPort: !Ref ListenerPort
         TestListenerPort: !Ref TestListenerPort
 
+  ECSTask:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/5-0-ecs-task.yaml
+      Parameters:
+        AppName: !Ref AppName
+        Environment: !Ref Environment
+        ContainerPort: !Ref ContainerPort
+
   CodeBuild:
     Type: AWS::CloudFormation::Stack
     DependsOn:
-      - ECR
+      - ECSTask
     Properties:
-      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/4-1-code-build.yaml
+      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/5-1-code-build.yaml
       Parameters:
         AppName: !Ref AppName
         Environment: !Ref Environment
@@ -117,21 +126,9 @@ Resources:
         ArtifactBucket: !Ref ArtifactBucket
         ContainerPort: !Ref ContainerPort
 
-  ECSTask:
-    Type: AWS::CloudFormation::Stack
-    DependsOn:
-      - CodeBuild
-    Properties:
-      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/5-1-ecs-task.yaml
-      Parameters:
-        AppName: !Ref AppName
-        Environment: !Ref Environment
-        ContainerPort: !Ref ContainerPort
-
   ECSCluster:
     Type: AWS::CloudFormation::Stack
     DependsOn:
-      - ECSTask
       - VPCStack
     Properties:
       TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/5-2-ecs-cluster.yaml

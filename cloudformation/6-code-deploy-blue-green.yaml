@@ -25,7 +25,7 @@ Resources:
   CodeDeployApplication:
     Type: AWS::CodeDeploy::Application
     Properties:
-      ApplicationName: !Sub "${AppName}-${Environment}"
+      ApplicationName: !Sub "${AppName}-${Environment}-codedeploy-app"
       ComputePlatform: ECS
   
   CodeDeployDeploymentGroup:
@@ -64,23 +64,11 @@ Resources:
           ServiceName: !Sub "${AppName}-${Environment}-service"
           
 Outputs:
-  CodeDeployAppName:
-    Description: "CodeDeploy Application Name"
-    Value: !Ref CodeDeployApplication
-    Export:
-      Name: !Sub ${AppName}-${Environment}-codedeploy-app-name
-
   CodeDeployAppArn:
     Description: "CodeDeploy Application ARN (manually constructed)"
     Value: !Sub arn:aws:codedeploy:${AWS::Region}:${AWS::AccountId}:application:${AppName}-${Environment}
     Export:
       Name: !Sub ${AppName}-${Environment}-codedeploy-app-arn
-
-  CodeDeployDGName:
-    Description: "CodeDeploy Deployment Group Name"
-    Value: !Ref CodeDeployDeploymentGroup
-    Export:
-      Name: !Sub ${AppName}-${Environment}-codedeploy-dg-name
 
   CodeDeployDGArn:
     Description: "CodeDeploy Deployment Group ARN (manually constructed)"

@@ -86,7 +86,7 @@ Outputs:
     Export:
       Name: !Sub ${AppName}-${Environment}-public-subnet2-id
   VpcId:
-    Description: VPC Name
+    Description: VPC ID
     Value: !Ref VPC
     Export:
       Name: !Sub ${AppName}-${Environment}-vpc-id

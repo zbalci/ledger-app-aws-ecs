@@ -83,11 +83,6 @@ Resources:
               - !Ref GithubConnectionArn
 
 Outputs:
-  CodePipelineServiceRoleName:
-    Description: CodePipelineServiceRole Name
-    Value: !Ref CodePipelineServiceRole
-    Export:
-      Name: !Sub ${AppName}-${Environment}-codepipeline-servicerole-name
   CodePipelineServiceRoleArn:
     Description: CodePipelineServiceRole Arn
     Value: !GetAtt CodePipelineServiceRole.Arn
