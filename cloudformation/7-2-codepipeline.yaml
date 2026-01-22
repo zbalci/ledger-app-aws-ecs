@@ -101,7 +101,7 @@ Resources:
                       Fn::Sub: ${AppName}-${Environment}-ecs-cluster
                   ServiceName:
                     Fn::ImportValue:
-                      Fn::Sub: ${AppName}-${Environment}-ecs-service
+                      Fn::Sub: ${AppName}-${Environment}-ecs-service-name
                 InputArtifacts:
                   - Name: BuildArtifact
                 RunOrder: 1
@@ -121,7 +121,7 @@ Resources:
                       Fn::Sub: ${AppName}-${Environment}-codedeploy-app-name
                   DeploymentGroupName:
                     Fn::ImportValue:
-                      Fn::Sub: ${AppName}-${Environment}-codedeploy-dg-name
+                      Fn::Sub: ${AppName}-${Environment}-codedeploy-dg-arn
                   AppSpecTemplateArtifact: BuildArtifact
                   TaskDefinitionTemplateArtifact: BuildArtifact
                   Image1ArtifactName: BuildArtifact

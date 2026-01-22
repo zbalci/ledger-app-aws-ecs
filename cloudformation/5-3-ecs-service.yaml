@@ -74,7 +74,7 @@ Resources:
 
 Outputs:
   ECSService:
-    Description: ECSService ***
+    Description: ECSService Name
     Value: !Ref ECSService
     Export:
       Name: !Sub ${AppName}-${Environment}-ecs-service

@@ -19,7 +19,7 @@ Parameters:
     AllowedValues:
       - bluegreen
       - rolling
-    Default: rolling
+    Default: bluegreen
 
   GithubConnectionArn:
     Type: String
@@ -157,7 +157,6 @@ Resources:
         ContainerPort: !Ref ContainerPort
 
   CodePipelineServiceRoleBase:
-    Condition: IsRolling
     Type: AWS::CloudFormation::Stack
     DependsOn:
       - ECSService
@@ -197,39 +196,41 @@ Resources:
         ArtifactBucket: !Ref ArtifactBucket
         ContainerPort: !Ref ContainerPort
 
-  # CodePipelineServiceRoleBlueGreen:
-  #   Condition: IsBlueGreen
-  #   Type: AWS::CloudFormation::Stack
-  #   DependsOn:
-  #     - CodePipelineServiceRoleBase
-  #   Properties:
-  #     TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/7-1-codepipeline-service-role-bluegreen.yaml
-  #     Parameters:
-  #       AppName: !Ref AppName
-  #       Environment: !Ref Environment
+  CodeDeploy:
+    Condition: IsBlueGreen
+    Type: AWS::CloudFormation::Stack
+    DependsOn:
+      - ECSService
+    Properties:
+      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/6-code-deploy-blue-green.yaml
+      Parameters:
+        AppName: !Ref AppName
+        Environment: !Ref Environment
 
-  # CodeDeploy:
-  #   Condition: IsBlueGreen
-  #   Type: AWS::CloudFormation::Stack
-  #   DependsOn:
-  #     - ECSService
-  #   Properties:
-  #     TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/6-code-deploy-blue-green.yaml
-  #     Parameters:
-  #       AppName: !Ref AppName
-  #       Environment: !Ref Environment
+  CodePipelineServiceRoleBlueGreen:
+    Condition: IsBlueGreen
+    Type: AWS::CloudFormation::Stack
+    DependsOn:
+      - CodeDeploy
+    Properties:
+      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/7-1-codepipeline-service-role-bluegreen.yaml
+      Parameters:
+        AppName: !Ref AppName
+        Environment: !Ref Environment
 
-  # CodePipelineBlueGreen:
-  #   Type: AWS::CloudFormation::Stack
-  #   Condition: IsBlueGreen
-  #   DependsOn:
-  #     - CodePipelineServiceRoleBlueGreen
-  #   Properties:
-  #     TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/7-2-codepipeline.yaml
-  #     Parameters:
-  #       AppName: !Ref AppName
-  #       Environment: !Ref Environment
-  #       DeploymentType: !Ref DeploymentType
-  #       GitRepoId: !Ref GitRepoId
-  #       GitBranch: !Ref GitBranch
-  #       ArtifactBucket: !Ref ArtifactBucket
+  CodePipelineBlueGreen:
+    Type: AWS::CloudFormation::Stack
+    Condition: IsBlueGreen
+    DependsOn:
+      - CodePipelineServiceRoleBlueGreen
+    Properties:
+      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/7-2-codepipeline.yaml
+      Parameters:
+        AppName: !Ref AppName
+        Environment: !Ref Environment
+        DeploymentType: !Ref DeploymentType
+        GitRepoId: !Ref GitRepoId
+        GitBranch: !Ref GitBranch
+        ArtifactBucket: !Ref ArtifactBucket
+        GithubConnectionArn: !Ref GithubConnectionArn
+        ContainerPort: !Ref ContainerPort
