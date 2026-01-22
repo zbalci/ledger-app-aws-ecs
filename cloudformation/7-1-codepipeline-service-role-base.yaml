@@ -24,7 +24,7 @@ Resources:
   CodePipelineServiceRole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: CodePipelineServiceRole
+      RoleName: !Sub ${AppName}-${Environment}-codepipeline-servicerole
       AssumeRolePolicyDocument:
         Version: "2012-10-17"
         Statement:
@@ -37,7 +37,7 @@ Resources:
   BasePolicies:
     Type: AWS::IAM::Policy
     Properties:
-      PolicyName: BaseCodePipelinePolicies
+      PolicyName: !Sub ${AppName}-${Environment}-codepipeline-base-policies
       Roles:
         - !Ref CodePipelineServiceRole
       PolicyDocument:
@@ -74,7 +74,7 @@ Resources:
               - codebuild:StartBuildBatch
             Resource:
               Fn::ImportValue:
-                Fn::Sub: ${AppName}-${Environment}-CodeBuildProjectArn
+                Fn::Sub: ${AppName}-${Environment}-codebuild-project-arn
           - Effect: Allow
             Action:
               - codeconnections:UseConnection
@@ -87,9 +87,9 @@ Outputs:
     Description: CodePipelineServiceRole Name
     Value: !Ref CodePipelineServiceRole
     Export:
-      Name: !Sub ${AppName}-${Environment}-CodePipelineServiceRoleName
+      Name: !Sub ${AppName}-${Environment}-codepipeline-servicerole-name
   CodePipelineServiceRoleArn:
     Description: CodePipelineServiceRole Arn
     Value: !GetAtt CodePipelineServiceRole.Arn
     Export:
-      Name: !Sub ${AppName}-${Environment}-CodePipelineServiceRoleArn
+      Name: !Sub ${AppName}-${Environment}-codepipeline-servicerole-arn

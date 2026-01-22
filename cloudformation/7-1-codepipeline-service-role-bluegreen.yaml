@@ -15,10 +15,10 @@ Resources:
   BlueGreenPolicy:
     Type: AWS::IAM::Policy
     Properties:
-      PolicyName: CodeDeployAndECSAccess
+      PolicyName: !Sub ${AppName}-${Environment}-codedeploy-ecs-accesss
       Roles:
-        Fn::ImportValue:
-          Fn::Sub: ${AppName}-${Environment}-CodePipelineServiceRoleName
+      - Fn::ImportValue:
+          Fn::Sub: ${AppName}-${Environment}-codepipeline-servicerole-name
       PolicyDocument:
         Version: "2012-10-17"
         Statement:
@@ -29,7 +29,7 @@ Resources:
               - codedeploy:GetDeployment
             Resource:
               Fn::ImportValue:
-                Fn::Sub: ${AppName}-${Environment}-CodeDeployDGArn
+                Fn::Sub: ${AppName}-${Environment}-codedeploy-dg-arn
 
           - Sid: AllowCodeDeployApplicationActions
             Effect: Allow
@@ -39,12 +39,12 @@ Resources:
               - codedeploy:RegisterApplicationRevision
             Resource:
               - Fn::ImportValue:
-                  Fn::Sub: ${AppName}-${Environment}-CodeDeployAppArn
+                  Fn::Sub: ${AppName}-${Environment}-codedeploy-app-arn
               - Fn::Sub:
                   - "${AppArn}/*"
                   - AppArn:
                       Fn::ImportValue:
-                        Fn::Sub: ${AppName}-${Environment}-CodeDeployAppArn
+                        Fn::Sub: ${AppName}-${Environment}-codedeploy-app-arn
 
           - Sid: AllowCodeDeployDeploymentConfigAccess
             Effect: Allow
@@ -63,7 +63,7 @@ Resources:
             Action: iam:PassRole
             Resource:
               Fn::ImportValue:
-                Fn::Sub: ${AppName}-${Environment}-TaskExecutionRoleArn
+                Fn::Sub: ${AppName}-${Environment}-ecs-task-executionrole-arn
             Condition:
               StringEquals:
                 iam:PassedToService:

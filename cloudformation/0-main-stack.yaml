@@ -15,11 +15,11 @@ Parameters:
 
   DeploymentType:
     Type: String
-    Description: Deployment tipi (BlueGreen veya Rolling)
+    Description: Deployment tipi (bluegreen veya rolling)
     AllowedValues:
-      - BlueGreen
-      - Rolling
-    Default: Rolling
+      - bluegreen
+      - rolling
+    Default: rolling
 
   GithubConnectionArn:
     Type: String
@@ -68,8 +68,8 @@ Parameters:
     Default: ledger-app-artifacts-bucket
 
 Conditions:
-  IsRolling: !Equals [ !Ref DeploymentType, "Rolling" ]
-  IsBlueGreen: !Equals [ !Ref DeploymentType, "BlueGreen" ]
+  IsRolling: !Equals [ !Ref DeploymentType, "rolling" ]
+  IsBlueGreen: !Equals [ !Ref DeploymentType, "bluegreen" ]
 
 Resources:
   ECR:
@@ -191,8 +191,8 @@ Resources:
         AppName: !Ref AppName
         Environment: !Ref Environment
         DeploymentType: !Ref DeploymentType
-        GitRepoId: !Ref GitRepoId
         GithubConnectionArn: !Ref GithubConnectionArn
+        GitRepoId: !Ref GitRepoId
         GitBranch: !Ref GitBranch
         ArtifactBucket: !Ref ArtifactBucket
         ContainerPort: !Ref ContainerPort

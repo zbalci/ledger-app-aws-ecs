@@ -138,4 +138,4 @@ Outputs:
     Description: "ECR repository URI"
     Value: !GetAtt ECRRepository.RepositoryUri
     Export:
-      Name: !Sub ${AppName}-${Environment}-ECRUri
+      Name: !Sub ${AppName}-${Environment}-ecr-uri

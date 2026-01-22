@@ -12,7 +12,7 @@ Parameters:
 
   DeploymentType:
     Type: String
-    Description: Deployment Type (Rolling or BlueGreen)
+    Description: Deployment Type (rolling or bluegreen)
 
   GithubConnectionArn:
     Type: String
@@ -34,18 +34,18 @@ Parameters:
     Type: Number
 
 Conditions:
-  IsRolling: !Equals [ !Ref DeploymentType, "Rolling" ]
-  IsBlueGreen: !Equals [ !Ref DeploymentType, "BlueGreen" ]
+  IsRolling: !Equals [ !Ref DeploymentType, "rolling" ]
+  IsBlueGreen: !Equals [ !Ref DeploymentType, "bluegreen" ]
 
 Resources:
 
   CodePipeline:
     Type: AWS::CodePipeline::Pipeline
     Properties:
-      Name: !Sub "${AppName}-${Environment}-${DeploymentType}-Pipeline"
+      Name: !Sub "${AppName}-${Environment}-${DeploymentType}-pipeline"
       RoleArn:
         Fn::ImportValue:
-          Fn::Sub: ${AppName}-${Environment}-CodePipelineServiceRoleArn
+          Fn::Sub: ${AppName}-${Environment}-codepipeline-servicerole-arn
       ArtifactStore:
         Type: S3
         Location: !Ref ArtifactBucket
@@ -78,7 +78,7 @@ Resources:
               Configuration:
                 ProjectName:
                   Fn::ImportValue:
-                    Fn::Sub: ${AppName}-${Environment}-CodeBuildProjectName
+                    Fn::Sub: ${AppName}-${Environment}-codebuild-project-name
               InputArtifacts:
                 - Name: SourceArtifact
               OutputArtifacts:
@@ -98,10 +98,10 @@ Resources:
                 Configuration:
                   ClusterName:
                     Fn::ImportValue:
-                      Fn::Sub: ${AppName}-${Environment}-ECSCluster
+                      Fn::Sub: ${AppName}-${Environment}-ecs-cluster
                   ServiceName:
                     Fn::ImportValue:
-                      Fn::Sub: ${AppName}-${Environment}--ECSService
+                      Fn::Sub: ${AppName}-${Environment}-ecs-service
                 InputArtifacts:
                   - Name: BuildArtifact
                 RunOrder: 1
@@ -118,10 +118,10 @@ Resources:
                 Configuration:
                   ApplicationName:
                     Fn::ImportValue:
-                      Fn::Sub: ${AppName}-${Environment}-CodeDeployAppName
+                      Fn::Sub: ${AppName}-${Environment}-codedeploy-app-name
                   DeploymentGroupName:
                     Fn::ImportValue:
-                      Fn::Sub: ${AppName}-${Environment}-CodeDeployDGName
+                      Fn::Sub: ${AppName}-${Environment}-codedeploy-dg-name
                   AppSpecTemplateArtifact: BuildArtifact
                   TaskDefinitionTemplateArtifact: BuildArtifact
                   Image1ArtifactName: BuildArtifact

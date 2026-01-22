@@ -79,14 +79,14 @@ Outputs:
     Description: Public Subnet 1 ID
     Value: !Ref PublicSubnet1
     Export:
-      Name: !Sub ${AppName}-${Environment}-PublicSubnet1Id
+      Name: !Sub ${AppName}-${Environment}-public-subnet1-id
   PublicSubnet2Id:
     Description: Public Subnet 2 ID
     Value: !Ref PublicSubnet2
     Export:
-      Name: !Sub ${AppName}-${Environment}-PublicSubnet2Id
+      Name: !Sub ${AppName}-${Environment}-public-subnet2-id
   VpcId:
     Description: VPC Name
     Value: !Ref VPC
     Export:
-      Name: !Sub ${AppName}-${Environment}-VpcId
+      Name: !Sub ${AppName}-${Environment}-vpc-id

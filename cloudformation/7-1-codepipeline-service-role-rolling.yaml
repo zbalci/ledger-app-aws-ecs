@@ -15,10 +15,10 @@ Resources:
   RollingEcsPolicy:
     Type: AWS::IAM::Policy
     Properties:
-      PolicyName: RollingECSAccess
+      PolicyName: !Sub ${AppName}-${Environment}-rolling-ecs-access
       Roles:
-        Fn::ImportValue:
-          Fn::Sub: ${AppName}-${Environment}-CodePipelineServiceRoleName
+      - Fn::ImportValue:
+          Fn::Sub: ${AppName}-${Environment}-codepipeline-servicerole-name
       PolicyDocument:
         Version: "2012-10-17"
         Statement:
@@ -36,7 +36,7 @@ Resources:
               - ecs:UpdateService
             Resource:
               Fn::ImportValue:
-                Fn::Sub: ${AppName}-${Environment}-ECSServiceArn
+                Fn::Sub: ${AppName}-${Environment}-ecs-service-arn
 
           - Sid: ECSTaskDefinitionRegistration
             Effect: Allow
@@ -54,7 +54,7 @@ Resources:
             Action: iam:PassRole
             Resource:
               Fn::ImportValue:
-                Fn::Sub: ${AppName}-${Environment}-TaskExecutionRoleArn
+                Fn::Sub: ${AppName}-${Environment}-ecs-task-executionrole-arn
 
             Condition:
               StringEquals:

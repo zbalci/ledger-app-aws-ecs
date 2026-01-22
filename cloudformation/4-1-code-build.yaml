@@ -12,7 +12,7 @@ Parameters:
 
   DeploymentType:
     Type: String
-    Description: Deployment tipi (BlueGreen veya Rolling)
+    Description: Deployment tipi (bluegreen veya rolling)
 
   GitRepoId:
     Type: String
@@ -29,14 +29,14 @@ Parameters:
     Type: Number
 
 Conditions:
-  IsRolling: !Equals [!Ref DeploymentType, Rolling]
-  IsBlueGreen: !Equals [!Ref DeploymentType, BlueGreen]
+  IsRolling: !Equals [!Ref DeploymentType, rolling]
+  IsBlueGreen: !Equals [!Ref DeploymentType, bluegreen]
 
 Resources:
   CodeBuildRole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: CodeBuildServiceRole
+      RoleName: !Sub ${AppName}-${Environment}-codebuild-role
       AssumeRolePolicyDocument:
         Version: '2012-10-17'
         Statement:
@@ -114,7 +114,7 @@ Resources:
           - Name: ECR_URI
             Value: 
               Fn::ImportValue:
-                Fn::Sub: ${AppName}-${Environment}-ECRUri
+                Fn::Sub: ${AppName}-${Environment}-ecr-uri
             Type: PLAINTEXT
 
           - Name: TASK_DEFINITION_ARN
@@ -153,12 +153,12 @@ Resources:
 
 Outputs:
   CodeBuildProjectName:
-    Description: CodeBuildProjectName ***
+    Description: CodeBuild Project Name
     Value: !Ref CodeBuildProject
     Export:
-      Name: !Sub ${AppName}-${Environment}-CodeBuildProjectName
+      Name: !Sub ${AppName}-${Environment}-codebuild-project-name
   CodeBuildProjectArn:
-    Description: CodeBuildProjectArn ***
+    Description: CodeBuild Project Arn
     Value: !GetAtt CodeBuildProject.Arn
     Export:
-      Name: !Sub ${AppName}-${Environment}-CodeBuildProjectArn
+      Name: !Sub ${AppName}-${Environment}-codebuild-project-arn

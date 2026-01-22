@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: ECS Service Template (Blue/Green & Rolling Update)
+Description: ECS Service Template (blue/green & rolling Update)
 
 Parameters:
   AppName:
@@ -12,14 +12,14 @@ Parameters:
 
   DeploymentType:
     Type: String
-    Description: Deployment Type (BlueGreen or Rolling)
+    Description: Deployment Type (bluegreen or rolling)
 
   ContainerPort:
     Type: Number
 
 Conditions:
-  IsBlueGreen: !Equals [ !Ref DeploymentType, BlueGreen ]
-  IsRolling: !Equals [ !Ref DeploymentType, Rolling ]
+  IsBlueGreen: !Equals [ !Ref DeploymentType, bluegreen ]
+  IsRolling: !Equals [ !Ref DeploymentType, rolling ]
 
 Resources:
 
@@ -29,10 +29,10 @@ Resources:
       ServiceName: !Sub "${AppName}-${Environment}-service"
       Cluster:
         Fn::ImportValue:
-          Fn::Sub: ${AppName}-${Environment}-ECSCluster
+          Fn::Sub: ${AppName}-${Environment}-ecs-cluster
       TaskDefinition:
         Fn::ImportValue:
-          Fn::Sub: ${AppName}-${Environment}-TaskDefinition
+          Fn::Sub: ${AppName}-${Environment}-task-definition
       DesiredCount: 0
       LaunchType: !If
         - IsRolling
@@ -57,16 +57,16 @@ Resources:
           TargetGroupArn: !If
             - IsBlueGreen
             - Fn::ImportValue:
-                Fn::Sub: ${AppName}-${Environment}-BlueTG
+                Fn::Sub: ${AppName}-${Environment}-alb-blue-tg
             - Fn::ImportValue:
-                Fn::Sub: ${AppName}-${Environment}-RollingTG
+                Fn::Sub: ${AppName}-${Environment}-alb-rolling-tg
 
       CapacityProviderStrategy: !If
         - IsRolling
         - 
           - CapacityProvider:
               Fn::ImportValue:
-                Fn::Sub: ${AppName}-${Environment}--CapacityProvider
+                Fn::Sub: ${AppName}-${Environment}-capacity-provider
             Base: 0
             Weight: 1
         - !Ref "AWS::NoValue"
@@ -77,10 +77,10 @@ Outputs:
     Description: ECSService ***
     Value: !Ref ECSService
     Export:
-      Name: !Sub ${AppName}-${Environment}-ECSService
+      Name: !Sub ${AppName}-${Environment}-ecs-service
 
   ECSServiceArn:
     Description: ECSService ARN ***
     Value: !GetAtt ECSService.ServiceArn
     Export:
-      Name: !Sub ${AppName}-${Environment}-ECSServiceArn
+      Name: !Sub ${AppName}-${Environment}-ecs-service-arn

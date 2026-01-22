@@ -89,10 +89,10 @@ Outputs:
     Description: TaskExecutionRole ***
     Value: !GetAtt TaskExecutionRole.Arn
     Export:
-      Name: !Sub ${AppName}-${Environment}-TaskExecutionRoleArn
+      Name: !Sub ${AppName}-${Environment}-ecs-task-executionrole-arn
 
   TaskDefinition:
     Description: TaskDefinition ***
     Value: !Ref TaskDefinition
     Export:
-      Name: !Sub ${AppName}-${Environment}-TaskDefinition
+      Name: !Sub ${AppName}-${Environment}-task-definition

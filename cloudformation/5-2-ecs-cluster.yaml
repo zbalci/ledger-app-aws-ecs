@@ -41,7 +41,7 @@ Resources:
       GroupDescription: ECS container host security group
       VpcId:
         Fn::ImportValue:
-          Fn::Sub: ${AppName}-${Environment}-VpcId
+          Fn::Sub: ${AppName}-${Environment}-vpc-id
       SecurityGroupIngress:
         - IpProtocol: tcp
           FromPort: !Ref ContainerPort
@@ -110,9 +110,9 @@ Resources:
     Properties:
       VPCZoneIdentifier:
         - Fn::ImportValue:
-            Fn::Sub: ${AppName}-${Environment}-PublicSubnet1Id
+            Fn::Sub: ${AppName}-${Environment}-public-subnet1-id
         - Fn::ImportValue:
-            Fn::Sub: ${AppName}-${Environment}-PublicSubnet2Id
+            Fn::Sub: ${AppName}-${Environment}-public-subnet2-id
       LaunchTemplate:
         LaunchTemplateId: !Ref ContainerInstances
         Version: !GetAtt ContainerInstances.LatestVersionNumber
@@ -153,9 +153,9 @@ Outputs:
     Description: The cluster capacity provider that the service should use
     Value: !Ref CapacityProvider
     Export:
-      Name: !Sub ${AppName}-${Environment}-CapacityProvider
+      Name: !Sub ${AppName}-${Environment}-capacity-provider
   ECSCluster:
     Description: ECS Cluster ***
     Value: !Ref ECSCluster
     Export:
-      Name: !Sub ${AppName}-${Environment}-ECSCluster
+      Name: !Sub ${AppName}-${Environment}-ecs-cluster

@@ -11,7 +11,7 @@ Resources:
   CodeDeployRoleForECSBlueGreen:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: CodeDeployRoleForECSBlueGreen
+      RoleName: !Sub ${AppName}-${Environment}-codedeploy-role-for-ecs-bluegreen
       AssumeRolePolicyDocument:
         Version: "2012-10-17"
         Statement:
@@ -50,42 +50,42 @@ Resources:
           - TargetGroups:
               - Name:
                   Fn::ImportValue:
-                    Fn::Sub: ${AppName}-${Environment}-BlueTG
+                    Fn::Sub: ${AppName}-${Environment}-alb-blue-tg
                   Fn::ImportValue:
-                    Fn::Sub: ${AppName}-${Environment}-GreenTG
+                    Fn::Sub: ${AppName}-${Environment}-alb-green-tg
             ProdTrafficRoute:
               ListenerArns:
                 Fn::ImportValue:
-                  Fn::Sub: ${AppName}-${Environment}-Listener
+                  Fn::Sub: ${AppName}-${Environment}-alb-listener
             TestTrafficRoute:
               ListenerArns:
                 Fn::ImportValue:
-                  Fn::Sub: ${AppName}-${Environment}-TestListener
+                  Fn::Sub: ${AppName}-${Environment}-alb-test-listener
       ECSServices:
         - ClusterName:
             Fn::ImportValue:
-              Fn::Sub: ${AppName}-${Environment}-ECSCluster
+              Fn::Sub: ${AppName}-${Environment}-ecs-cluster
           ServiceName:
             Fn::ImportValue:
-              Fn::Sub: ${AppName}-${Environment}--ECSService
+              Fn::Sub: ${AppName}-${Environment}-ecs-service
 Outputs:
   CodeDeployAppName:
     Description: "CodeDeploy Application Name"
     Value: !Ref CodeDeployApplication
     Export:
-      Name: !Sub ${AppName}-${Environment}-CodeDeployAppName
+      Name: !Sub ${AppName}-${Environment}-codedeploy-app-name
   CodeDeployAppArn:
     Description: "CodeDeploy Application ARN"
     Value: !GetAtt CodeDeployApplication.Arn
     Export:
-      Name: !Sub ${AppName}-${Environment}-CodeDeployAppArn
+      Name: !Sub ${AppName}-${Environment}-codedeploy-app-arn
   CodeDeployDGName:
     Description: "CodeDeploy Deployment Group Name"
     Value: !Ref CodeDeployDeploymentGroup
     Export:
-      Name: !Sub ${AppName}-${Environment}-CodeDeployDGName
+      Name: !Sub ${AppName}-${Environment}-codedeploy-dg-name
   CodeDeployDGArn:
     Description: "CodeDeploy Deployment Group ARN"
     Value: !GetAtt CodeDeployDeploymentGroup.Arn
     Export:
-      Name: !Sub ${AppName}-${Environment}-CodeDeployDGArn
+      Name: !Sub ${AppName}-${Environment}-codedeploy-dg-arn
