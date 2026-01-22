@@ -96,12 +96,8 @@ Resources:
                   Provider: ECS
                   Version: '1'
                 Configuration:
-                  ClusterName:
-                    Fn::ImportValue:
-                      Fn::Sub: ${AppName}-${Environment}-ecs-cluster
-                  ServiceName:
-                    Fn::ImportValue:
-                      Fn::Sub: ${AppName}-${Environment}-ecs-service-name
+                  ClusterName: !Sub "${AppName}-${Environment}-cluster"
+                  ServiceName: !Sub "${AppName}-${Environment}-service"
                 InputArtifacts:
                   - Name: BuildArtifact
                 RunOrder: 1

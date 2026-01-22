@@ -152,32 +152,32 @@ Outputs:
     Description: ALB Listener ARN
     Value: !Ref Listener
     Export:
-      Name: !Sub ${AppName}-${Environment}-alb-listener
+      Name: !Sub ${AppName}-${Environment}-alb-listener-arn
 
-  BlueTG:
+  BlueTGArn:
     Condition: IsBlueGreen
     Description: Blue target group ARN
     Value: !Ref BlueTargetGroup
     Export:
-      Name: !Sub ${AppName}-${Environment}-alb-blue-tg
+      Name: !Sub ${AppName}-${Environment}-alb-blue-tg-arn
 
-  GreenTG:
+  GreenTGArn:
     Condition: IsBlueGreen
     Description: Green target group ARN
     Value: !Ref GreenTargetGroup
     Export:
-      Name: !Sub ${AppName}-${Environment}-alb-green-tg
+      Name: !Sub ${AppName}-${Environment}-alb-green-tg-arn
 
-  RollingTG:
+  RollingTGArn:
     Condition: IsRolling
     Description: Rolling target group ARN
     Value: !Ref RollingTargetGroup
     Export:
-      Name: !Sub ${AppName}-${Environment}-alb-rolling-tg
+      Name: !Sub ${AppName}-${Environment}-alb-rolling-tg-arn
 
-  TestListener:
+  TestListenerArn:
     Condition: IsBlueGreen
     Description: Test listener ARN
     Value: !Ref TestListener
     Export:
-      Name: !Sub ${AppName}-${Environment}-alb-test-listener
+      Name: !Sub ${AppName}-${Environment}-alb-test-listener-arn

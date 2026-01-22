@@ -33,7 +33,6 @@ Resources:
       TaskDefinition:
         Fn::ImportValue:
           Fn::Sub: ${AppName}-${Environment}-task-definition
-      DesiredCount: 0
       LaunchType: !If
         - IsRolling
         - !Ref "AWS::NoValue"
@@ -57,9 +56,9 @@ Resources:
           TargetGroupArn: !If
             - IsBlueGreen
             - Fn::ImportValue:
-                Fn::Sub: ${AppName}-${Environment}-alb-blue-tg
+                Fn::Sub: ${AppName}-${Environment}-alb-blue-tg-arn
             - Fn::ImportValue:
-                Fn::Sub: ${AppName}-${Environment}-alb-rolling-tg
+                Fn::Sub: ${AppName}-${Environment}-alb-rolling-tg-arn
 
       CapacityProviderStrategy: !If
         - IsRolling

@@ -50,24 +50,17 @@ Resources:
           - TargetGroups:
             - Name: !Sub "${AppName}-blue-tg"
             - Name: !Sub "${AppName}-green-tg"
-            # - Name:
-            #     Fn::ImportValue:
-            #       Fn::Sub: ${AppName}-${Environment}-alb-blue-tg
-            # - Name:
-            #     Fn::ImportValue:
-            #       Fn::Sub: ${AppName}-${Environment}-alb-green-tg
+
             ProdTrafficRoute:
               ListenerArns:
                 - Fn::ImportValue:
-                    Fn::Sub: ${AppName}-${Environment}-alb-listener
+                    Fn::Sub: ${AppName}-${Environment}-alb-listener-arn
             TestTrafficRoute:
               ListenerArns:
                 - Fn::ImportValue:
-                    Fn::Sub: ${AppName}-${Environment}-alb-test-listener
+                    Fn::Sub: ${AppName}-${Environment}-alb-test-listener-arn
       ECSServices:
-        - ClusterName:
-            Fn::ImportValue:
-              Fn::Sub: ${AppName}-${Environment}-ecs-cluster
+        - ClusterName: !Sub "${AppName}-${Environment}-cluster"
           ServiceName: !Sub "${AppName}-${Environment}-service"
           
 Outputs:
