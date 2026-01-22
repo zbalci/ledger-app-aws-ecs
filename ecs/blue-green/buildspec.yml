@@ -26,7 +26,7 @@ phases:
       - printf '{"ImageURI":"%s"}' "$ECR_URI:$IMAGE_TAG2" > imageDetail.json
       - echo Replacing placeholders in appspec.yaml
       - |
-        sed -e "s|_CONTAINER_NAME_|$APP_NAME$ENVIRONMENT|g" \
+        sed -e "s|_CONTAINER_NAME_|$APP_NAME-$ENVIRONMENT|g" \
             -e "s|_CONTAINER_PORT_|$CONTAINER_PORT|g" \
             -e "s|_ENVIRONMENT_|$ENVIRONMENT|g" \
             ecs/blue-green/appspec.yaml > appspec.yaml
@@ -39,7 +39,7 @@ phases:
             -e "s|_TASK_DEFINITION_ARN_|$TASK_DEFINITION_ARN|g" \
             -e "s|_TASK_DEFINITION_FAMILY_|$TASK_DEFINITION_FAMILY|g" \
             -e "s|_TASK_EXECUTION_ROLE_|$TASK_EXECUTION_ROLE|g" \
-            -e "s|_CONTAINER_NAME_|$APP_NAME$ENVIRONMENT|g" \
+            -e "s|_CONTAINER_NAME_|$APP_NAME-$ENVIRONMENT|g" \
             -e "s|_CONTAINER_PORT_|$CONTAINER_PORT|g" \
             -e "s|IMAGE_URI_PLACEHOLDER|$ECR_URI:$IMAGE_TAG2|g" \
             ecs/blue-green/taskdef.json > taskdef.json

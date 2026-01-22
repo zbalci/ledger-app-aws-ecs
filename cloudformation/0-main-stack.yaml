@@ -184,6 +184,7 @@ Resources:
     Condition: IsRolling
     DependsOn:
       - CodePipelineServiceRoleRolling
+      - ECSService
     Properties:
       TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/7-2-codepipeline.yaml
       Parameters:
@@ -211,7 +212,7 @@ Resources:
     Condition: IsBlueGreen
     Type: AWS::CloudFormation::Stack
     DependsOn:
-      - CodeDeploy
+      - CodePipelineServiceRoleBase
     Properties:
       TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/7-1-codepipeline-service-role-bluegreen.yaml
       Parameters:
@@ -223,6 +224,7 @@ Resources:
     Condition: IsBlueGreen
     DependsOn:
       - CodePipelineServiceRoleBlueGreen
+      - CodeDeploy
     Properties:
       TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/7-2-codepipeline.yaml
       Parameters:
