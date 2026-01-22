@@ -43,6 +43,8 @@ phases:
             -e "s|_CONTAINER_PORT_|$CONTAINER_PORT|g" \
             -e "s|_IMAGE_URI_PLACEHOLDER_|$ECR_URI:$IMAGE_TAG2|g" \
             ecs/blue-green/taskdef.json > taskdef.json
+      - echo "=== FINAL TASKDEF ==="  
+      - cat taskdef.json
 
 artifacts:
   files: 
