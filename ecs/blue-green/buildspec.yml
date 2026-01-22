@@ -41,7 +41,7 @@ phases:
             -e "s|_TASK_EXECUTION_ROLE_|$TASK_EXECUTION_ROLE|g" \
             -e "s|_CONTAINER_NAME_|$APP_NAME-$ENVIRONMENT|g" \
             -e "s|_CONTAINER_PORT_|$CONTAINER_PORT|g" \
-            -e "s|IMAGE_URI_PLACEHOLDER|$ECR_URI:$IMAGE_TAG2|g" \
+            -e "s|_IMAGE_URI_PLACEHOLDER_|$ECR_URI:$IMAGE_TAG2|g" \
             ecs/blue-green/taskdef.json > taskdef.json
 
 artifacts:
