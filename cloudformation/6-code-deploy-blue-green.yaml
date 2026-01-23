@@ -60,20 +60,20 @@ Resources:
                 - Fn::ImportValue:
                     Fn::Sub: ${AppName}-${Environment}-alb-test-listener-arn
       ECSServices:
-        - ClusterName: !Sub "${AppName}-${Environment}-cluster"
+        - ClusterName: !Sub "${AppName}-${Environment}-ecs-cluster"
           ServiceName: !Sub "${AppName}-${Environment}-service"
           
 Outputs:
   CodeDeployAppArn:
     Description: "CodeDeploy Application ARN (manually constructed)"
-    Value: !Sub arn:aws:codedeploy:${AWS::Region}:${AWS::AccountId}:application:${AppName}-${Environment}
+    Value: !Sub arn:aws:codedeploy:${AWS::Region}:${AWS::AccountId}:application:${AppName}-${Environment}-codedeploy-app
     Export:
       Name: !Sub ${AppName}-${Environment}-codedeploy-app-arn
 
   CodeDeployDGArn:
-    Description: "CodeDeploy Deployment Group ARN (manually constructed)"
+    Description: "CodeDeploy Deployment Group ARN"
     Value: !Sub
-      - arn:aws:codedeploy:${AWS::Region}:${AWS::AccountId}:deploymentgroup:${AppName}-${Environment}/${DGName}
+      - arn:aws:codedeploy:${AWS::Region}:${AWS::AccountId}:deploymentgroup:${AppName}-${Environment}-codedeploy-app/${DGName}
       - DGName: !Ref CodeDeployDeploymentGroup
     Export:
       Name: !Sub ${AppName}-${Environment}-codedeploy-dg-arn

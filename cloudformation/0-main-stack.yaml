@@ -19,7 +19,7 @@ Parameters:
     AllowedValues:
       - bluegreen
       - rolling
-    Default: bluegreen
+    Default: rolling
 
   GithubConnectionArn:
     Type: String
@@ -114,6 +114,7 @@ Resources:
   CodeBuild:
     Type: AWS::CloudFormation::Stack
     DependsOn:
+      - ECR
       - ECSTask
     Properties:
       TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/5-1-code-build.yaml

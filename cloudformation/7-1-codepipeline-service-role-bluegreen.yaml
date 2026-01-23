@@ -27,8 +27,8 @@ Resources:
               - codedeploy:CreateDeployment
               - codedeploy:GetDeployment
             Resource:
-              Fn::ImportValue:
-                Fn::Sub: ${AppName}-${Environment}-codedeploy-dg-arn
+              - Fn::ImportValue:
+                  Fn::Sub: ${AppName}-${Environment}-codedeploy-dg-arn
 
           - Sid: AllowCodeDeployApplicationActions
             Effect: Allow
