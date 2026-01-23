@@ -94,7 +94,7 @@ Resources:
                   Provider: ECS
                   Version: '1'
                 Configuration:
-                  ClusterName: !Sub "${AppName}-${Environment}-cluster"
+                  ClusterName: !Sub "${AppName}-${Environment}-ecs-cluster"
                   ServiceName: !Sub "${AppName}-${Environment}-service"
                 InputArtifacts:
                   - Name: BuildArtifact

@@ -72,14 +72,6 @@ Conditions:
   IsBlueGreen: !Equals [ !Ref DeploymentType, "bluegreen" ]
 
 Resources:
-  ECR:
-    Type: AWS::CloudFormation::Stack
-    Properties:
-      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/1-ecr-repo.yaml
-      Parameters:
-        AppName: !Ref AppName
-        Environment: !Ref Environment
-
   VPCStack:
     Type: AWS::CloudFormation::Stack
     Properties:
@@ -101,6 +93,14 @@ Resources:
         ContainerPort: !Ref ContainerPort
         ListenerPort: !Ref ListenerPort
         TestListenerPort: !Ref TestListenerPort
+
+  ECR:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/1-ecr-repo.yaml
+      Parameters:
+        AppName: !Ref AppName
+        Environment: !Ref Environment
 
   ECSTask:
     Type: AWS::CloudFormation::Stack
