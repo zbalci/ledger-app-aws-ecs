@@ -71,14 +71,6 @@ Conditions:
   IsRolling: !Equals [ !Ref DeploymentType, "rolling" ]
   IsBlueGreen: !Equals [ !Ref DeploymentType, "bluegreen" ]
 
-CommonTags: &CommonTags
-  - Key: Application
-    Value: !Ref AppName
-  - Key: Environment
-    Value: !Ref Environment
-  - Key: ManagedBy
-    Value: CloudFormation
-
 Resources:
   VpcStack:
     Type: AWS::CloudFormation::Stack
@@ -94,7 +86,6 @@ Resources:
       - VpcStack
     Properties:
       TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/loadbalancing/alb.yaml
-      Tags: *CommonTags
       Parameters:
         AppName: !Ref AppName
         Environment: !Ref Environment
@@ -107,7 +98,6 @@ Resources:
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/registry/ecr.yaml
-      Tags: *CommonTags
       Parameters:
         AppName: !Ref AppName
         Environment: !Ref Environment
@@ -116,7 +106,6 @@ Resources:
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/compute/taskdefinition.yaml
-      Tags: *CommonTags
       Parameters:
         AppName: !Ref AppName
         Environment: !Ref Environment
@@ -129,7 +118,6 @@ Resources:
       - EcsTaskDefStack
     Properties:
       TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/cicd/build/codebuild.yaml
-      Tags: *CommonTags
       Parameters:
         AppName: !Ref AppName
         Environment: !Ref Environment
@@ -145,7 +133,6 @@ Resources:
       - VpcStack
     Properties:
       TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/compute/ecs-cluster.yaml
-      Tags: *CommonTags
       Parameters:
         AppName: !Ref AppName
         Environment: !Ref Environment
@@ -161,7 +148,6 @@ Resources:
       - AlbStack
     Properties:
       TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/compute/ecs-service.yaml
-      Tags: *CommonTags
       Parameters:
         AppName: !Ref AppName
         Environment: !Ref Environment
@@ -176,7 +162,6 @@ Resources:
       - EcsServiceStack
     Properties:
       TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/cicd/pipeline/root.yaml
-      Tags: *CommonTags
       Parameters:
         AppName: !Ref AppName
         Environment: !Ref Environment

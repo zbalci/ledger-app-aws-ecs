@@ -34,15 +34,6 @@ Conditions:
   IsBlueGreen: !Equals [ !Ref DeploymentType, "bluegreen" ]
 
 Resources:
-  CodeDeployStack:
-    Condition: IsBlueGreen
-    Type: AWS::CloudFormation::Stack
-    Properties:
-      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/cicd/deploy/codedeploy.yaml
-      Parameters:
-        AppName: !Ref AppName
-        Environment: !Ref Environment
-
   CodePipelineServiceRole:
     Type: AWS::CloudFormation::Stack
     Properties:
@@ -52,11 +43,11 @@ Resources:
         Environment: !Ref Environment
         ArtifactBucket: !Ref ArtifactBucket
         GithubConnectionArn: !Ref GithubConnectionArn
+        DeploymentType: !Ref DeploymentType
 
   CodePipelineStack:
     Type: AWS::CloudFormation::Stack
     DependsOn:
-      - CodeDeployStack
       - CodePipelineServiceRole
     Properties:
       TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/cicd/pipeline/codepipeline.yaml
