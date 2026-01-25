@@ -157,9 +157,10 @@ Resources:
   CodePipelineServiceRoleBase:
     Type: AWS::CloudFormation::Stack
     DependsOn:
+      - CodeBuildStack
       - EcsServiceStack
     Properties:
-      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/cicd/roles/service-role-base.yaml
+      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/cicd/roles/codepipeline-service-role-base.yaml
       Parameters:
         AppName: !Ref AppName
         Environment: !Ref Environment
@@ -172,7 +173,7 @@ Resources:
     DependsOn:
       - CodePipelineServiceRoleBase
     Properties:
-      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/cicd/roles/service-role-rolling.yaml
+      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/cicd/roles/codepipeline-service-role-rolling.yaml
       Parameters:
         AppName: !Ref AppName
         Environment: !Ref Environment
@@ -212,7 +213,7 @@ Resources:
     DependsOn:
       - CodePipelineServiceRoleBase
     Properties:
-      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/cicd/roles/service-role-bluegreen.yaml
+      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/cicd/roles/codepipeline-service-role-bluegreen.yaml
       Parameters:
         AppName: !Ref AppName
         Environment: !Ref Environment
