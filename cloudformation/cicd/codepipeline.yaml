@@ -1,0 +1,129 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: CodePipeline for Sample App Web Build
+
+Parameters:
+  AppName:
+    Type: String
+    Description: App name
+
+  Environment:
+    Type: String
+    Description: Environment name
+
+  DeploymentType:
+    Type: String
+    Description: Deployment Type (rolling or bluegreen)
+
+  GithubConnectionArn:
+    Type: String
+    Description: Github Connection ARN
+
+  SourceRepo:
+    Type: String
+    Description: owner/repo biçiminde GitHub repo ID'si
+
+  SourceBranch:
+    Type: String
+    Default: main
+
+  ArtifactBucket:
+    Type: String
+    Description: S3 bucket name used by CodePipeline
+
+  ContainerPort:
+    Type: Number
+
+Conditions:
+  IsRolling: !Equals [ !Ref DeploymentType, "rolling" ]
+  IsBlueGreen: !Equals [ !Ref DeploymentType, "bluegreen" ]
+
+Resources:
+
+  CodePipeline:
+    Type: AWS::CodePipeline::Pipeline
+    Properties:
+      Name: !Sub "${AppName}-${Environment}-${DeploymentType}-pipeline"
+      RoleArn:
+        Fn::ImportValue:
+          Fn::Sub: ${AppName}-${Environment}-codepipeline-servicerole-arn
+      ArtifactStore:
+        Type: S3
+        Location: !Ref ArtifactBucket
+      Stages:
+        - Name: Source
+          Actions:
+            - Name: Source
+              ActionTypeId:
+                Category: Source
+                Owner: AWS
+                Provider: CodeStarSourceConnection
+                Version: '1'
+              Configuration:
+                ConnectionArn: !Ref GithubConnectionArn
+                FullRepositoryId: !Ref SourceRepo
+                BranchName: !Ref SourceBranch
+                DetectChanges: 'true'
+                OutputArtifactFormat: CODE_ZIP
+              OutputArtifacts:
+                - Name: SourceArtifact
+              RunOrder: 1
+        - Name: Build
+          Actions:
+            - Name: Build
+              ActionTypeId:
+                Category: Build
+                Owner: AWS
+                Provider: CodeBuild
+                Version: '1'
+              Configuration:
+                ProjectName: !Sub "${AppName}-${Environment}-codebuild-project"
+              InputArtifacts:
+                - Name: SourceArtifact
+              OutputArtifacts:
+                - Name: BuildArtifact
+              RunOrder: 1
+        - Name: Deploy
+          Actions:
+            #Rolling Update
+            - !If
+              - IsRolling
+              - Name: Deploy
+                ActionTypeId:
+                  Category: Deploy
+                  Owner: AWS
+                  Provider: ECS
+                  Version: '1'
+                Configuration:
+                  ClusterName: !Sub "${AppName}-${Environment}-ecs-cluster"
+                  ServiceName: !Sub "${AppName}-${Environment}-service"
+                InputArtifacts:
+                  - Name: BuildArtifact
+                RunOrder: 1
+              - !Ref "AWS::NoValue"
+            #Blue/Green Deployment
+            - !If
+              - IsBlueGreen
+              - Name: Deploy
+                ActionTypeId:
+                  Category: Deploy
+                  Owner: AWS
+                  Provider: CodeDeployToECS
+                  Version: '1'
+                Configuration:
+                  ApplicationName: !Sub "${AppName}-${Environment}-codedeploy-app"
+                  DeploymentGroupName: !Sub "${AppName}-${Environment}-dg"
+                  AppSpecTemplateArtifact: BuildArtifact
+                  TaskDefinitionTemplateArtifact: BuildArtifact
+                InputArtifacts:
+                  - Name: BuildArtifact
+                RunOrder: 1
+              - !Ref "AWS::NoValue"
+      PipelineType: V2
+      Triggers:
+        - ProviderType: CodeStarSourceConnection
+          GitConfiguration:
+            SourceActionName: Source
+            Push:
+              - Branches:
+                  Includes:
+                    - !Ref SourceBranch
