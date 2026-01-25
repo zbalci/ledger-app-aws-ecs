@@ -1,0 +1,71 @@
+Parameters:
+  AppName:
+    Type: String
+    Description: App name
+
+  Environment:
+    Type: String
+    Description: Environment name
+
+  DeploymentType:
+    Type: String
+    Description: Deployment tipi (bluegreen veya rolling)
+
+  GithubConnectionArn:
+    Type: String
+    Description: Github Connection ARN
+
+  SourceRepo:
+    Type: String
+    Description: owner/repo biçiminde GitHub repo ID'si
+
+  SourceBranch:
+    Type: String
+
+  ContainerPort:
+    Type: Number
+
+  ArtifactBucket:
+    Type: String
+    Description: S3 bucket name used by CodePipeline
+
+Conditions:
+  IsRolling: !Equals [ !Ref DeploymentType, "rolling" ]
+  IsBlueGreen: !Equals [ !Ref DeploymentType, "bluegreen" ]
+
+Resources:
+  CodeDeployStack:
+    Condition: IsBlueGreen
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/cicd/deploy/codedeploy.yaml
+      Parameters:
+        AppName: !Ref AppName
+        Environment: !Ref Environment
+
+  CodePipelineServiceRole:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/cicd/pipeline/pipeline-role.yaml
+      Parameters:
+        AppName: !Ref AppName
+        Environment: !Ref Environment
+        ArtifactBucket: !Ref ArtifactBucket
+        GithubConnectionArn: !Ref GithubConnectionArn
+
+  CodePipelineStack:
+    Type: AWS::CloudFormation::Stack
+    DependsOn:
+      - CodeDeployStack
+      - CodePipelineServiceRole
+    Properties:
+      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/cicd/pipeline/codepipeline.yaml
+      Parameters:
+        AppName: !Ref AppName
+        Environment: !Ref Environment
+        DeploymentType: !Ref DeploymentType
+        SourceRepo: !Ref SourceRepo
+        SourceBranch: !Ref SourceBranch
+        ArtifactBucket: !Ref ArtifactBucket
+        GithubConnectionArn: !Ref GithubConnectionArn
+        ContainerPort: !Ref ContainerPort
