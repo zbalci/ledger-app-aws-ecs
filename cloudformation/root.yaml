@@ -85,7 +85,7 @@ Resources:
     DependsOn:
       - VpcStack
     Properties:
-      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/alb/alb.yaml
+      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/loadbalancing/alb.yaml
       Parameters:
         AppName: !Ref AppName
         Environment: !Ref Environment
@@ -97,7 +97,7 @@ Resources:
   EcrStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/ecs/ecr.yaml
+      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/registry/ecr.yaml
       Parameters:
         AppName: !Ref AppName
         Environment: !Ref Environment
@@ -105,7 +105,7 @@ Resources:
   EcsTaskDefStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/ecs/taskdefinition.yaml
+      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/compute/taskdefinition.yaml
       Parameters:
         AppName: !Ref AppName
         Environment: !Ref Environment
@@ -117,7 +117,7 @@ Resources:
       - EcrStack
       - EcsTaskDefStack
     Properties:
-      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/codebuild/codebuild.yaml
+      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/cicd/codebuild.yaml
       Parameters:
         AppName: !Ref AppName
         Environment: !Ref Environment
@@ -132,7 +132,7 @@ Resources:
     DependsOn:
       - VpcStack
     Properties:
-      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/ecs/cluster.yaml
+      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/compute/ecs-cluster.yaml
       Parameters:
         AppName: !Ref AppName
         Environment: !Ref Environment
@@ -147,7 +147,7 @@ Resources:
       - EcsClusterStack
       - AlbStack
     Properties:
-      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/ecs/service.yaml
+      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/compute/ecs-service.yaml
       Parameters:
         AppName: !Ref AppName
         Environment: !Ref Environment
@@ -159,7 +159,7 @@ Resources:
     DependsOn:
       - EcsServiceStack
     Properties:
-      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/pipeline/service-role-base.yaml
+      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/cicd/roles/service-role-base.yaml
       Parameters:
         AppName: !Ref AppName
         Environment: !Ref Environment
@@ -172,7 +172,7 @@ Resources:
     DependsOn:
       - CodePipelineServiceRoleBase
     Properties:
-      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/pipeline/service-role-rolling.yaml
+      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/cicd/roles/service-role-rolling.yaml
       Parameters:
         AppName: !Ref AppName
         Environment: !Ref Environment
@@ -184,7 +184,7 @@ Resources:
       - CodePipelineServiceRoleRolling
       - EcsServiceStack
     Properties:
-      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/pipeline/codepipeline.yaml
+      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/cicd/codepipeline.yaml
       Parameters:
         AppName: !Ref AppName
         Environment: !Ref Environment
@@ -201,7 +201,7 @@ Resources:
     DependsOn:
       - EcsServiceStack
     Properties:
-      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/pipeline/codedeploy.yaml
+      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/cicd/codedeploy.yaml
       Parameters:
         AppName: !Ref AppName
         Environment: !Ref Environment
@@ -212,7 +212,7 @@ Resources:
     DependsOn:
       - CodePipelineServiceRoleBase
     Properties:
-      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/pipeline/service-role-bluegreen.yaml
+      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/cicd/roles/service-role-bluegreen.yaml
       Parameters:
         AppName: !Ref AppName
         Environment: !Ref Environment
@@ -224,7 +224,7 @@ Resources:
       - CodePipelineServiceRoleBlueGreen
       - CodeDeployStack
     Properties:
-      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/pipeline/codepipeline.yaml
+      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/cicd/codepipeline.yaml
       Parameters:
         AppName: !Ref AppName
         Environment: !Ref Environment
