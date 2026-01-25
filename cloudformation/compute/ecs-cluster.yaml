@@ -39,6 +39,7 @@ Resources:
     Type: AWS::EC2::SecurityGroup
     Properties:
       GroupDescription: ECS container host security group
+      GroupName: !Sub "${AppName}-${Environment}-ecs-sg"
       VpcId:
         Fn::ImportValue:
           Fn::Sub: ${AppName}-${Environment}-vpc-id
@@ -52,9 +53,6 @@ Resources:
           FromPort: 0
           ToPort: 0
           CidrIp: 0.0.0.0/0
-      Tags:
-        - Key: Name
-          Value: !Sub "${AppName}-${Environment}-ecs-sg"
 
   EC2Role:
     Type: AWS::IAM::Role

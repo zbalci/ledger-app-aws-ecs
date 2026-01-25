@@ -33,6 +33,7 @@ Resources:
     Type: AWS::EC2::SecurityGroup
     Properties:
       GroupDescription: Allow HTTP inbound and all outbound
+      GroupName: !Sub "${AppName}-${Environment}-alb-sg"
       VpcId:
         Fn::ImportValue:
           Fn::Sub: ${AppName}-${Environment}-vpc-id
@@ -50,9 +51,6 @@ Resources:
           FromPort: 0
           ToPort: 0
           CidrIp: 0.0.0.0/0
-      Tags:
-        - Key: Name
-          Value: !Sub "${AppName}-${Environment}-alb-sg"
 
   ALB:
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
