@@ -19,7 +19,7 @@ Parameters:
     AllowedValues:
       - bluegreen
       - rolling
-    Default: rolling
+    Default: bluegreen
 
   GithubConnectionArn:
     Type: String
@@ -76,6 +76,13 @@ Resources:
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/network/vpc.yaml
+      Tags:
+        - Key: Application
+          Value: !Ref AppName
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: ManagedBy
+          Value: CloudFormation
       Parameters:
         AppName: !Ref AppName
         Environment: !Ref Environment
@@ -86,6 +93,13 @@ Resources:
       - VpcStack
     Properties:
       TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/loadbalancing/alb.yaml
+      Tags:
+        - Key: Application
+          Value: !Ref AppName
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: ManagedBy
+          Value: CloudFormation
       Parameters:
         AppName: !Ref AppName
         Environment: !Ref Environment
@@ -98,6 +112,13 @@ Resources:
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/registry/ecr.yaml
+      Tags:
+        - Key: Application
+          Value: !Ref AppName
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: ManagedBy
+          Value: CloudFormation
       Parameters:
         AppName: !Ref AppName
         Environment: !Ref Environment
@@ -106,6 +127,13 @@ Resources:
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/ecs/taskdefinition.yaml
+      Tags:
+        - Key: Application
+          Value: !Ref AppName
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: ManagedBy
+          Value: CloudFormation
       Parameters:
         AppName: !Ref AppName
         Environment: !Ref Environment
@@ -117,6 +145,13 @@ Resources:
       - VpcStack
     Properties:
       TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/ecs/cluster.yaml
+      Tags:
+        - Key: Application
+          Value: !Ref AppName
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: ManagedBy
+          Value: CloudFormation
       Parameters:
         AppName: !Ref AppName
         Environment: !Ref Environment
@@ -132,6 +167,13 @@ Resources:
       - AlbStack
     Properties:
       TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/ecs/service.yaml
+      Tags:
+        - Key: Application
+          Value: !Ref AppName
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: ManagedBy
+          Value: CloudFormation
       Parameters:
         AppName: !Ref AppName
         Environment: !Ref Environment
@@ -145,6 +187,13 @@ Resources:
       - EcsServiceStack
     Properties:
       TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/pipeline/root.yaml
+      Tags:
+        - Key: Application
+          Value: !Ref AppName
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: ManagedBy
+          Value: CloudFormation
       Parameters:
         AppName: !Ref AppName
         Environment: !Ref Environment
