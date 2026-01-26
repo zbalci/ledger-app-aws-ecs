@@ -185,6 +185,7 @@ Resources:
     DependsOn:
       - EcrStack
       - AlbStack
+      - EcsTaskDefStack
       - EcsServiceStack
     Properties:
       TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/pipeline/root.yaml
