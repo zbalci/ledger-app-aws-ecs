@@ -1,0 +1,75 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: ECS Service Template (blue/green & rolling Update)
+
+Parameters:
+  AppName:
+    Type: String
+    Description: App name
+
+  Environment:
+    Type: String
+    Description: Environment name
+
+  DeploymentType:
+    Type: String
+    Description: Deployment Type (bluegreen or rolling)
+
+  ContainerPort:
+    Type: Number
+
+Conditions:
+  IsBlueGreen: !Equals [ !Ref DeploymentType, bluegreen ]
+  IsRolling: !Equals [ !Ref DeploymentType, rolling ]
+
+Resources:
+
+  ECSService:
+    Type: AWS::ECS::Service
+    Properties:
+      ServiceName: !Sub "${AppName}-${Environment}-service"
+      Cluster: !Sub "${AppName}-${Environment}-ecs-cluster"
+      TaskDefinition:
+        Fn::ImportValue:
+          Fn::Sub: ${AppName}-${Environment}-task-definition-arn
+      LaunchType: !If
+        - IsRolling
+        - !Ref "AWS::NoValue"
+        - EC2
+
+      DeploymentController: !If
+        - IsBlueGreen
+        - { Type: CODE_DEPLOY }
+        - !Ref "AWS::NoValue"
+
+      DeploymentConfiguration: !If
+        - IsRolling
+        - 
+          MaximumPercent: 200
+          MinimumHealthyPercent: 100
+        - !Ref "AWS::NoValue"
+
+      LoadBalancers:
+        - ContainerName: !Sub "${AppName}-${Environment}"
+          ContainerPort: !Ref ContainerPort
+          TargetGroupArn: !If
+            - IsBlueGreen
+            - Fn::ImportValue:
+                Fn::Sub: ${AppName}-${Environment}-alb-blue-tg-arn
+            - Fn::ImportValue:
+                Fn::Sub: ${AppName}-${Environment}-alb-rolling-tg-arn
+
+      CapacityProviderStrategy: !If
+        - IsRolling
+        - 
+          - CapacityProvider: !Sub ${AppName}-${Environment}-capacity-provider
+            Base: 0
+            Weight: 1
+        - !Ref "AWS::NoValue"
+      DesiredCount: 1
+
+Outputs:
+  EcsServiceArn:
+    Description: ECSService ARN ***
+    Value: !GetAtt ECSService.ServiceArn
+    Export:
+      Name: !Sub ${AppName}-${Environment}-ecs-service-arn
