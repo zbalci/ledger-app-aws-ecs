@@ -19,7 +19,7 @@ Parameters:
     AllowedValues:
       - bluegreen
       - rolling
-    Default: bluegreen
+    Default: rolling
 
   GithubConnectionArn:
     Type: String
@@ -183,6 +183,7 @@ Resources:
   CodePipelineStack:
     Type: AWS::CloudFormation::Stack
     DependsOn:
+      - EcrStack
       - AlbStack
       - EcsServiceStack
     Properties:
