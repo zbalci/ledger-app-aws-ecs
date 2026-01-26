@@ -148,8 +148,8 @@ Resources:
         Type: CODEPIPELINE
         BuildSpec: !If
           - IsRolling
-          - ecs/rolling-update/buildspec.yml
-          - ecs/blue-green/buildspec.yml
+          - deployment/rolling-update/buildspec.yml
+          - deployment/blue-green/buildspec.yml
       TimeoutInMinutes: 5
 
 Outputs:

@@ -2,34 +2,60 @@ version: 0.2
 
 env:
   exported-variables:
-    - IMAGE_TAG2
+    - IMAGE_TAG
 
 phases:
+  install:
+    commands:
+      - echo Installing security tools...
+      # Hadolint
+      - curl -sL https://github.com/hadolint/hadolint/releases/download/${HADOLINT_VERSION}/hadolint-Linux-x86_64 -o /usr/local/bin/hadolint
+      - chmod +x /usr/local/bin/hadolint
+
+      # Bandit
+      - pip install bandit
+
+      # Trivy
+      - curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh
+      - mv ./bin/trivy /usr/local/bin/trivy
+
   pre_build:
     commands:
       - echo Logging in to Amazon ECR...
       - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin "$ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com"
       # Unique & deterministic tag
-      - IMAGE_TAG2=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
-      - echo "IMAGE_TAG2=$IMAGE_TAG2"
+      - IMAGE_TAG=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
+      - echo "IMAGE_TAG=$IMAGE_TAG"
+
+      # ---------- STATIC ANALYSIS ----------
+      - echo "Running Dockerfile static analysis (Hadolint)..."
+      - hadolint web/Dockerfile || echo "Hadolint warnings detected"
+
+      - echo "Running Python security scan (Bandit)..."
+      - bandit -r web/ -lll || echo "Bandit warnings detected"
+
   build:
     commands:
       - echo Build Docker image...
       - docker build -t $REPO_NAME web/
-      - docker tag $REPO_NAME:latest $ECR_URI:$IMAGE_TAG2
+      - docker tag $REPO_NAME:latest $ECR_URI:$IMAGE_TAG
+
+      # ---------- IMAGE SECURITY SCAN ----------
+      - echo "Running Trivy image vulnerability scan..."
+      - trivy image --severity CRITICAL,HIGH --exit-code 1 $ECR_URI:$IMAGE_TAG
 
   post_build:
     commands:
       - echo Pushing the Docker image to Amazon ECR...
-      - docker push $ECR_URI:$IMAGE_TAG2
+      - docker push $ECR_URI:$IMAGE_TAG
       - echo Writing image definitions file...
-      - printf '{"ImageURI":"%s"}' "$ECR_URI:$IMAGE_TAG2" > imageDetail.json
+      - printf '{"ImageURI":"%s"}' "$ECR_URI:$IMAGE_TAG" > imageDetail.json
       - echo Replacing placeholders in appspec.yaml
       - |
         sed -e "s|_CONTAINER_NAME_|$APP_NAME-$ENVIRONMENT|g" \
             -e "s|_CONTAINER_PORT_|$CONTAINER_PORT|g" \
             -e "s|_ENVIRONMENT_|$ENVIRONMENT|g" \
-            ecs/blue-green/appspec.yaml > appspec.yaml
+            deployment/blue-green/appspec.yaml > appspec.yaml
       - echo Replacing placeholders in taskdef.json
       - |
         sed -e "s|_APP_NAME_|$APP_NAME|g" \
@@ -41,10 +67,8 @@ phases:
             -e "s|_TASK_EXECUTION_ROLE_|$TASK_EXECUTION_ROLE|g" \
             -e "s|_CONTAINER_NAME_|$APP_NAME-$ENVIRONMENT|g" \
             -e "s|_CONTAINER_PORT_|$CONTAINER_PORT|g" \
-            -e "s|_IMAGE_URI_PLACEHOLDER_|$ECR_URI:$IMAGE_TAG2|g" \
-            ecs/blue-green/taskdef.json > taskdef.json
-      - echo "=== FINAL TASKDEF ==="  
-      - cat taskdef.json
+            -e "s|_IMAGE_URI_PLACEHOLDER_|$ECR_URI:$IMAGE_TAG|g" \
+            deployment/blue-green/taskdef.json > taskdef.json
 
 artifacts:
   files: 
