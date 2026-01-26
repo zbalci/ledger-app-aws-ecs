@@ -105,26 +105,10 @@ Resources:
   EcsTaskDefStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/compute/taskdefinition.yaml
+      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/ecs/taskdefinition.yaml
       Parameters:
         AppName: !Ref AppName
         Environment: !Ref Environment
-        ContainerPort: !Ref ContainerPort
-
-  CodeBuildStack:
-    Type: AWS::CloudFormation::Stack
-    DependsOn:
-      - EcrStack
-      - EcsTaskDefStack
-    Properties:
-      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/cicd/build/codebuild.yaml
-      Parameters:
-        AppName: !Ref AppName
-        Environment: !Ref Environment
-        DeploymentType: !Ref DeploymentType
-        SourceRepo: !Ref SourceRepo
-        GithubConnectionArn: !Ref GithubConnectionArn
-        ArtifactBucket: !Ref ArtifactBucket
         ContainerPort: !Ref ContainerPort
 
   EcsClusterStack:
@@ -132,7 +116,7 @@ Resources:
     DependsOn:
       - VpcStack
     Properties:
-      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/compute/ecs-cluster.yaml
+      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/ecs/cluster.yaml
       Parameters:
         AppName: !Ref AppName
         Environment: !Ref Environment
@@ -147,7 +131,7 @@ Resources:
       - EcsClusterStack
       - AlbStack
     Properties:
-      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/compute/ecs-service.yaml
+      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/ecs/service.yaml
       Parameters:
         AppName: !Ref AppName
         Environment: !Ref Environment
@@ -157,11 +141,10 @@ Resources:
   CodePipelineStack:
     Type: AWS::CloudFormation::Stack
     DependsOn:
-      - CodeBuildStack
       - AlbStack
       - EcsServiceStack
     Properties:
-      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/cicd/pipeline/root.yaml
+      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/pipeline/root.yaml
       Parameters:
         AppName: !Ref AppName
         Environment: !Ref Environment

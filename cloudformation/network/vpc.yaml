@@ -46,6 +46,10 @@ Resources:
           Value: !Sub ${AppName}-${Environment}-subnet-2
   InternetGateway:
     Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: Name
+          Value: !Sub ${AppName}-${Environment}-ig
   VPCGatewayAttachment:
     Type: AWS::EC2::VPCGatewayAttachment
     Properties:
