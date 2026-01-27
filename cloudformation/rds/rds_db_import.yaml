@@ -1,3 +1,13 @@
+Parameters:
+  AppName:
+    Type: String
+    Description: App name
+    Default: ledger-app 
+
+  Environment:
+    Type: String
+    Description: Environment name
+    Default: dev
 Resources:
   DatabaseInitLambdaRole:
     Type: AWS::IAM::Role
@@ -22,27 +32,28 @@ Resources:
               - Effect: Allow
                 Action: secretsmanager:GetSecretValue
                 Resource: "*"
-  DatabaseInitLambda:
-  Type: AWS::Lambda::Function
-  Properties:
-    FunctionName: !Sub "${AppName}-${Environment}-db-init"
-    Runtime: python3.11
-    Handler: lambda_function.lambda_handler
-    Role: !GetAtt DatabaseInitLambdaRole.Arn
-    Timeout: 300
-    Code:
-      S3Bucket: ledger-app-aws-iac
-      S3Key: lambda/database-init-lambda.zip
-    Environment:
-      Variables:
-        DB_HOST: !Sub '{{resolve:ssm:/${AppName}/${Environment}/db/host}}'
-        DB_USER: !Sub '{{resolve:ssm:/${AppName}/${Environment}/db/user}}'
-        DB_NAME: !Sub '{{resolve:ssm:/${AppName}/${Environment}/db/database}}'
-        DB_SECRET_NAME: !Sub '${AppName}-${Environment}db-pass'
-        SQL_BUCKET: ledger-app-aws-iac
-        SQL_KEY: sql/init.sql
 
-DatabaseInitTrigger:
-  Type: Custom::DatabaseInitDatabase
-  Properties:
-    ServiceToken: !GetAtt DatabaseInitLambda.Arn
+  DatabaseInitLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub "${AppName}-${Environment}-db-init5"
+      Runtime: python3.11
+      Handler: lambda_function.lambda_handler
+      Role: !GetAtt DatabaseInitLambdaRole.Arn
+      Timeout: 300
+      Code:
+        S3Bucket: ledger-app-aws-iac
+        S3Key: lambda/database-init-lambda.zip
+      Environment:
+        Variables:
+          DB_HOST: !Sub '{{resolve:ssm:/${AppName}/${Environment}/db/host}}'
+          DB_USER: !Sub '{{resolve:ssm:/${AppName}/${Environment}/db/user}}'
+          DB_NAME: !Sub '{{resolve:ssm:/${AppName}/${Environment}/db/database}}'
+          DB_SECRET_NAME: !Sub '${AppName}-${Environment}-db-pass'
+          SQL_BUCKET: ledger-app-aws-iac
+          SQL_KEY: sql/init.sql
+
+  DatabaseInitTrigger:
+    Type: Custom::DatabaseInitDatabase
+    Properties:
+      ServiceToken: !GetAtt DatabaseInitLambda.Arn
