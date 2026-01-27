@@ -7,11 +7,11 @@ Parameters:
   Environment:
     Type: String
     Description: Environment name
-    Default: dev
+    Default: prod
 
   CFNBucket:
     Type: String
-    Description: S3 bucket name used for CFN templates and deployment files
+    Description: S3 bucket name used for CFN template and deployment files
     Default: ledger-app-aws-iac
 
   LambdaKey:

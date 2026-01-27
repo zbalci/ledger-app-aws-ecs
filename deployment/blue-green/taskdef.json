@@ -42,7 +42,7 @@
                 },
 		        {
 		            "name": "DATABASE_PASS",
-                    "valueFrom": "arn:aws:ssm:_AWS_REGION_:_ACCOUNT_ID_:parameter/_APP_NAME_/_ENVIRONMENT_/db/pass"
+                    "valueFrom": "arn:aws:secretsmanager:_AWS_REGION_:_ACCOUNT_ID_:secret:_APP_NAME_/_ENVIRONMENT_/db/pass"
                 }
             ],
             "dnsServers": [],

@@ -12,8 +12,8 @@ Parameters:
     Description: S3 bucket name used by CodePipeline
 
   LambdaKey:
-  Type: String
-  Description: S3 bucket key used by lambda function
+    Type: String
+    Description: S3 bucket key used by lambda function
 
   SqlKey:
     Type: String
