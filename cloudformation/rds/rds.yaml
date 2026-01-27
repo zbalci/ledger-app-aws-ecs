@@ -1,0 +1,175 @@
+Parameters:
+  AppName:
+    Type: String
+    Description: App name
+    Default: ledger-app 
+
+  Environment:
+    Type: String
+    Description: Environment name
+    Default: dev
+
+  ArtifactBucket:
+    Type: String
+    Description: S3 bucket name used by CodePipeline
+    Default: ledger-app-aws-iac
+
+  DatabaseName:
+    Type: String
+    Description: Database Name
+    Default: ledger
+
+  DatabaseUser:
+    Type: String
+    Description: Database User Name
+    Default: ledger
+
+  DatabasePort:
+    Type: String
+    Description: Database User Name
+    Default: 3306
+
+Resources:
+  LambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+
+      Policies:
+        - PolicyName: SSMWrite
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action: 
+                  - s3:GetObject
+                  - rds-db:connect
+                  - ssm:GetParameter
+                  - secretsmanager:GetSecretValue
+                Resource: "*"
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: "*"
+
+  DBNameSSMParam:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub "/${AppName}/${Environment}/db/database"
+      Type: String
+      Value: !Ref DatabaseName
+
+  DBPortSSMParam:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub "/${AppName}/${Environment}/db/port"
+      Type: String
+      Value: !Ref DatabasePort
+
+  DBUserSSMParam:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub "/${AppName}/${Environment}/db/user"
+      Type: String
+      Value: !Ref DatabaseUser
+
+  DBPasswordSecretManager:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      Name: !Sub "${AppName}-${Environment}-db-pass"
+      Description: "Database password"
+      GenerateSecretString:
+        PasswordLength: 20
+        ExcludePunctuation: true
+ 
+  MySQLDatabaseSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: MySQL Database Security Group
+      GroupName: !Sub "${AppName}-${Environment}-mysql-sg"
+      VpcId: "vpc-04e9c5aee75bef483"
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: !Ref DatabasePort
+          ToPort: !Ref DatabasePort
+          CidrIp: 0.0.0.0/0
+      SecurityGroupEgress:
+        - IpProtocol: -1
+          FromPort: 0
+          ToPort: 0
+          CidrIp: 0.0.0.0/0
+
+  RDSInstance:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      AllocatedStorage: "10"
+      DBInstanceIdentifier: !Sub "${AppName}-${Environment}-dbinstance"
+      DBName: !Ref DatabaseName
+      DBInstanceClass: db.t4g.micro
+      Engine: MySQL
+      EngineVersion: "8.0.43"
+      MasterUsername: !Ref DatabaseUser
+      MasterUserPassword: !Sub "{{resolve:secretsmanager:${DBPasswordSecretManager}}}"
+      VPCSecurityGroups:
+        - !Ref MySQLDatabaseSecurityGroup
+
+  DBHostParam:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub "/${AppName}/${Environment}/db/host"
+      Type: String
+      Value: !GetAtt RDSInstance.Endpoint.Address
+
+Outputs:
+  DBHostParam:
+    Description: "DB Host Param"
+    Value: !Ref DBHostParam
+    Export:
+      Name: !Sub ${AppName}-${Environment}-db-host
+
+  # # 3. Lambda Function
+  # RDSImportDB:
+  #   Type: AWS::Lambda::Function
+  #   Properties:
+  #     Handler: index.lambda_handler
+  #     Runtime: python3.12
+  #     Timeout: 60
+  #     Role: !GetAtt LambdaExecutionRole.Arn
+  #     Code:
+  #       ZipFile: |
+  #         import boto3, psycopg2
+
+  #         def handler(event, context):
+  #             ssm = boto3.client("ssm")
+  #             s3  = boto3.client("s3")
+
+  #             artifact_bucket = event["ResourceProperties"]["ArtifactBucket"]
+
+  #             host = ssm.get_parameter(Name="/ledger/dev/db/host")["Parameter"]["Value"]
+  #             user = ssm.get_parameter(Name="/ledger/dev/db/user")["Parameter"]["Value"]
+  #             pwd  = ssm.get_parameter(Name="/ledger/dev/db/pass", WithDecryption=True)["Parameter"]["Value"]
+
+  #             sql = s3.get_object(Bucket=artifact_bucket, Key="sql/init.sql")["Body"].read().decode()
+
+  #             conn = psycopg2.connect(host=host, user=user, password=pwd)
+  #             cur = conn.cursor()
+  #             cur.execute(sql)
+  #             conn.commit()
+
+  # DBInit:
+  #   Type: Custom::InitDatabase
+  #   DependsOn: RDSImportDB
+  #   Properties:
+  #     ServiceToken: !GetAtt RDSImportDB.Arn
+  #     ArtifactBucket: !Ref ArtifactBucket
