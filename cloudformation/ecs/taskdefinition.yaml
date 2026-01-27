@@ -36,6 +36,7 @@ Resources:
                 Action:
                   - ssm:GetParameters
                   - ssm:GetParameter
+                  - secretsmanager:GetSecretValue
                 Resource: 
                   - !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${AppName}/${Environment}/db/*"
               - Effect: Allow
