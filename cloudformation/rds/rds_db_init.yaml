@@ -2,12 +2,23 @@ Parameters:
   AppName:
     Type: String
     Description: App name
-    Default: ledger-app 
 
   Environment:
     Type: String
     Description: Environment name
-    Default: dev
+
+  CFNBucket:
+    Type: String
+    Description: S3 bucket name used by CodePipeline
+
+  LambdaKey:
+  Type: String
+  Description: S3 bucket key used by lambda function
+
+  SqlKey:
+    Type: String
+    Description: S3 bucket key used by sql db init
+
 Resources:
   DatabaseInitLambdaRole:
     Type: AWS::IAM::Role
@@ -28,7 +39,7 @@ Resources:
             Statement:
               - Effect: Allow
                 Action: s3:GetObject
-                Resource: arn:aws:s3:::ledger-app-aws-iac/sql/*
+                Resource: !Sub "arn:aws:s3:::${CFNBucket}/${SqlKey}"
               - Effect: Allow
                 Action: secretsmanager:GetSecretValue
                 Resource: "*"
@@ -36,22 +47,22 @@ Resources:
   DatabaseInitLambda:
     Type: AWS::Lambda::Function
     Properties:
-      FunctionName: !Sub "${AppName}-${Environment}-db-init5"
+      FunctionName: !Sub "${AppName}-${Environment}-db-init"
       Runtime: python3.11
       Handler: lambda_function.lambda_handler
       Role: !GetAtt DatabaseInitLambdaRole.Arn
       Timeout: 300
       Code:
-        S3Bucket: ledger-app-aws-iac
-        S3Key: lambda/database-init-lambda.zip
+        S3Bucket: !Ref CFNBucket
+        S3Key: !Ref LambdaKey
       Environment:
         Variables:
           DB_HOST: !Sub '{{resolve:ssm:/${AppName}/${Environment}/db/host}}'
           DB_USER: !Sub '{{resolve:ssm:/${AppName}/${Environment}/db/user}}'
           DB_NAME: !Sub '{{resolve:ssm:/${AppName}/${Environment}/db/database}}'
           DB_SECRET_NAME: !Sub '${AppName}-${Environment}-db-pass'
-          SQL_BUCKET: ledger-app-aws-iac
-          SQL_KEY: sql/init.sql
+          SQL_BUCKET: !Ref CFNBucket
+          SQL_KEY: !Ref SqlKey
 
   DatabaseInitTrigger:
     Type: Custom::DatabaseInitDatabase

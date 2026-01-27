@@ -1,0 +1,65 @@
+Parameters:
+  AppName:
+    Type: String
+    Description: App name
+    Default: ledger-app 
+
+  Environment:
+    Type: String
+    Description: Environment name
+    Default: dev
+
+  CFNBucket:
+    Type: String
+    Description: S3 bucket name used for CFN templates and deployment files
+    Default: ledger-app-aws-iac
+
+  LambdaKey:
+    Type: String
+    Description: S3 bucket key used by lambda function
+    Default: lambda/database-init-lambda.zip
+
+  SqlKey:
+    Type: String
+    Description: S3 bucket key used by sql db init
+    Default: sql/init.sql
+
+  DBName:
+    Type: String
+    Description: Database Name
+    Default: ledger
+
+  DBUser:
+    Type: String
+    Description: Database User Name
+    Default: ledger
+
+  DBPort:
+    Type: String
+    Description: Database User Name
+    Default: 3306
+
+Resources:
+  RdsStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/rds/rds.yaml
+      Parameters:
+        AppName: !Ref AppName
+        Environment: !Ref Environment
+        DBName: !Ref DBName
+        DBUser: !Ref DBUser
+        DBPort: !Ref DBPort
+
+  RdsDbInit:
+    Type: AWS::CloudFormation::Stack
+    DependsOn:
+      - RdsStack
+    Properties:
+      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/rds/rds_db_init.yaml
+      Parameters:
+        AppName: !Ref AppName
+        Environment: !Ref Environment
+        CFNBucket: !Ref CFNBucket
+        SqlKey: !Ref SqlKey
+        LambdaKey: !Ref LambdaKey
