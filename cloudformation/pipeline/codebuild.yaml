@@ -66,6 +66,7 @@ Resources:
                   - ecr:PutImage
                   - s3:PutObject
                   - s3:GetObject
+                  - secretsmanager:GetSecretValue
                 Resource: "*"
         - PolicyName: GitHubConnectionAccess
           PolicyDocument:
@@ -142,13 +143,11 @@ Resources:
             Type: PLAINTEXT
 
           - Name: DATABASE_PASS
-            ValueFrom:
-              Fn::Sub:
-                - "{{resolve:secretsmanager:${SecretArn}:SecretString:password}}"
-                - SecretArn:
-                    Fn::ImportValue: "${AppName}-${Environment}-rds-master-secret-arn"
-            Type: PLAINTEXT
-
+            Type: SECRETS_MANAGER
+            Value: !Sub
+              - "${SecretArn}:password"
+              - SecretArn:
+                  Fn::ImportValue: !Sub "${AppName}-${Environment}-rds-master-secret-arn"
       Artifacts:
         Type: CODEPIPELINE 
         Packaging: ZIP

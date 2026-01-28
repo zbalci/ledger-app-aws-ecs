@@ -42,8 +42,8 @@ Resources:
                 Action:
                   - secretsmanager:GetSecretValue
                 Resource: 
-                  ImportValue:
-                    Fn::ImportValue: !Sub "${AppName}-${Environment}-rds-master-secret-arn"
+                  Fn::ImportValue:
+                    Fn::Sub: "${AppName}-${Environment}-rds-master-secret-arn"
               - Effect: Allow
                 Action:
                   - kms:Decrypt
@@ -81,11 +81,10 @@ Resources:
             - Name: DATABASE_USER
               ValueFrom: !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${AppName}/${Environment}/db/user"
             - Name: DATABASE_PASS
-              ValueFrom:
-                Fn::Sub:
-                  - "{{resolve:secretsmanager:${SecretArn}:SecretString:password}}"
-                  - SecretArn:
-                      Fn::ImportValue: "${AppName}-${Environment}-rds-master-secret-arn"
+              ValueFrom: !Sub
+                - "${SecretArn}:password::"
+                - SecretArn:
+                    Fn::ImportValue: !Sub "${AppName}-${Environment}-rds-master-secret-arn"
           LogConfiguration:
             LogDriver: awslogs
             Options:

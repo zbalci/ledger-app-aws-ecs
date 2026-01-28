@@ -19,7 +19,7 @@ Parameters:
     AllowedValues:
       - bluegreen
       - rolling
-    Default: rolling
+    Default: bluegreen
 
   GithubConnectionArn:
     Type: String
@@ -139,69 +139,69 @@ Resources:
         Environment: !Ref Environment
         ContainerPort: !Ref ContainerPort
 
-  # EcsClusterStack:
-  #   Type: AWS::CloudFormation::Stack
-  #   DependsOn:
-  #     - VpcStack
-  #   Properties:
-  #     TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/ecs/cluster.yaml
-  #     Tags:
-  #       - Key: Application
-  #         Value: !Ref AppName
-  #       - Key: Environment
-  #         Value: !Ref Environment
-  #       - Key: ManagedBy
-  #         Value: CloudFormation
-  #     Parameters:
-  #       AppName: !Ref AppName
-  #       Environment: !Ref Environment
-  #       InstanceType: !Ref InstanceType
-  #       KeyName: !Ref KeyName
-  #       AmiId: !Ref AmiId
-  #       ContainerPort: !Ref ContainerPort
+  EcsClusterStack:
+    Type: AWS::CloudFormation::Stack
+    DependsOn:
+      - VpcStack
+    Properties:
+      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/ecs/cluster.yaml
+      Tags:
+        - Key: Application
+          Value: !Ref AppName
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: ManagedBy
+          Value: CloudFormation
+      Parameters:
+        AppName: !Ref AppName
+        Environment: !Ref Environment
+        InstanceType: !Ref InstanceType
+        KeyName: !Ref KeyName
+        AmiId: !Ref AmiId
+        ContainerPort: !Ref ContainerPort
 
-  # EcsServiceStack:
-  #   Type: AWS::CloudFormation::Stack
-  #   DependsOn:
-  #     - EcsClusterStack
-  #     - AlbStack
-  #   Properties:
-  #     TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/ecs/service.yaml
-  #     Tags:
-  #       - Key: Application
-  #         Value: !Ref AppName
-  #       - Key: Environment
-  #         Value: !Ref Environment
-  #       - Key: ManagedBy
-  #         Value: CloudFormation
-  #     Parameters:
-  #       AppName: !Ref AppName
-  #       Environment: !Ref Environment
-  #       DeploymentType: !Ref DeploymentType
-  #       ContainerPort: !Ref ContainerPort
+  EcsServiceStack:
+    Type: AWS::CloudFormation::Stack
+    DependsOn:
+      - EcsClusterStack
+      - AlbStack
+    Properties:
+      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/ecs/service.yaml
+      Tags:
+        - Key: Application
+          Value: !Ref AppName
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: ManagedBy
+          Value: CloudFormation
+      Parameters:
+        AppName: !Ref AppName
+        Environment: !Ref Environment
+        DeploymentType: !Ref DeploymentType
+        ContainerPort: !Ref ContainerPort
 
-  # CodePipelineStack:
-  #   Type: AWS::CloudFormation::Stack
-  #   DependsOn:
-  #     - EcrStack
-  #     - AlbStack
-  #     - EcsTaskDefStack
-  #     - EcsServiceStack
-  #   Properties:
-  #     TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/pipeline/root.yaml
-  #     Tags:
-  #       - Key: Application
-  #         Value: !Ref AppName
-  #       - Key: Environment
-  #         Value: !Ref Environment
-  #       - Key: ManagedBy
-  #         Value: CloudFormation
-  #     Parameters:
-  #       AppName: !Ref AppName
-  #       Environment: !Ref Environment
-  #       DeploymentType: !Ref DeploymentType
-  #       SourceRepo: !Ref SourceRepo
-  #       SourceBranch: !Ref SourceBranch
-  #       ArtifactBucket: !Ref ArtifactBucket
-  #       GithubConnectionArn: !Ref GithubConnectionArn
-  #       ContainerPort: !Ref ContainerPort
+  CodePipelineStack:
+    Type: AWS::CloudFormation::Stack
+    DependsOn:
+      - EcrStack
+      - AlbStack
+      - EcsTaskDefStack
+      - EcsServiceStack
+    Properties:
+      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/pipeline/root.yaml
+      Tags:
+        - Key: Application
+          Value: !Ref AppName
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: ManagedBy
+          Value: CloudFormation
+      Parameters:
+        AppName: !Ref AppName
+        Environment: !Ref Environment
+        DeploymentType: !Ref DeploymentType
+        SourceRepo: !Ref SourceRepo
+        SourceBranch: !Ref SourceBranch
+        ArtifactBucket: !Ref ArtifactBucket
+        GithubConnectionArn: !Ref GithubConnectionArn
+        ContainerPort: !Ref ContainerPort
