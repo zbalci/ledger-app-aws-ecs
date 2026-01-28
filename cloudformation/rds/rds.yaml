@@ -40,15 +40,6 @@ Resources:
       Name: !Sub "/${AppName}/${Environment}/db/user"
       Type: String
       Value: !Ref DBUser
-
-  DBPassword:
-    Type: AWS::SecretsManager::Secret
-    Properties:
-      Name: !Sub "${AppName}-${Environment}-db-pass"
-      Description: "Database password"
-      GenerateSecretString:
-        PasswordLength: 20
-        ExcludePunctuation: true
  
   RDSSecurityGroup:
     Type: AWS::EC2::SecurityGroup
@@ -77,7 +68,7 @@ Resources:
       Engine: MySQL
       EngineVersion: "8.0.43"
       MasterUsername: !Ref DBUser
-      MasterUserPassword: !Sub "{{resolve:secretsmanager:${DBPassword}}}"
+      ManageMasterUserPassword: true   # 👈 kritik satır
       VPCSecurityGroups:
         - !Ref RDSSecurityGroup
 
@@ -89,8 +80,8 @@ Resources:
       Value: !GetAtt RDSInstance.Endpoint.Address
 
 Outputs:
-  DBHostParam:
-    Description: "DB Host Param"
-    Value: !Ref DBHostParam
+  RDSMasterSecretArn:
+    Description: "RDS master user secret arn"
+    Value: !GetAtt RDSInstance.MasterUserSecret.SecretArn
     Export:
-      Name: !Sub ${AppName}-${Environment}-db-host
+      Name: !Sub "${AppName}-${Environment}-rds-master-secret-arn"

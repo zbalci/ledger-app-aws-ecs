@@ -141,6 +141,14 @@ Resources:
             Value: !Ref ContainerPort
             Type: PLAINTEXT
 
+          - Name: DATABASE_PASS
+            ValueFrom:
+              Fn::Sub:
+                - "{{resolve:secretsmanager:${SecretArn}:SecretString:password}}"
+                - SecretArn:
+                    Fn::ImportValue: "${AppName}-${Environment}-rds-master-secret-arn"
+            Type: PLAINTEXT
+
       Artifacts:
         Type: CODEPIPELINE 
         Packaging: ZIP

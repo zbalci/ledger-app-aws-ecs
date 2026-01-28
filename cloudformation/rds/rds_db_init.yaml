@@ -60,7 +60,8 @@ Resources:
           DB_HOST: !Sub '{{resolve:ssm:/${AppName}/${Environment}/db/host}}'
           DB_USER: !Sub '{{resolve:ssm:/${AppName}/${Environment}/db/user}}'
           DB_NAME: !Sub '{{resolve:ssm:/${AppName}/${Environment}/db/database}}'
-          DB_SECRET_NAME: !Sub '${AppName}-${Environment}-db-pass'
+          DB_SECRET_NAME:
+            Fn::ImportValue: !Sub "${AppName}-${Environment}-rds-master-secret-arn"
           SQL_BUCKET: !Ref CFNBucket
           SQL_KEY: !Ref SqlKey
 
