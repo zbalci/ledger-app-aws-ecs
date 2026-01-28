@@ -143,11 +143,14 @@ Resources:
             Type: PLAINTEXT
 
           - Name: DATABASE_PASS
-            Type: SECRETS_MANAGER
-            Value: !Sub
-              - "${SecretArn}:password"
-              - SecretArn:
-                  Fn::ImportValue: !Sub "${AppName}-${Environment}-rds-master-secret-arn"
+            Value:
+              Fn::ImportValue: !Sub "${AppName}-${Environment}-rds-master-secret-arn"
+          # - Name: DATABASE_PASS
+          #   Type: SECRETS_MANAGER
+          #   Value: !Sub
+          #     - "${SecretArn}:password"
+          #     - SecretArn:
+          #         Fn::ImportValue: !Sub "${AppName}-${Environment}-rds-master-secret-arn"
       Artifacts:
         Type: CODEPIPELINE 
         Packaging: ZIP
