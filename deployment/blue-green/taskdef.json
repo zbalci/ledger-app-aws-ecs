@@ -42,7 +42,7 @@
                 },
 		        {
 		            "name": "DATABASE_PASS",
-                    "value": "_DATABASE_PASS_"
+                    "valueFrom": "_DATABASE_PASS_"
                 }
             ],
             "dnsServers": [],
