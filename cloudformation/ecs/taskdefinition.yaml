@@ -95,7 +95,7 @@ Resources:
 
 Outputs:
   TaskExecutionRole:
-    Description: TaskExecutionRole ***
+    Description: TaskExecutionRole Arn
     Value: !GetAtt TaskExecutionRole.Arn
     Export:
       Name: !Sub ${AppName}-${Environment}-ecs-task-executionrole-arn
