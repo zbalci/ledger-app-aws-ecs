@@ -19,7 +19,7 @@ Parameters:
     AllowedValues:
       - bluegreen
       - rolling
-    Default: bluegreen
+    Default: rolling
 
   GithubConnectionArn:
     Type: String
@@ -123,10 +123,10 @@ Resources:
         AppName: !Ref AppName
         Environment: !Ref Environment
 
-  DBStack:
+  DatabaseStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/rds/rds.yaml
+      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/database/rds.yaml
       Tags:
         - Key: Application
           Value: !Ref AppName
@@ -141,7 +141,7 @@ Resources:
   EcsTaskDefStack:
     Type: AWS::CloudFormation::Stack
     DependsOn:
-      - DBStack
+      - DatabaseStack
     Properties:
       TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/ecs/taskdefinition.yaml
       Tags:
@@ -204,7 +204,7 @@ Resources:
       - EcrStack
       - AlbStack
       - EcsTaskDefStack
-      - DBStack
+      - DatabaseStack
       - EcsServiceStack
     Properties:
       TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/pipeline/root.yaml

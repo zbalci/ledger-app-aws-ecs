@@ -5,4 +5,4 @@ aws cloudformation create-stack \
   --capabilities CAPABILITY_IAM \
   --capabilities CAPABILITY_NAMED_IAM
 
-aws cloudformation create-stack --stack-name RDS --capabilities CAPABILITY_IAM --capabilities CAPABILITY_NAMED_IAM --template-url https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/rds/root.yaml --disable-rollback
+aws cloudformation create-stack --stack-name RDS --capabilities CAPABILITY_IAM --capabilities CAPABILITY_NAMED_IAM --template-url https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/database/root.yaml --disable-rollback
