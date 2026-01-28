@@ -123,8 +123,25 @@ Resources:
         AppName: !Ref AppName
         Environment: !Ref Environment
 
+  DBStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/rds/rds.yaml
+      Tags:
+        - Key: Application
+          Value: !Ref AppName
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: ManagedBy
+          Value: CloudFormation
+      Parameters:
+        AppName: !Ref AppName
+        Environment: !Ref Environment
+
   EcsTaskDefStack:
     Type: AWS::CloudFormation::Stack
+    DependsOn:
+      - DBStack
     Properties:
       TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/ecs/taskdefinition.yaml
       Tags:
@@ -163,6 +180,7 @@ Resources:
   EcsServiceStack:
     Type: AWS::CloudFormation::Stack
     DependsOn:
+      - EcsTaskDefStack
       - EcsClusterStack
       - AlbStack
     Properties:
@@ -186,6 +204,7 @@ Resources:
       - EcrStack
       - AlbStack
       - EcsTaskDefStack
+      - DBStack
       - EcsServiceStack
     Properties:
       TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/pipeline/root.yaml

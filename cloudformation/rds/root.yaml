@@ -2,12 +2,10 @@ Parameters:
   AppName:
     Type: String
     Description: App name
-    Default: ledger-app 
 
   Environment:
     Type: String
     Description: Environment name
-    Default: prod
 
   CFNBucket:
     Type: String
