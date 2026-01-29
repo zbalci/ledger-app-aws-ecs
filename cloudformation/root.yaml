@@ -35,21 +35,6 @@ Parameters:
     Type: String
     Default: main
 
-  InstanceType:
-    Type: String
-    Description: EC2 instance tipi
-    Default: t3.micro
-
-  KeyName:
-    Type: String
-    Default: zekib
-    Description: Key-pair
-
-  AmiId:
-    Type: AWS::EC2::Image::Id
-    Description: ECS-uyumlu AMI ID
-    Default: ami-0f3092a09bb5324c4
-
   ContainerPort:
     Type: Number
     Default: 80
@@ -72,7 +57,7 @@ Conditions:
   IsBlueGreen: !Equals [ !Ref DeploymentType, "bluegreen" ]
 
 Resources:
-  VpcStack:
+  NetworkStack:
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/network/vpc.yaml
@@ -87,12 +72,12 @@ Resources:
         AppName: !Ref AppName
         Environment: !Ref Environment
 
-  AlbStack:
+  LoadbalanceStack:
     Type: AWS::CloudFormation::Stack
     DependsOn:
-      - VpcStack
+      - NetworkStack
     Properties:
-      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/loadbalancing/alb.yaml
+      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/loadbalance/alb.yaml
       Tags:
         - Key: Application
           Value: !Ref AppName
@@ -108,7 +93,7 @@ Resources:
         ListenerPort: !Ref ListenerPort
         TestListenerPort: !Ref TestListenerPort
 
-  EcrStack:
+  RegistryStack:
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/registry/ecr.yaml
@@ -126,7 +111,7 @@ Resources:
   DatabaseStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/database/rds.yaml
+      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/database/root.yaml
       Tags:
         - Key: Application
           Value: !Ref AppName
@@ -138,53 +123,15 @@ Resources:
         AppName: !Ref AppName
         Environment: !Ref Environment
 
-  EcsTaskDefStack:
+  EcsStack:
     Type: AWS::CloudFormation::Stack
     DependsOn:
+      - NetworkStack
+      - LoadbalanceStack
+      - RegistryStack
       - DatabaseStack
     Properties:
-      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/ecs/taskdefinition.yaml
-      Tags:
-        - Key: Application
-          Value: !Ref AppName
-        - Key: Environment
-          Value: !Ref Environment
-        - Key: ManagedBy
-          Value: CloudFormation
-      Parameters:
-        AppName: !Ref AppName
-        Environment: !Ref Environment
-        ContainerPort: !Ref ContainerPort
-
-  EcsClusterStack:
-    Type: AWS::CloudFormation::Stack
-    DependsOn:
-      - VpcStack
-    Properties:
-      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/ecs/cluster.yaml
-      Tags:
-        - Key: Application
-          Value: !Ref AppName
-        - Key: Environment
-          Value: !Ref Environment
-        - Key: ManagedBy
-          Value: CloudFormation
-      Parameters:
-        AppName: !Ref AppName
-        Environment: !Ref Environment
-        InstanceType: !Ref InstanceType
-        KeyName: !Ref KeyName
-        AmiId: !Ref AmiId
-        ContainerPort: !Ref ContainerPort
-
-  EcsServiceStack:
-    Type: AWS::CloudFormation::Stack
-    DependsOn:
-      - EcsTaskDefStack
-      - EcsClusterStack
-      - AlbStack
-    Properties:
-      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/ecs/service.yaml
+      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/ecs/root.yaml
       Tags:
         - Key: Application
           Value: !Ref AppName
@@ -201,11 +148,11 @@ Resources:
   CodePipelineStack:
     Type: AWS::CloudFormation::Stack
     DependsOn:
-      - EcrStack
-      - AlbStack
-      - EcsTaskDefStack
+      - NetworkStack
+      - LoadbalanceStack
+      - RegistryStack
       - DatabaseStack
-      - EcsServiceStack
+      - EcsStack
     Properties:
       TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/pipeline/root.yaml
       Tags:

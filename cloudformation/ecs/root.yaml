@@ -1,0 +1,65 @@
+Parameters:
+  AppName:
+    Type: String
+    Description: App name
+
+  Environment:
+    Type: String
+    Description: Environment name
+
+  DeploymentType:
+    Type: String
+    Description: Deployment tipi (bluegreen veya rolling)
+
+  ContainerPort:
+    Type: Number
+
+  InstanceType:
+    Type: String
+    Description: EC2 instance tipi
+    Default: t3.micro
+
+  KeyName:
+    Type: String
+    Default: zekib
+    Description: Key-pair
+
+  AmiId:
+    Type: AWS::EC2::Image::Id
+    Description: ECS-uyumlu AMI ID
+    Default: ami-0f3092a09bb5324c4
+
+Resources:
+  EcsTaskDefStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/ecs/taskdefinition.yaml
+      Parameters:
+        AppName: !Ref AppName
+        Environment: !Ref Environment
+        ContainerPort: !Ref ContainerPort
+
+  EcsClusterStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/ecs/cluster.yaml
+      Parameters:
+        AppName: !Ref AppName
+        Environment: !Ref Environment
+        InstanceType: !Ref InstanceType
+        KeyName: !Ref KeyName
+        AmiId: !Ref AmiId
+        ContainerPort: !Ref ContainerPort
+
+  EcsServiceStack:
+    Type: AWS::CloudFormation::Stack
+    DependsOn:
+      - EcsTaskDefStack
+      - EcsClusterStack
+    Properties:
+      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/ecs/service.yaml
+      Parameters:
+        AppName: !Ref AppName
+        Environment: !Ref Environment
+        DeploymentType: !Ref DeploymentType
+        ContainerPort: !Ref ContainerPort
