@@ -3,7 +3,7 @@ version: "3.9"
 services:
   db:
     build:
-      context: ../sql
+      context: ../services/database
       dockerfile: Dockerfile
     image: ledger-app-db:local
     container_name: ledger-db
@@ -16,10 +16,12 @@ services:
       - "3306:3306"
     volumes:
       - db-data:/var/lib/mysql
+      - ../assets/sql/init.sql:/docker-entrypoint-initdb.d/init.sql
+
 
   web:
     build:
-      context: ../web
+      context: ../services/web
       dockerfile: Dockerfile
     image: ledger-app-web:local
     container_name: ledger-web
