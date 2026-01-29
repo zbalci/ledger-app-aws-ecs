@@ -10,27 +10,12 @@ Parameters:
     Type: String
     Description: Environment name
 
-  DeploymentType:
-    Type: String
-    Description: Deployment tipi (bluegreen veya rolling)
-
-  SourceRepo:
-    Type: String
-    Description: owner/repo biçiminde GitHub repo ID'si
-
   GithubConnectionArn:
     Type: String
     Description: Github Connection ARN
 
-  ArtifactBucket:
-    Type: String
-
   ContainerPort:
     Type: Number
-
-Conditions:
-  IsRolling: !Equals [!Ref DeploymentType, rolling]
-  IsBlueGreen: !Equals [!Ref DeploymentType, bluegreen]
 
 Resources:
   CodeBuildRole:
