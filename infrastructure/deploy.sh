@@ -11,3 +11,6 @@ aws cloudformation create-stack \
   --disable-rollback \
   --capabilities CAPABILITY_IAM \
   --capabilities CAPABILITY_NAMED_IAM
+
+
+aws cloudformation update-stack --stack-name codebuild-lambda --template-body file://codebuild.yaml --capabilities CAPABILITY_IAM --capabilities CAPABILITY_NAMED_IAM

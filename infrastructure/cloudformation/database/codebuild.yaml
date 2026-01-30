@@ -88,7 +88,8 @@ Resources:
             Value: !Ref Environment
             Type: PLAINTEXT
           - Name: ASSET_BUCKET
-            Value: !Sub "${AppName}-${Environment}-asset-bucket"
+            Value:
+              Fn::ImportValue: !Sub "${AppName}-${Environment}-asset-bucket"
       Artifacts:
         Type: CODEPIPELINE 
       Source:
