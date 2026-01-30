@@ -6,6 +6,13 @@ The application consists of a small Python web service backed by a SQL database.
 
 <img width="1140" height="311" alt="image" src="https://github.com/user-attachments/assets/818d81d7-6be7-406d-89cf-d750162c0a9d" />
 
+## Directory Layout
+
+assets/        Runtime artifacts
+cicd/          Build & deploy logic
+cloudformation Infrastructure as Code
+services/      Application source
+
 ---
 
 ## High‑Level Architecture
