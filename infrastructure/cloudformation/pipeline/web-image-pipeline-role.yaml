@@ -1,0 +1,200 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: CodePipeline IAM Role with Conditional IAM Policies for ECS Deployment
+
+Parameters:
+  AppName:
+    Type: String
+    Description: App name
+
+  Environment:
+    Type: String
+    Description: Environment name
+
+  ArtifactBucket:
+    Type: String
+    Description: S3 bucket name used by CodePipeline
+
+  GithubConnectionArn:
+    Type: String
+    Description: Github Connection ARN
+
+  DeploymentType:
+    Type: String
+    Description: Deployment tipi (bluegreen veya rolling)
+
+Conditions:
+  IsRolling: !Equals [ !Ref DeploymentType, "rolling" ]
+  IsBlueGreen: !Equals [ !Ref DeploymentType, "bluegreen" ]
+
+Resources:
+  ### IAM Role for CodePipeline
+  CodePipelineServiceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ${AppName}-${Environment}-codepipeline-servicerole
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: codepipeline.amazonaws.com
+            Action: sts:AssumeRole
+
+  ### Base Policy (Her iki durumda da geçerli)
+  BasePolicies:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: !Sub ${AppName}-${Environment}-codepipeline-base-policies
+      Roles:
+        - !Ref CodePipelineServiceRole
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: AllowS3BucketAccess
+            Effect: Allow
+            Action:
+              - s3:GetBucketVersioning
+              - s3:GetBucketAcl
+              - s3:GetBucketLocation
+            Resource: !Sub arn:aws:s3:::${ArtifactBucket}
+            Condition:
+              StringEquals:
+                aws:ResourceAccount: !Ref AWS::AccountId
+
+          - Sid: AllowS3ObjectAccess
+            Effect: Allow
+            Action:
+              - s3:PutObject
+              - s3:PutObjectAcl
+              - s3:GetObject
+              - s3:GetObjectVersion
+            Resource: !Sub arn:aws:s3:::${ArtifactBucket}/*
+            Condition:
+              StringEquals:
+                aws:ResourceAccount: !Ref AWS::AccountId
+
+          - Effect: Allow
+            Action:
+              - codebuild:BatchGetBuilds
+              - codebuild:StartBuild
+              - codebuild:BatchGetBuildBatches
+              - codebuild:StartBuildBatch
+            Resource:
+              Fn::ImportValue:
+                Fn::Sub: ${AppName}-${Environment}-build-project-arn
+          - Effect: Allow
+            Action:
+              - codeconnections:UseConnection
+              - codestar-connections:UseConnection
+            Resource:
+              - !Ref GithubConnectionArn
+
+  ### Rolling Policy
+  RollingEcsPolicy:
+    Condition: IsRolling
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: !Sub ${AppName}-${Environment}-rolling-ecs-access
+      Roles: 
+        - !Ref CodePipelineServiceRole
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: TaskDefinitionPermissions
+            Effect: Allow
+            Action:
+              - ecs:DescribeTaskDefinition
+              - ecs:RegisterTaskDefinition
+            Resource: "*"
+
+          - Sid: ECSServicePermissions
+            Effect: Allow
+            Action:
+              - ecs:DescribeServices
+              - ecs:UpdateService
+            Resource:
+              Fn::ImportValue:
+                Fn::Sub: ${AppName}-${Environment}-ecs-service-arn
+
+          - Sid: ECSTaskDefinitionRegistration
+            Effect: Allow
+            Action:
+              - ecs:RegisterTaskDefinition
+              - ecs:TagResource
+            Resource: "*"
+            Condition:
+              StringEquals:
+                ecs:CreateAction:
+                  - RegisterTaskDefinition
+
+          - Sid: IamPassRolePermissions
+            Effect: Allow
+            Action: iam:PassRole
+            Resource:
+              Fn::ImportValue:
+                Fn::Sub: ${AppName}-${Environment}-ecs-task-executionrole-arn
+            Condition:
+              StringEquals:
+                iam:PassedToService:
+                  - ecs.amazonaws.com
+                  - ecs-tasks.amazonaws.com
+
+  ### BlueGreen Policy
+  BlueGreenPolicy:
+    Condition: IsBlueGreen
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: !Sub ${AppName}-${Environment}-codedeploy-ecs-accesss
+      Roles: 
+        - !Ref CodePipelineServiceRole
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: AllowCodeDeployDeploymentActions
+            Effect: Allow
+            Action:
+              - codedeploy:CreateDeployment
+              - codedeploy:GetDeployment
+            Resource:
+              - !Sub arn:aws:codedeploy:${AWS::Region}:${AWS::AccountId}:deploymentgroup:${AppName}-${Environment}-codedeploy-app/${AppName}-${Environment}-dg
+
+          - Sid: AllowCodeDeployApplicationActions
+            Effect: Allow
+            Action:
+              - codedeploy:GetApplication
+              - codedeploy:GetApplicationRevision
+              - codedeploy:RegisterApplicationRevision
+            Resource:
+              - !Sub arn:aws:codedeploy:${AWS::Region}:${AWS::AccountId}:application:${AppName}-${Environment}-codedeploy-app
+              - !Sub arn:aws:codedeploy:${AWS::Region}:${AWS::AccountId}:application:${AppName}-${Environment}-codedeploy-app/*
+
+          - Sid: AllowCodeDeployDeploymentConfigAccess
+            Effect: Allow
+            Action:
+              - codedeploy:GetDeploymentConfig
+            Resource: "*"
+
+          - Sid: AllowECSRegisterTaskDefinition
+            Effect: Allow
+            Action:
+              - ecs:RegisterTaskDefinition
+            Resource: "*"
+
+          - Sid: AllowPassRoleToECS
+            Effect: Allow
+            Action: iam:PassRole
+            Resource:
+              Fn::ImportValue:
+                Fn::Sub: ${AppName}-${Environment}-ecs-task-executionrole-arn
+            Condition:
+              StringEquals:
+                iam:PassedToService:
+                  - ecs.amazonaws.com
+                  - ecs-tasks.amazonaws.com
+
+Outputs:
+  CodePipelineServiceRoleArn:
+    Description: CodePipelineServiceRole Arn
+    Value: !GetAtt CodePipelineServiceRole.Arn
+    Export:
+      Name: !Sub ${AppName}-${Environment}-codepipeline-servicerole-arn

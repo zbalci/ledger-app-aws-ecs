@@ -1,0 +1,79 @@
+{
+    "containerDefinitions": [
+        {
+            "name": "_CONTAINER_NAME_",
+            "image": "_IMAGE_URI_PLACEHOLDER_",
+            "cpu": 0,
+            "links": [],
+            "portMappings": [
+                {
+                    "name": "_APP_NAME_-_ENVIRONMENT_-_CONTAINER_PORT_-tcp",
+                    "containerPort": _CONTAINER_PORT_,
+                    "hostPort": _CONTAINER_PORT_,
+                    "protocol": "tcp",
+                    "appProtocol": "http"
+                }
+            ],
+            "essential": true,
+            "entryPoint": [],
+            "command": [],
+            "environment": [
+
+            ],
+            "environmentFiles": [],
+            "mountPoints": [],
+            "volumesFrom": [],
+            "secrets": [
+                {
+                    "name": "DATABASE",
+                    "valueFrom": "arn:aws:ssm:_AWS_REGION_:_ACCOUNT_ID_:parameter/_APP_NAME_/_ENVIRONMENT_/db/database"
+                },
+                {
+                    "name": "DATABASE_HOST",
+                    "valueFrom": "arn:aws:ssm:_AWS_REGION_:_ACCOUNT_ID_:parameter/_APP_NAME_/_ENVIRONMENT_/db/host"
+                },
+                {
+                    "name": "DATABASE_HOST_PORT",
+                    "valueFrom": "arn:aws:ssm:_AWS_REGION_:_ACCOUNT_ID_:parameter/_APP_NAME_/_ENVIRONMENT_/db/port"
+                },
+                {
+                    "name": "DATABASE_USER",
+                    "valueFrom": "arn:aws:ssm:_AWS_REGION_:_ACCOUNT_ID_:parameter/_APP_NAME_/_ENVIRONMENT_/db/user"
+                },
+		        {
+		            "name": "DATABASE_PASS",
+                    "valueFrom": "_DATABASE_PASS_:password::"
+                }
+            ],
+            "dnsServers": [],
+            "dnsSearchDomains": [],
+            "extraHosts": [],
+            "dockerSecurityOptions": [],
+            "dockerLabels": {},
+            "ulimits": [],
+            "logConfiguration": {
+                "logDriver": "awslogs",
+                "options": {
+                    "awslogs-group": "/ecs/_CONTAINER_NAME_",
+                    "awslogs-create-group": "true",
+                    "awslogs-region": "_AWS_REGION_",
+                    "awslogs-stream-prefix": "ecs"
+                },
+                "secretOptions": []
+            },
+            "systemControls": [],
+            "credentialSpecs": []
+        }
+    ],
+    "family": "_TASK_DEFINITION_FAMILY_",
+    "taskRoleArn": "_TASK_EXECUTION_ROLE_",
+    "executionRoleArn": "_TASK_EXECUTION_ROLE_",
+    "networkMode": "bridge",
+    "volumes": [],
+    "placementConstraints": [],
+    "requiresCompatibilities": [
+        "EC2"
+    ],
+    "cpu": "200",
+    "memory": "150"
+}
