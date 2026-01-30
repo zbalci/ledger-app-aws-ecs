@@ -55,7 +55,7 @@ phases:
         sed -e "s|_CONTAINER_NAME_|$APP_NAME-$ENVIRONMENT|g" \
             -e "s|_CONTAINER_PORT_|$CONTAINER_PORT|g" \
             -e "s|_ENVIRONMENT_|$ENVIRONMENT|g" \
-            deployment/blue-green/appspec.yaml > appspec.yaml
+            infrastructure/cicd/blue-green/appspec.yaml > appspec.yaml
       - echo Replacing placeholders in taskdef.json
       - |
         sed -e "s|_APP_NAME_|$APP_NAME|g" \
@@ -69,7 +69,7 @@ phases:
             -e "s|_CONTAINER_PORT_|$CONTAINER_PORT|g" \
             -e "s|_IMAGE_URI_PLACEHOLDER_|$ECR_URI:$IMAGE_TAG|g" \
             -e "s|_DATABASE_PASS_|$DATABASE_PASS|g" \
-            deployment/blue-green/taskdef.json > taskdef.json
+            infrastructure/cicd/blue-green/taskdef.json > taskdef.json
 
 artifacts:
   files: 

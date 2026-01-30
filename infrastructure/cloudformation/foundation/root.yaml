@@ -1,0 +1,37 @@
+Parameters:
+  AppName:
+    Type: String
+    Default: ledger-app
+
+  Environment:
+    Type: String
+    AllowedValues:
+      - prod
+      - dev
+    Default: prod
+
+Resources:
+  AssetBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      BucketName: !Sub "${AppName}-${Environment}-${AWS::AccountId}-assets"
+
+  ArtifactBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      BucketName: !Sub "${AppName}-${Environment}-${AWS::AccountId}-artifacts"
+
+Outputs:
+  AssetBucketName:
+    Value: !Ref AssetBucket
+    Export:
+      Name: !Sub "${AppName}-${Environment}-asset-bucket"
+
+  ArtifactBucketName:
+    Value: !Ref ArtifactBucket
+    Export:
+      Name: !Sub "${AppName}-${Environment}-artifact-bucket"

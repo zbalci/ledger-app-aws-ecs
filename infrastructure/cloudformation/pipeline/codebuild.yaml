@@ -130,12 +130,7 @@ Resources:
           - Name: DATABASE_PASS
             Value:
               Fn::ImportValue: !Sub "${AppName}-${Environment}-rds-master-secret-arn"
-          # - Name: DATABASE_PASS
-          #   Type: SECRETS_MANAGER
-          #   Value: !Sub
-          #     - "${SecretArn}:password"
-          #     - SecretArn:
-          #         Fn::ImportValue: !Sub "${AppName}-${Environment}-rds-master-secret-arn"
+
       Artifacts:
         Type: CODEPIPELINE 
         Packaging: ZIP
@@ -143,8 +138,8 @@ Resources:
         Type: CODEPIPELINE
         BuildSpec: !If
           - IsRolling
-          - deployment/rolling-update/buildspec.yml
-          - deployment/blue-green/buildspec.yml
+          - infrastructure/cicd/rolling-update/buildspec.yml
+          - infrastructure/cicd/blue-green/buildspec.yml
       TimeoutInMinutes: 5
 
 Outputs:

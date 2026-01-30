@@ -1,0 +1,204 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: CodeBuild project for Lambda Pipeline
+
+Parameters:
+  AppName:
+    Type: String
+    Description: App name
+    Default: ledger-app
+
+  Environment:
+    Type: String
+    Description: Environment name
+    Default: prod
+
+  GithubConnectionArn:
+    Type: String
+    Description: Github Connection ARN
+    Default: arn:aws:codeconnections:eu-north-1:253712034003:connection/2c02ecd9-b115-4cec-967f-a0e4445ecfaa
+
+  SourceRepo:
+    Type: String
+    Description: owner/repo biçiminde GitHub repo ID'si
+    Default: zbalci/ledger-app-aws-ecs
+
+  SourceBranch:
+    Type: String
+    Default: main
+
+Resources:
+  CodeBuildLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ${AppName}-${Environment}-codebuild-role
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: codebuild.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AWSCodeBuildDeveloperAccess
+      Policies:
+        - PolicyName: AdditionalPermissions
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: "*"
+
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                  - s3:PutObject
+                Resource:
+                  - !Sub
+                      - "arn:aws:s3:::${BucketName}/*"
+                      - BucketName:
+                          Fn::ImportValue: !Sub "${AppName}-${Environment}-asset-bucket"
+                  - !Sub
+                      - "arn:aws:s3:::${BucketName}/*"
+                      - BucketName:
+                          Fn::ImportValue: !Sub "${AppName}-${Environment}-artifact-bucket"
+  CodeBuildProject:
+    Type: AWS::CodeBuild::Project
+    Properties:
+      Name: !Sub "${AppName}-${Environment}-codebuild-project"
+      ServiceRole: !GetAtt CodeBuildLambdaRole.Arn
+      Environment:
+        ComputeType: BUILD_GENERAL1_SMALL
+        Image: aws/codebuild/standard:7.0
+        Type: LINUX_CONTAINER
+        EnvironmentVariables:
+          - Name: AWS_REGION
+            Value: !Ref AWS::Region
+            Type: PLAINTEXT
+          - Name: ACCOUNT_ID
+            Value: !Ref AWS::AccountId
+            Type: PLAINTEXT
+          - Name: APP_NAME
+            Value: !Ref AppName
+            Type: PLAINTEXT
+          - Name: ENVIRONMENT
+            Value: !Ref Environment
+            Type: PLAINTEXT
+          - Name: ASSET_BUCKET
+            Value: !Sub "${AppName}-${Environment}-asset-bucket"
+      Artifacts:
+        Type: CODEPIPELINE 
+      Source:
+        Type: CODEPIPELINE
+        BuildSpec: infrastructure/cicd/lambda/buildspec.yml
+      TimeoutInMinutes: 5
+
+  ### IAM Role for CodePipeline
+  CodePipelineServiceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ${AppName}-${Environment}-codepipeline-servicerole
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: codepipeline.amazonaws.com
+            Action: sts:AssumeRole
+
+  ### Base Policy (Her iki durumda da geçerli)
+  BasePolicies:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: !Sub ${AppName}-${Environment}-codepipeline-base-policies
+      Roles:
+        - !Ref CodePipelineServiceRole
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: AllowS3BucketAccess
+            Effect: Allow
+            Action:
+              - s3:GetBucketVersioning
+              - s3:GetBucketAcl
+              - s3:GetBucketLocation
+            Resource:
+              !Sub
+                - "arn:aws:s3:::${BucketName}/*"
+                - BucketName:
+                    Fn::ImportValue: !Sub "${AppName}-${Environment}-artifact-bucket"
+            Condition:
+              StringEquals:
+                aws:ResourceAccount: !Ref AWS::AccountId
+
+          - Sid: AllowS3ObjectAccess
+            Effect: Allow
+            Action:
+              - s3:PutObject
+              - s3:PutObjectAcl
+              - s3:GetObject
+              - s3:GetObjectVersion
+            Resource:
+              !Sub
+                - "arn:aws:s3:::${BucketName}/*"
+                - BucketName:
+                    Fn::ImportValue: !Sub "${AppName}-${Environment}-artifact-bucket"
+            Condition:
+              StringEquals:
+                aws:ResourceAccount: !Ref AWS::AccountId
+
+          - Effect: Allow
+            Action:
+              - codebuild:BatchGetBuilds
+              - codebuild:StartBuild
+            Resource: !GetAtt CodeBuildProject.Arn
+          - Effect: Allow
+            Action:
+              - codeconnections:UseConnection
+              - codestar-connections:UseConnection
+            Resource:
+              - !Ref GithubConnectionArn
+
+  CodePipeline:
+    Type: AWS::CodePipeline::Pipeline
+    Properties:
+      Name: !Sub "${AppName}-${Environment}-pipeline"
+      RoleArn: !GetAtt CodePipelineServiceRole.Arn
+
+      ArtifactStore:
+        Type: S3
+        Location: 
+          Fn::ImportValue: !Sub "${AppName}-${Environment}-artifact-bucket"
+
+      Stages:
+        - Name: Source
+          Actions:
+            - Name: Source
+              ActionTypeId:
+                Category: Source
+                Owner: AWS
+                Provider: CodeStarSourceConnection
+                Version: '1'
+              Configuration:
+                ConnectionArn: !Ref GithubConnectionArn
+                FullRepositoryId: !Ref SourceRepo
+                BranchName: !Ref SourceBranch
+                DetectChanges: true
+              OutputArtifacts:
+                - Name: SourceArtifact
+
+        - Name: Build
+          Actions:
+            - Name: Build
+              ActionTypeId:
+                Category: Build
+                Owner: AWS
+                Provider: CodeBuild
+                Version: '1'
+              Configuration:
+                ProjectName: !Ref CodeBuildProject
+              InputArtifacts:
+                - Name: SourceArtifact
