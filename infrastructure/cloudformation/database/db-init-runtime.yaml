@@ -2,26 +2,27 @@ Parameters:
   AppName:
     Type: String
     Description: App name
+    Default: ledger-app
 
   Environment:
     Type: String
     Description: Environment name
-
-  CFNBucket:
-    Type: String
-    Description: S3 bucket name used by CodePipeline
+    Default: prod
 
   LambdaLayerKey:
     Type: String
     Description: S3 bucket key used by lambda layer zip
+    Default: db-init/lambda/db-init-layer.zip
 
   LambdaFunctionKey:
     Type: String
     Description: S3 bucket key used by lambda function zip
+    Default: db-init/lambda/db-init-function.zip
 
   InitSqlKey:
     Type: String
     Description: S3 bucket key used by sql db init
+    Default: db-init/sql/init.sql
 
 Resources:
   DatabaseInitFunctionRole:
@@ -43,31 +44,37 @@ Resources:
               Statement:
                 - Effect: Allow
                   Action: s3:GetObject
-                  Resource: !Sub "arn:aws:s3:::${CFNBucket}/${InitSqlKey}"
+                  Resource:
+                    Fn::Sub:
+                      - "arn:aws:s3:::${AssetBucket}/${InitSqlKey}"
+                      - AssetBucket:
+                          Fn::ImportValue: !Sub "${AppName}-${Environment}-asset-bucket"
                 - Effect: Allow
                   Action: secretsmanager:GetSecretValue
                   Resource: "*"
 
-DatabaseInitLayer:
-  Type: AWS::Lambda::LayerVersion
-  Properties:
-    LayerName: !Sub "${AppName}-${Environment}-db-init-layer"
-    CompatibleRuntimes:
-      - python3.11
-    Content:
-      S3Bucket: !Ref CFNBucket
-      S3Key: !Ref LambdaLayerKey
+  DatabaseInitLayer:
+    Type: AWS::Lambda::LayerVersion
+    Properties:
+      LayerName: !Sub "${AppName}-${Environment}-db-init-layer"
+      CompatibleRuntimes:
+        - python3.11
+      Content:
+        S3Bucket:
+          Fn::ImportValue: !Sub "${AppName}-${Environment}-asset-bucket"
+        S3Key: !Ref LambdaLayerKey
 
   DatabaseInitFunction:
     Type: AWS::Lambda::Function
     Properties:
       FunctionName: !Sub "${AppName}-${Environment}-db-init"
       Runtime: python3.11
-      Handler: lambda_function.lambda_handler
+      Handler: handler.lambda_handler
       Role: !GetAtt DatabaseInitFunctionRole.Arn
       Timeout: 300
       Code:
-        S3Bucket: !Ref CFNBucket
+        S3Bucket:
+          Fn::ImportValue: !Sub "${AppName}-${Environment}-asset-bucket"
         S3Key: !Ref LambdaFunctionKey
       Layers:
         - !Ref DatabaseInitLayer
@@ -78,7 +85,8 @@ DatabaseInitLayer:
           DB_NAME: !Sub '{{resolve:ssm:/${AppName}/${Environment}/db/database}}'
           DB_SECRET_NAME:
             Fn::ImportValue: !Sub "${AppName}-${Environment}-rds-master-secret-arn"
-          SQL_BUCKET: !Ref CFNBucket
+          SQL_BUCKET:
+            Fn::ImportValue: !Sub "${AppName}-${Environment}-asset-bucket"
           SQL_KEY: !Ref InitSqlKey
 
   DatabaseInitFunctionTrigger:

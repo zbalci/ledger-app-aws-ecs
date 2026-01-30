@@ -68,7 +68,7 @@ Resources:
       Engine: MySQL
       EngineVersion: "8.0.43"
       MasterUsername: !Ref DBUser
-      ManageMasterUserPassword: true   # 👈 kritik satır
+      ManageMasterUserPassword: true   # Create and store password in SecretManager
       VPCSecurityGroups:
         - !Ref RDSSecurityGroup
 

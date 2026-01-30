@@ -10,12 +10,20 @@ Parameters:
     Type: String
     Description: Environment name
 
+  DeploymentType:
+    Type: String
+    Description: Deployment Type (rolling or bluegreen)
+
   GithubConnectionArn:
     Type: String
     Description: Github Connection ARN
 
   ContainerPort:
     Type: Number
+
+Conditions:
+  IsRolling: !Equals [ !Ref DeploymentType, "rolling" ]
+  IsBlueGreen: !Equals [ !Ref DeploymentType, "bluegreen" ]
 
 Resources:
   CodeBuildRole:

@@ -17,17 +17,13 @@ Parameters:
 
   SourceRepo:
     Type: String
-    Description: owner/repo biçiminde GitHub repo ID'si
+    Description: owner/repo biciminde GitHub repo ID'si
 
   SourceBranch:
     Type: String
 
   ContainerPort:
     Type: Number
-
-  ArtifactBucket:
-    Type: String
-    Description: S3 bucket name used by CodePipeline
 
 Conditions:
   IsRolling: !Equals [ !Ref DeploymentType, "rolling" ]
@@ -42,9 +38,7 @@ Resources:
         AppName: !Ref AppName
         Environment: !Ref Environment
         DeploymentType: !Ref DeploymentType
-        SourceRepo: !Ref SourceRepo
         GithubConnectionArn: !Ref GithubConnectionArn
-        ArtifactBucket: !Ref ArtifactBucket
         ContainerPort: !Ref ContainerPort
 
   CodePipelineServiceRole:
@@ -56,7 +50,6 @@ Resources:
       Parameters:
         AppName: !Ref AppName
         Environment: !Ref Environment
-        ArtifactBucket: !Ref ArtifactBucket
         GithubConnectionArn: !Ref GithubConnectionArn
         DeploymentType: !Ref DeploymentType
 
@@ -72,6 +65,5 @@ Resources:
         DeploymentType: !Ref DeploymentType
         SourceRepo: !Ref SourceRepo
         SourceBranch: !Ref SourceBranch
-        ArtifactBucket: !Ref ArtifactBucket
         GithubConnectionArn: !Ref GithubConnectionArn
         ContainerPort: !Ref ContainerPort

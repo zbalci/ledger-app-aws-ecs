@@ -26,10 +26,6 @@ Parameters:
     Type: String
     Default: main
 
-  ArtifactBucket:
-    Type: String
-    Description: S3 bucket name used by CodePipeline
-
   ContainerPort:
     Type: Number
 
@@ -108,7 +104,8 @@ Resources:
           Fn::Sub: ${AppName}-${Environment}-codepipeline-servicerole-arn
       ArtifactStore:
         Type: S3
-        Location: !Ref ArtifactBucket
+        Location: 
+          Fn::ImportValue: !Sub "${AppName}-${Environment}-artifact-bucket"
       Stages:
         - Name: Source
           Actions:

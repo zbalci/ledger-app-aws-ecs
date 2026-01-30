@@ -10,10 +10,6 @@ Parameters:
     Type: String
     Description: Environment name
 
-  ArtifactBucket:
-    Type: String
-    Description: S3 bucket name used by CodePipeline
-
   GithubConnectionArn:
     Type: String
     Description: Github Connection ARN
@@ -56,7 +52,11 @@ Resources:
               - s3:GetBucketVersioning
               - s3:GetBucketAcl
               - s3:GetBucketLocation
-            Resource: !Sub arn:aws:s3:::${ArtifactBucket}
+            Resource:
+              Fn::Sub:
+                - "arn:aws:s3:::${ArtifactBucket}"
+                - ArtifactBucket:
+                    Fn::ImportValue: !Sub "${AppName}-${Environment}-artifact-bucket"
             Condition:
               StringEquals:
                 aws:ResourceAccount: !Ref AWS::AccountId
@@ -68,7 +68,11 @@ Resources:
               - s3:PutObjectAcl
               - s3:GetObject
               - s3:GetObjectVersion
-            Resource: !Sub arn:aws:s3:::${ArtifactBucket}/*
+            Resource:
+              Fn::Sub:
+                - "arn:aws:s3:::${ArtifactBucket}/*"
+                - ArtifactBucket:
+                    Fn::ImportValue: !Sub "${AppName}-${Environment}-artifact-bucket"
             Condition:
               StringEquals:
                 aws:ResourceAccount: !Ref AWS::AccountId
