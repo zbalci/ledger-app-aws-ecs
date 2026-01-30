@@ -12,15 +12,20 @@ Parameters:
     Description: S3 bucket name used for CFN template and deployment files
     Default: ledger-app-aws-iac
 
-  LambdaKey:
+  LambdaLayerKey:
     Type: String
-    Description: S3 bucket key used by lambda function
-    Default: lambda/database-init-lambda.zip
+    Description: S3 bucket key used by lambda layer zip
+    Default: db-init/lambda/db-init-layer.zip
 
-  SqlKey:
+  LambdaFunctionKey:
+    Type: String
+    Description: S3 bucket key used by lambda function zip
+    Default: db-init/lambda/db-init-function.zip
+
+  InitSqlKey:
     Type: String
     Description: S3 bucket key used by sql db init
-    Default: sql/init.sql
+    Default: db-init/sql/init.sql
 
   DBName:
     Type: String
@@ -54,10 +59,11 @@ Resources:
     DependsOn:
       - RdsStack
     Properties:
-      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/database/rds_db_init.yaml
+      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/database/db-init-runtime.yaml
       Parameters:
         AppName: !Ref AppName
         Environment: !Ref Environment
         CFNBucket: !Ref CFNBucket
-        SqlKey: !Ref SqlKey
-        LambdaKey: !Ref LambdaKey
+        LambdaLayerKey: !Ref LambdaLayerKey
+        LambdaFunctionKey: !Ref LambdaFunctionKey
+        InitSqlKey: !Ref InitSqlKey

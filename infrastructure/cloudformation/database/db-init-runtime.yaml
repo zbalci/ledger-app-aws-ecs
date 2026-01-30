@@ -11,50 +11,66 @@ Parameters:
     Type: String
     Description: S3 bucket name used by CodePipeline
 
-  LambdaKey:
+  LambdaLayerKey:
     Type: String
-    Description: S3 bucket key used by lambda function
+    Description: S3 bucket key used by lambda layer zip
 
-  SqlKey:
+  LambdaFunctionKey:
+    Type: String
+    Description: S3 bucket key used by lambda function zip
+
+  InitSqlKey:
     Type: String
     Description: S3 bucket key used by sql db init
 
 Resources:
-  DatabaseInitLambdaRole:
-    Type: AWS::IAM::Role
-    Properties:
-      AssumeRolePolicyDocument:
-        Version: "2012-10-17"
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service: lambda.amazonaws.com
-            Action: sts:AssumeRole
-      ManagedPolicyArns:
-        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
-      Policies:
-        - PolicyName: DatabaseInitAccess
-          PolicyDocument:
-            Version: "2012-10-17"
-            Statement:
-              - Effect: Allow
-                Action: s3:GetObject
-                Resource: !Sub "arn:aws:s3:::${CFNBucket}/${SqlKey}"
-              - Effect: Allow
-                Action: secretsmanager:GetSecretValue
-                Resource: "*"
+  DatabaseInitFunctionRole:
+      Type: AWS::IAM::Role
+      Properties:
+        AssumeRolePolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Effect: Allow
+              Principal:
+                Service: lambda.amazonaws.com
+              Action: sts:AssumeRole
+        ManagedPolicyArns:
+          - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+        Policies:
+          - PolicyName: DatabaseInitAccess
+            PolicyDocument:
+              Version: "2012-10-17"
+              Statement:
+                - Effect: Allow
+                  Action: s3:GetObject
+                  Resource: !Sub "arn:aws:s3:::${CFNBucket}/${InitSqlKey}"
+                - Effect: Allow
+                  Action: secretsmanager:GetSecretValue
+                  Resource: "*"
 
-  DatabaseInitLambda:
+DatabaseInitLayer:
+  Type: AWS::Lambda::LayerVersion
+  Properties:
+    LayerName: !Sub "${AppName}-${Environment}-db-init-layer"
+    CompatibleRuntimes:
+      - python3.11
+    Content:
+      S3Bucket: !Ref CFNBucket
+      S3Key: !Ref LambdaLayerKey
+
+  DatabaseInitFunction:
     Type: AWS::Lambda::Function
     Properties:
       FunctionName: !Sub "${AppName}-${Environment}-db-init"
       Runtime: python3.11
       Handler: lambda_function.lambda_handler
-      Role: !GetAtt DatabaseInitLambdaRole.Arn
+      Role: !GetAtt DatabaseInitFunctionRole.Arn
       Timeout: 300
       Code:
         S3Bucket: !Ref CFNBucket
-        S3Key: !Ref LambdaKey
+        S3Key: !Ref LambdaFunctionKey
+      Layers:
+        - !Ref DatabaseInitLayer
       Environment:
         Variables:
           DB_HOST: !Sub '{{resolve:ssm:/${AppName}/${Environment}/db/host}}'
@@ -63,9 +79,9 @@ Resources:
           DB_SECRET_NAME:
             Fn::ImportValue: !Sub "${AppName}-${Environment}-rds-master-secret-arn"
           SQL_BUCKET: !Ref CFNBucket
-          SQL_KEY: !Ref SqlKey
+          SQL_KEY: !Ref InitSqlKey
 
-  DatabaseInitTrigger:
+  DatabaseInitFunctionTrigger:
     Type: Custom::DatabaseInitDatabase
     Properties:
-      ServiceToken: !GetAtt DatabaseInitLambda.Arn
+      ServiceToken: !GetAtt DatabaseInitFunction.Arn

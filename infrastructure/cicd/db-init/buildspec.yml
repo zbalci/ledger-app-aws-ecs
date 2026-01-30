@@ -10,25 +10,27 @@ phases:
   build:
     commands:
       - echo "=== Packaging Lambda Function ==="
-      - cd infrastructure/assets/lambda
-      - zip function.zip handler.py
+      - cd infrastructure/assets/db-init/lambda
+      - zip db-init-function.zip handler.py
       - cd -
 
       - echo "=== Building Lambda Layer ==="
       - mkdir -p layer_build/python/lib/python3.11/site-packages
-      - pip install -r infrastructure/assets/lambda/requirements.txt -t layer_build/python/lib/python3.11/site-packages
+      - pip install -r infrastructure/assets/db-init/lambda/requirements.txt -t layer_build/python/lib/python3.11/site-packages
       - cd layer_build
-      - zip -r ../database-init-layer.zip python
+      - zip -r ../db-init-layer.zip python
       - cd -
 
   post_build:
     commands:
       - echo "=== Uploading Artifacts ==="
-      - aws s3 cp infrastructure/assets/lambda/function.zip s3://$ASSET_BUCKET/lambda/function.zip
+      - aws s3 cp infrastructure/assets/db-init/lambda/db-init-function.zip s3://$ASSET_BUCKET/db-init/lambda/db-init-function.zip
 
-      - aws s3 cp database-init-layer.zip s3://$ASSET_BUCKET/lambda/database-init-layer.zip
+      - aws s3 cp db-init-layer.zip s3://$ASSET_BUCKET/db-init/lambda/db-init-layer.zip
+
+      - aws s3 cp infrastructure/assets/db-init/sql/init.sql s3://$ASSET_BUCKET/db-init/sql/init.sql
 
 artifacts:
   files:
-    - infrastructure/assets/lambda/function.zip
-    - database-init-layer.zip
+    - infrastructure/assets/db-init/lambda/db-init-function.zip
+    - db-init-layer.zip

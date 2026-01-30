@@ -12,5 +12,4 @@ aws cloudformation create-stack \
   --capabilities CAPABILITY_IAM \
   --capabilities CAPABILITY_NAMED_IAM
 
-
-aws cloudformation update-stack --stack-name codebuild-lambda --template-body file://web-image-build.yaml --capabilities CAPABILITY_IAM --capabilities CAPABILITY_NAMED_IAM
+aws cloudformation create-stack --stack-name db-init-lambda-build --template-body file://infrastructure/cloudformation/pipeline/db-init.yaml --capabilities CAPABILITY_IAM --capabilities CAPABILITY_NAMED_IAM
