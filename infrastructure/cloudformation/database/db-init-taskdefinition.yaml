@@ -9,11 +9,16 @@ Parameters:
     Type: String
     Description: Environment name
 
+  BuildPurpose:
+    Type: String
+    Description: logical purpose of produced artifact
+    Default: db-init
+
 Resources:
   TaskExecutionRole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: !Sub ${AppName}-${Environment}-task-execution-role
+      RoleName: !Sub ${AppName}-${Environment}-${BuildPurpose}-task-execution-role
       AssumeRolePolicyDocument:
         Version: '2012-10-17'
         Statement:
@@ -43,11 +48,22 @@ Resources:
                 Action:
                   - kms:Decrypt
                 Resource: '*'
-
+        - PolicyName: S3Access
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                Resource:
+                  - !Sub
+                      - "arn:aws:s3:::${BucketName}/*"
+                      - BucketName:
+                          Fn::ImportValue: !Sub "${AppName}-${Environment}-asset-bucket-name"
   TaskDefinition:
     Type: AWS::ECS::TaskDefinition
     Properties:
-      Family: !Sub ${AppName}-${Environment}
+      Family: !Sub ${AppName}-${Environment}-${BuildPurpose}
       Cpu: '200'
       Memory: '150'
       NetworkMode: bridge
@@ -56,8 +72,12 @@ Resources:
       ExecutionRoleArn: !Ref TaskExecutionRole
       TaskRoleArn: !Ref TaskExecutionRole
       ContainerDefinitions:
-        - Name: !Sub ${AppName}-${Environment}
-          Image: mysql:8.0
+        - Name: !Sub ${AppName}-${Environment}-${BuildPurpose}
+          Image: 
+            Fn::Sub:
+              - "${ECR_URI}/${BuildPurpose}:latest"
+              - ECR_URI:
+                  Fn::ImportValue: !Sub ${AppName}-${Environment}-ecr-uri
           Command:
             - /bin/sh
             - '-c'

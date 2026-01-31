@@ -23,7 +23,6 @@ Parameters:
 
 Conditions:
   IsRolling: !Equals [ !Ref DeploymentType, "rolling" ]
-  IsBlueGreen: !Equals [ !Ref DeploymentType, "bluegreen" ]
 
 Resources:
   CodeBuildRole:

@@ -59,18 +59,6 @@ Resources:
           Fn::ImportValue: !Sub "${AppName}-${Environment}-asset-bucket-name"
         S3Key: !Ref LambdaLayerKey
 
-  # DatabaseInitSecurityGroup:
-  #   Type: AWS::EC2::SecurityGroup
-  #   Properties:
-  #     GroupDescription: Lambda SG
-  #     VpcId: !Ref VPC
-  #     SecurityGroupIngress: []
-  #     SecurityGroupEgress:
-  #       - IpProtocol: -1
-  #         FromPort: 0
-  #         ToPort: 0
-  #         CidrIp: 0.0.0.0/0
-
   DatabaseInitFunction:
     Type: AWS::Lambda::Function
     Properties:
@@ -95,15 +83,6 @@ Resources:
           SQL_BUCKET:
             Fn::ImportValue: !Sub "${AppName}-${Environment}-asset-bucket-name"
           SQL_KEY: !Ref InitSqlKey
-      # PubliclyAccessible: false
-      # VpcConfig:
-      #   SubnetIds:
-      #     - Fn::ImportValue:
-      #         Fn::Sub: ${AppName}-${Environment}-public-subnet1-id
-      #     - Fn::ImportValue:
-      #         Fn::Sub: ${AppName}-${Environment}-public-subnet2-id
-      #   SecurityGroupIds:
-      #     - !Ref DatabaseInitSecurityGroup
 
   DatabaseInitFunctionTrigger:
     Type: Custom::DatabaseInitDatabase

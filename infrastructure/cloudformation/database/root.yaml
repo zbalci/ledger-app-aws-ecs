@@ -7,32 +7,6 @@ Parameters:
     Type: String
     Description: Environment name
 
-  GithubConnectionArn:
-    Type: String
-    Description: Github Connection ARN
-
-  SourceRepo:
-    Type: String
-    Description: owner/repo biçiminde GitHub repo ID'si
-
-  SourceBranch:
-    Type: String
-
-  LambdaLayerKey:
-    Type: String
-    Description: S3 bucket key used by lambda layer zip
-    Default: db-init/lambda/db-init-layer.zip
-
-  LambdaFunctionKey:
-    Type: String
-    Description: S3 bucket key used by lambda function zip
-    Default: db-init/lambda/db-init-function.zip
-
-  InitSqlKey:
-    Type: String
-    Description: S3 bucket key used by sql db init
-    Default: db-init/sql/init.sql
-
   DBName:
     Type: String
     Description: Database Name
@@ -59,33 +33,3 @@ Resources:
         DBName: !Ref DBName
         DBUser: !Ref DBUser
         DBPort: !Ref DBPort
-
-  RdsDbInitBuild:
-    Type: AWS::CloudFormation::Stack
-    DependsOn:
-      - RdsInstanceStack
-    Properties:
-      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/database/pipeline/db-init.yaml
-      Parameters:
-        AppName: !Ref AppName
-        Environment: !Ref Environment
-        GithubConnectionArn: !Ref GithubConnectionArn
-        SourceRepo: !Ref SourceRepo
-        SourceBranch: !Ref SourceBranch
-        LambdaLayerKey: !Ref LambdaLayerKey
-        LambdaFunctionKey: !Ref LambdaFunctionKey
-        InitSqlKey: !Ref InitSqlKey
-
-  RdsDbInitRuntime:
-    Type: AWS::CloudFormation::Stack
-    DependsOn:
-      - RdsInstanceStack
-      - RdsDbInitBuild
-    Properties:
-      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/database/db-init-runtime.yaml
-      Parameters:
-        AppName: !Ref AppName
-        Environment: !Ref Environment
-        LambdaLayerKey: !Ref LambdaLayerKey
-        LambdaFunctionKey: !Ref LambdaFunctionKey
-        InitSqlKey: !Ref InitSqlKey
