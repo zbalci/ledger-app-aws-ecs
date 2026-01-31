@@ -9,7 +9,8 @@ phases:
     commands:
       - echo Logging in to Amazon ECR...
       - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin "$ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com"
-
+      - ls -lh
+      - pwd
   build:
     commands:
       - echo Build Docker image...
