@@ -1,8 +1,5 @@
-FROM amazonlinux:2023
+FROM alpine:3.19
 
-RUN dnf install -y \
-    mysql \
-    awscli \
- && dnf clean all
+RUN apk add --no-cache mysql-client aws-cli
 
 ENTRYPOINT ["/bin/sh","-c"]
