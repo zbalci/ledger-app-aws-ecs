@@ -105,7 +105,7 @@ Resources:
       ArtifactStore:
         Type: S3
         Location: 
-          Fn::ImportValue: !Sub "${AppName}-${Environment}-artifact-bucket"
+          Fn::ImportValue: !Sub "${AppName}-${Environment}-artifact-bucket-name"
       Stages:
         - Name: Source
           Actions:

@@ -29,9 +29,9 @@ Outputs:
   AssetBucketName:
     Value: !Ref AssetBucket
     Export:
-      Name: !Sub "${AppName}-${Environment}-asset-bucket"
+      Name: !Sub "${AppName}-${Environment}-asset-bucket-name"
 
   ArtifactBucketName:
     Value: !Ref ArtifactBucket
     Export:
-      Name: !Sub "${AppName}-${Environment}-artifact-bucket"
+      Name: !Sub "${AppName}-${Environment}-artifact-bucket-name"

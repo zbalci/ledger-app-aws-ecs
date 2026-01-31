@@ -60,11 +60,11 @@ Resources:
                   - !Sub
                       - "arn:aws:s3:::${BucketName}/*"
                       - BucketName:
-                          Fn::ImportValue: !Sub "${AppName}-${Environment}-asset-bucket"
+                          Fn::ImportValue: !Sub "${AppName}-${Environment}-asset-bucket-name"
                   - !Sub
                       - "arn:aws:s3:::${BucketName}/*"
                       - BucketName:
-                          Fn::ImportValue: !Sub "${AppName}-${Environment}-artifact-bucket"
+                          Fn::ImportValue: !Sub "${AppName}-${Environment}-artifact-bucket-name"
   CodeBuildProject:
     Type: AWS::CodeBuild::Project
     Properties:
@@ -89,12 +89,12 @@ Resources:
             Type: PLAINTEXT
           - Name: ASSET_BUCKET
             Value:
-              Fn::ImportValue: !Sub "${AppName}-${Environment}-asset-bucket"
+              Fn::ImportValue: !Sub "${AppName}-${Environment}-asset-bucket-name"
       Artifacts:
         Type: CODEPIPELINE 
       Source:
         Type: CODEPIPELINE
-        BuildSpec: infrastructure/cicd/db-init/buildspec.yml
+        BuildSpec: infrastructure/cicd/db-init/lambda/buildspec.yml
       TimeoutInMinutes: 5
 
   ### IAM Role for CodePipeline
@@ -129,7 +129,7 @@ Resources:
               !Sub
                 - "arn:aws:s3:::${BucketName}/*"
                 - BucketName:
-                    Fn::ImportValue: !Sub "${AppName}-${Environment}-artifact-bucket"
+                    Fn::ImportValue: !Sub "${AppName}-${Environment}-artifact-bucket-name"
             Condition:
               StringEquals:
                 aws:ResourceAccount: !Ref AWS::AccountId
@@ -145,7 +145,7 @@ Resources:
               !Sub
                 - "arn:aws:s3:::${BucketName}/*"
                 - BucketName:
-                    Fn::ImportValue: !Sub "${AppName}-${Environment}-artifact-bucket"
+                    Fn::ImportValue: !Sub "${AppName}-${Environment}-artifact-bucket-name"
             Condition:
               StringEquals:
                 aws:ResourceAccount: !Ref AWS::AccountId
@@ -171,7 +171,7 @@ Resources:
       ArtifactStore:
         Type: S3
         Location: 
-          Fn::ImportValue: !Sub "${AppName}-${Environment}-artifact-bucket"
+          Fn::ImportValue: !Sub "${AppName}-${Environment}-artifact-bucket-name"
 
       Stages:
         - Name: Source
