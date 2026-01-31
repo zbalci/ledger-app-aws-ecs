@@ -13,7 +13,7 @@ phases:
   build:
     commands:
       - echo Build Docker image...
-      - docker build -f infrastructure/assets/db-init/ecs/Dockerfile
+      - docker build -t $REPO_NAME -f infrastructure/assets/db-init/ecs/Dockerfile
       - docker tag $REPO_NAME:$IMAGE_TAGtest $ECR_URI:$BUILD_PURPOSE/$IMAGE_TAG
 
   post_build:
