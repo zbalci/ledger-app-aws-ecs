@@ -19,7 +19,7 @@ Parameters:
     AllowedValues:
       - bluegreen
       - rolling
-    Default: rolling
+    Default: bluegreen
 
   GithubConnectionArn:
     Type: String
@@ -103,20 +103,23 @@ Resources:
         AppName: !Ref AppName
         Environment: !Ref Environment
 
-  # DatabaseStack:
-  #   Type: AWS::CloudFormation::Stack
-  #   Properties:
-  #     TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/database/root.yaml
-  #     Tags:
-  #       - Key: Application
-  #         Value: !Ref AppName
-  #       - Key: Environment
-  #         Value: !Ref Environment
-  #       - Key: ManagedBy
-  #         Value: CloudFormation
-  #     Parameters:
-  #       AppName: !Ref AppName
-  #       Environment: !Ref Environment
+  DatabaseStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/database/root.yaml
+      Tags:
+        - Key: Application
+          Value: !Ref AppName
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: ManagedBy
+          Value: CloudFormation
+      Parameters:
+        AppName: !Ref AppName
+        Environment: !Ref Environment
+        GithubConnectionArn: !Ref GithubConnectionArn
+        SourceRepo: !Ref SourceRepo
+        SourceBranch: !Ref SourceBranch
 
   EcsStack:
     Type: AWS::CloudFormation::Stack
@@ -124,7 +127,7 @@ Resources:
       - NetworkStack
       - LoadbalanceStack
       - RegistryStack
-      # - DatabaseStack
+      - DatabaseStack
     Properties:
       TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/ecs/root.yaml
       Tags:
@@ -146,7 +149,7 @@ Resources:
       - NetworkStack
       - LoadbalanceStack
       - RegistryStack
-      # - DatabaseStack
+      - DatabaseStack
       - EcsStack
     Properties:
       TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/pipeline/root.yaml

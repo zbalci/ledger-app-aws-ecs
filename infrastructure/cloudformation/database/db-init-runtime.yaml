@@ -2,27 +2,22 @@ Parameters:
   AppName:
     Type: String
     Description: App name
-    Default: ledger-app
 
   Environment:
     Type: String
     Description: Environment name
-    Default: prod
 
   LambdaLayerKey:
     Type: String
     Description: S3 bucket key used by lambda layer zip
-    Default: db-init/lambda/db-init-layer.zip
 
   LambdaFunctionKey:
     Type: String
     Description: S3 bucket key used by lambda function zip
-    Default: db-init/lambda/db-init-function.zip
 
   InitSqlKey:
     Type: String
     Description: S3 bucket key used by sql db init
-    Default: db-init/sql/init.sql
 
 Resources:
   DatabaseInitFunctionRole:
@@ -64,6 +59,18 @@ Resources:
           Fn::ImportValue: !Sub "${AppName}-${Environment}-asset-bucket"
         S3Key: !Ref LambdaLayerKey
 
+  # DatabaseInitSecurityGroup:
+  #   Type: AWS::EC2::SecurityGroup
+  #   Properties:
+  #     GroupDescription: Lambda SG
+  #     VpcId: !Ref VPC
+  #     SecurityGroupIngress: []
+  #     SecurityGroupEgress:
+  #       - IpProtocol: -1
+  #         FromPort: 0
+  #         ToPort: 0
+  #         CidrIp: 0.0.0.0/0
+
   DatabaseInitFunction:
     Type: AWS::Lambda::Function
     Properties:
@@ -88,6 +95,15 @@ Resources:
           SQL_BUCKET:
             Fn::ImportValue: !Sub "${AppName}-${Environment}-asset-bucket"
           SQL_KEY: !Ref InitSqlKey
+      # PubliclyAccessible: false
+      # VpcConfig:
+      #   SubnetIds:
+      #     - Fn::ImportValue:
+      #         Fn::Sub: ${AppName}-${Environment}-public-subnet1-id
+      #     - Fn::ImportValue:
+      #         Fn::Sub: ${AppName}-${Environment}-public-subnet2-id
+      #   SecurityGroupIds:
+      #     - !Ref DatabaseInitSecurityGroup
 
   DatabaseInitFunctionTrigger:
     Type: Custom::DatabaseInitDatabase

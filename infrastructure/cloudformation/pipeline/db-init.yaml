@@ -5,26 +5,21 @@ Parameters:
   AppName:
     Type: String
     Description: App name
-    Default: ledger-app
 
   Environment:
     Type: String
     Description: Environment name
-    Default: prod
 
   GithubConnectionArn:
     Type: String
     Description: Github Connection ARN
-    Default: arn:aws:codeconnections:eu-north-1:253712034003:connection/2c02ecd9-b115-4cec-967f-a0e4445ecfaa
 
   SourceRepo:
     Type: String
     Description: owner/repo biçiminde GitHub repo ID'si
-    Default: zbalci/ledger-app-aws-ecs
 
   SourceBranch:
     Type: String
-    Default: main
 
   BuildPurpose:
     Type: String

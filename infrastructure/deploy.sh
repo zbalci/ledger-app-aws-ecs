@@ -6,7 +6,7 @@ aws cloudformation create-stack \
   --capabilities CAPABILITY_NAMED_IAM
 
 aws cloudformation create-stack \
-  --stack-name ledger-prod-root \
+  --stack-name ledger-app-prod-root \
   --template-url https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/root.yaml \
   --disable-rollback \
   --capabilities CAPABILITY_IAM \
