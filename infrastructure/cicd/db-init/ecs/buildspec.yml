@@ -11,6 +11,7 @@ phases:
       - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin "$ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com"
       - ls -lh
       - pwd
+      - cat infrastructure/assets/db-init/ecs/Dockerfile
   build:
     commands:
       - echo Build Docker image...
