@@ -44,22 +44,13 @@ Resources:
       Type: String
       Value: !Ref DBUser
  
-  RDSSecurityGroup:
-    Type: AWS::EC2::SecurityGroup
+  RDSSubnetGroup:
+    Type: AWS::RDS::DBSubnetGroup
     Properties:
-      GroupDescription: RDS Security Group
-      GroupName: !Sub "${AppName}-${Environment}-rds-sg"
-      VpcId: "vpc-04e9c5aee75bef483"
-      SecurityGroupIngress:
-        - IpProtocol: tcp
-          FromPort: !Ref DBPort
-          ToPort: !Ref DBPort
-          CidrIp: 0.0.0.0/0
-      SecurityGroupEgress:
-        - IpProtocol: -1
-          FromPort: 0
-          ToPort: 0
-          CidrIp: 0.0.0.0/0
+      DBSubnetGroupDescription: Subnet group for RDS
+      SubnetIds:
+        - Fn::ImportValue: !Sub ${AppName}-${Environment}-private-subnet1-id
+        - Fn::ImportValue: !Sub ${AppName}-${Environment}-private-subnet2-id
 
   RDSInstance:
     Type: AWS::RDS::DBInstance
@@ -72,8 +63,10 @@ Resources:
       EngineVersion: "8.0.43"
       MasterUsername: !Ref DBUser
       ManageMasterUserPassword: true   # Create and store password in SecretManager
+      PubliclyAccessible: false
+      DBSubnetGroupName: !Ref RDSSubnetGroup
       VPCSecurityGroups:
-        - !Ref RDSSecurityGroup
+        - Fn::ImportValue: !Sub "${AppName}-${Environment}-rds-sg-id"
 
   DBHostParam:
     Type: AWS::SSM::Parameter

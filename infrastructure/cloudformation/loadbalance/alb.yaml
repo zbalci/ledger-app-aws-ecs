@@ -29,29 +29,6 @@ Conditions:
 
 Resources:
 
-  ALBSecurityGroup:
-    Type: AWS::EC2::SecurityGroup
-    Properties:
-      GroupDescription: Allow HTTP inbound and all outbound
-      GroupName: !Sub "${AppName}-${Environment}-alb-sg"
-      VpcId:
-        Fn::ImportValue:
-          Fn::Sub: ${AppName}-${Environment}-vpc-id
-      SecurityGroupIngress:
-        - IpProtocol: tcp
-          FromPort: !Ref ListenerPort
-          ToPort: !Ref ListenerPort
-          CidrIp: 0.0.0.0/0
-        - IpProtocol: tcp
-          FromPort: !Ref TestListenerPort
-          ToPort: !Ref TestListenerPort
-          CidrIp: 0.0.0.0/0
-      SecurityGroupEgress:
-        - IpProtocol: -1
-          FromPort: 0
-          ToPort: 0
-          CidrIp: 0.0.0.0/0
-
   ALB:
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
     Properties:
@@ -62,7 +39,7 @@ Resources:
         - Fn::ImportValue:
             Fn::Sub: ${AppName}-${Environment}-public-subnet2-id
       SecurityGroups:
-        - !Ref ALBSecurityGroup
+        - Fn::ImportValue: !Sub ${AppName}-${Environment}-alb-sg-id
       Scheme: internet-facing
       Type: application
       IpAddressType: ipv4

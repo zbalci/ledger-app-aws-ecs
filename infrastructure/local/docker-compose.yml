@@ -3,7 +3,7 @@ version: "3.9"
 services:
   db:
     build:
-      context: ../../services/database
+      context: ./database
       dockerfile: Dockerfile
     image: ledger-app-db:local
     container_name: ledger-db
@@ -21,7 +21,7 @@ services:
 
   web:
     build:
-      context: ../../services/web
+      context: ../../src/web
       dockerfile: Dockerfile
     image: ledger-app-web:local
     container_name: ledger-web

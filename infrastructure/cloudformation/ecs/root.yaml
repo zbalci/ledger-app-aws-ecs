@@ -49,7 +49,6 @@ Resources:
         InstanceType: !Ref InstanceType
         KeyName: !Ref KeyName
         AmiId: !Ref AmiId
-        ContainerPort: !Ref ContainerPort
 
   EcsServiceStack:
     Type: AWS::CloudFormation::Stack

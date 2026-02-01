@@ -19,7 +19,7 @@ Parameters:
     AllowedValues:
       - bluegreen
       - rolling
-    Default: bluegreen
+    Default: rolling
 
   GithubConnectionArn:
     Type: String
@@ -47,6 +47,11 @@ Parameters:
     Type: Number
     Default: 8080
 
+  DBPort:
+    Type: String
+    Description: Database port
+    Default: 3306
+
 Resources:
   NetworkStack:
     Type: AWS::CloudFormation::Stack
@@ -63,10 +68,32 @@ Resources:
         AppName: !Ref AppName
         Environment: !Ref Environment
 
+  SecurityStack:
+    Type: AWS::CloudFormation::Stack
+    DependsOn:
+      - NetworkStack
+    Properties:
+      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/security/securitygroups.yaml
+      Tags:
+        - Key: Application
+          Value: !Ref AppName
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: ManagedBy
+          Value: CloudFormation
+      Parameters:
+        AppName: !Ref AppName
+        Environment: !Ref Environment
+        ContainerPort: !Ref ContainerPort
+        ListenerPort: !Ref ListenerPort
+        TestListenerPort: !Ref TestListenerPort
+        DBPort: !Ref DBPort
+  
   LoadbalanceStack:
     Type: AWS::CloudFormation::Stack
     DependsOn:
       - NetworkStack
+      - SecurityStack
     Properties:
       TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/loadbalance/alb.yaml
       Tags:
@@ -101,6 +128,8 @@ Resources:
 
   DatabaseStack:
     Type: AWS::CloudFormation::Stack
+    DependsOn: 
+      - SecurityStack
     Properties:
       TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/database/rds.yaml
       Tags:
@@ -118,6 +147,7 @@ Resources:
     Type: AWS::CloudFormation::Stack
     DependsOn:
       - NetworkStack
+      - SecurityStack
       - LoadbalanceStack
       - RegistryStack
       - DatabaseStack
@@ -163,8 +193,8 @@ Resources:
       - NetworkStack
       - LoadbalanceStack
       - RegistryStack
-      - DatabaseStack
       - EcsStack
+      - DatabaseStack
       - DatabaseInitStack
     Properties:
       TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/pipeline/root.yaml

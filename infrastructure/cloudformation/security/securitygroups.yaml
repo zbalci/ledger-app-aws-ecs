@@ -1,0 +1,96 @@
+Parameters:
+  AppName:
+    Type: String
+    Description: App name
+
+  Environment:
+    Type: String
+    Description: Environment name
+
+  ContainerPort:
+    Type: Number
+
+  ListenerPort:
+    Type: Number
+
+  TestListenerPort:
+    Type: Number
+
+  DBPort:
+    Type: String
+    Description: Database port
+
+Resources:
+  ALBSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allow HTTP inbound and all outbound
+      GroupName: !Sub "${AppName}-${Environment}-alb-sg"
+      VpcId:
+        Fn::ImportValue:
+          Fn::Sub: ${AppName}-${Environment}-vpc-id
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: !Ref ListenerPort
+          ToPort: !Ref ListenerPort
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: !Ref TestListenerPort
+          ToPort: !Ref TestListenerPort
+          CidrIp: 0.0.0.0/0
+      SecurityGroupEgress:
+        - IpProtocol: -1
+          CidrIp: 0.0.0.0/0
+
+  ContainerHostSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: ECS container host security group
+      GroupName: !Sub "${AppName}-${Environment}-ecs-sg"
+      VpcId:
+        Fn::ImportValue:
+          Fn::Sub: ${AppName}-${Environment}-vpc-id
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: !Ref ContainerPort
+          ToPort: !Ref ContainerPort
+          SourceSecurityGroupId: !GetAtt ALBSecurityGroup.GroupId
+      SecurityGroupEgress:
+        - IpProtocol: -1 # DNS (UDP 53) name resolution
+          CidrIp: 0.0.0.0/0
+
+  RDSSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: RDS Security Group
+      GroupName: !Sub "${AppName}-${Environment}-rds-sg"
+      VpcId:
+        Fn::ImportValue:
+          Fn::Sub: ${AppName}-${Environment}-vpc-id
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: !Ref DBPort
+          ToPort: !Ref DBPort
+          SourceSecurityGroupId: !GetAtt ContainerHostSecurityGroup.GroupId
+      SecurityGroupEgress:
+        - IpProtocol: -1
+          CidrIp: 0.0.0.0/0
+
+Outputs:
+  ALBSecurityGroupId:
+    Description: ALB Security Group Id
+    Value: !GetAtt ALBSecurityGroup.GroupId
+    Export:
+      Name: !Sub ${AppName}-${Environment}-alb-sg-id
+
+  ContainerHostSecurityGroupId:
+    Description: Container Host Security Group Id
+    Value: !GetAtt ContainerHostSecurityGroup.GroupId
+    Export:
+      Name: !Sub "${AppName}-${Environment}-ecs-sg-id"
+
+  RDSSecurityGroupId:
+    Description: RDS Security Group Id
+    Value: !GetAtt RDSSecurityGroup.GroupId
+    Export:
+      Name: !Sub "${AppName}-${Environment}-rds-sg-id"

@@ -22,11 +22,7 @@ Parameters:
     Type: AWS::EC2::Image::Id
     Description: ECS-uyumlu AMI ID
 
-  ContainerPort:
-    Type: Number
-
 Resources:
-
   ECSCluster:
     Type: AWS::ECS::Cluster
     Properties:
@@ -34,25 +30,6 @@ Resources:
       ClusterSettings:
         - Name: containerInsights
           Value: enabled
-
-  ContainerHostSecurityGroup:
-    Type: AWS::EC2::SecurityGroup
-    Properties:
-      GroupDescription: ECS container host security group
-      GroupName: !Sub "${AppName}-${Environment}-ecs-sg"
-      VpcId:
-        Fn::ImportValue:
-          Fn::Sub: ${AppName}-${Environment}-vpc-id
-      SecurityGroupIngress:
-        - IpProtocol: tcp
-          FromPort: !Ref ContainerPort
-          ToPort: !Ref ContainerPort
-          CidrIp: 0.0.0.0/0
-      SecurityGroupEgress:
-        - IpProtocol: -1
-          FromPort: 0
-          ToPort: 0
-          CidrIp: 0.0.0.0/0
 
   EC2Role:
     Type: AWS::IAM::Role
@@ -89,7 +66,7 @@ Resources:
         IamInstanceProfile:
           Name: !Ref EC2InstanceProfile
         SecurityGroupIds:
-          - !Ref ContainerHostSecurityGroup
+          - Fn::ImportValue: !Sub "${AppName}-${Environment}-ecs-sg-id"
         UserData:
           Fn::Base64: !Sub |
             #!/bin/bash -xe

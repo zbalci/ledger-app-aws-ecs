@@ -29,15 +29,15 @@ phases:
 
       # ---------- STATIC ANALYSIS ----------
       - echo "Running Dockerfile static analysis (Hadolint)..."
-      - hadolint services/web/Dockerfile || echo "Hadolint warnings detected"
+      - hadolint src/web/Dockerfile || echo "Hadolint warnings detected"
 
       - echo "Running Python security scan (Bandit)..."
-      - bandit -r services/web/ -lll || echo "Bandit warnings detected"
+      - bandit -r src/web/ -lll || echo "Bandit warnings detected"
 
   build:
     commands:
       - echo Build Docker image...
-      - docker build -t $REPO_NAME services/web/
+      - docker build -t $REPO_NAME src/web/
       - docker tag $REPO_NAME:latest $ECR_URI:$IMAGE_TAG
 
       # ---------- IMAGE SECURITY SCAN ----------

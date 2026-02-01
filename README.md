@@ -11,7 +11,7 @@ The application consists of a small Python web service backed by a SQL database.
 assets/        Runtime artifacts
 cicd/          Build & deploy logic
 cloudformation Infrastructure as Code
-services/      Application source
+src/      Application source
 
 ---
 
