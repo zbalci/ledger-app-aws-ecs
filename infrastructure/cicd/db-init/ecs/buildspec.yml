@@ -14,7 +14,6 @@ phases:
     commands:
       - echo Build Docker image...
       - docker build -t $REPO_NAME -f infrastructure/assets/db-init/ecs/Dockerfile infrastructure/assets/db-init/ecs
-      # - docker tag $REPO_NAME/$BUILD_PURPOSE:$IMAGE_TAG $ECR_URI/$BUILD_PURPOSE:$IMAGE_TAG
       - docker tag $REPO_NAME:latest $ECR_URI:$IMAGE_TAG
 
   post_build:
@@ -22,8 +21,6 @@ phases:
       - echo Pushing the Docker image to Amazon ECR...
       - docker push $ECR_URI:$IMAGE_TAG
 
-  post_build:
-    commands:
       - echo Running DB init task
       - echo "Cluster=$ECS_CLUSTER"
       - echo "TaskDef=$TASK_DEFINITION"

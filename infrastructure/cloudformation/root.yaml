@@ -87,7 +87,7 @@ Resources:
   RegistryStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/registry/ecr.yaml
+      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/registry/root.yaml
       Tags:
         - Key: Application
           Value: !Ref AppName
@@ -102,7 +102,7 @@ Resources:
   DatabaseStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/database/root.yaml
+      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/database/rds.yaml
       Tags:
         - Key: Application
           Value: !Ref AppName
@@ -136,28 +136,50 @@ Resources:
         DeploymentType: !Ref DeploymentType
         ContainerPort: !Ref ContainerPort
 
-  # CodePipelineStack:
-  #   Type: AWS::CloudFormation::Stack
-  #   DependsOn:
-  #     - NetworkStack
-  #     - LoadbalanceStack
-  #     - RegistryStack
-  #     - DatabaseStack
-  #     - EcsStack
-  #   Properties:
-  #     TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/pipeline/root.yaml
-  #     Tags:
-  #       - Key: Application
-  #         Value: !Ref AppName
-  #       - Key: Environment
-  #         Value: !Ref Environment
-  #       - Key: ManagedBy
-  #         Value: CloudFormation
-  #     Parameters:
-  #       AppName: !Ref AppName
-  #       Environment: !Ref Environment
-  #       DeploymentType: !Ref DeploymentType
-  #       SourceRepo: !Ref SourceRepo
-  #       SourceBranch: !Ref SourceBranch
-  #       GithubConnectionArn: !Ref GithubConnectionArn
-  #       ContainerPort: !Ref ContainerPort
+  DatabaseInitStack:
+    Type: AWS::CloudFormation::Stack
+    DependsOn:
+      - DatabaseStack
+      - EcsStack
+    Properties:
+      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/database-init/root.yaml
+      Tags:
+        - Key: Application
+          Value: !Ref AppName
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: ManagedBy
+          Value: CloudFormation
+      Parameters:
+        AppName: !Ref AppName
+        Environment: !Ref Environment
+        GithubConnectionArn: !Ref GithubConnectionArn
+        SourceRepo: !Ref SourceRepo
+        SourceBranch: !Ref SourceBranch
+
+  CodePipelineStack:
+    Type: AWS::CloudFormation::Stack
+    DependsOn:
+      - NetworkStack
+      - LoadbalanceStack
+      - RegistryStack
+      - DatabaseStack
+      - EcsStack
+      - DatabaseInitStack
+    Properties:
+      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/pipeline/root.yaml
+      Tags:
+        - Key: Application
+          Value: !Ref AppName
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: ManagedBy
+          Value: CloudFormation
+      Parameters:
+        AppName: !Ref AppName
+        Environment: !Ref Environment
+        DeploymentType: !Ref DeploymentType
+        SourceRepo: !Ref SourceRepo
+        SourceBranch: !Ref SourceBranch
+        GithubConnectionArn: !Ref GithubConnectionArn
+        ContainerPort: !Ref ContainerPort

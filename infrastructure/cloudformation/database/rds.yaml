@@ -10,14 +10,17 @@ Parameters:
   DBName:
     Type: String
     Description: Database Name
+    Default: ledger
 
   DBUser:
     Type: String
     Description: Database User Name
+    Default: ledger
 
   DBPort:
     Type: String
     Description: Database User Name
+    Default: 3306
 
 Resources:
   DBNameSSMParam:
