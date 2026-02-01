@@ -92,6 +92,10 @@ Resources:
               Fn::ImportValue:
                 Fn::Sub: ${AppName}-${Environment}-${BuildPurpose}-ecr-uri
             Type: PLAINTEXT
+          - Name: ECS_CLUSTER
+            Value: !Sub "${AppName}-${Environment}-ecs-cluster"
+          - Name: TASK_DEFINITION
+            Value: !Sub ${AppName}-${Environment}-${BuildPurpose}
       Artifacts:
         Type: CODEPIPELINE 
       Source:

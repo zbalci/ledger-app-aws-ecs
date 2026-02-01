@@ -117,10 +117,6 @@ Resources:
               Value:
                 Fn::ImportValue:
                   Fn::Sub: "${AppName}-${Environment}-asset-bucket-name"
-            - Name: ECS_CLUSTER
-              Value: !Sub "${AppName}-${Environment}-ecs-cluster"
-            - Name: TASK_DEFINITION
-              Value: !Sub ${AppName}-${Environment}-${BuildPurpose}
           Secrets:
             - Name: DATABASE
               ValueFrom: !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${AppName}/${Environment}/db/database
