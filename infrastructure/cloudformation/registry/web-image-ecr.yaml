@@ -1,0 +1,53 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: ECR Repository Template
+
+Parameters:
+  AppName:
+    Type: String
+    Description: App name
+
+  Environment:
+    Type: String
+    Description: Environment name
+
+Resources:
+  ECRRepository:
+    Type: AWS::ECR::Repository
+    Properties:
+      RepositoryName: !Sub "${AppName}/${Environment}"
+      ImageTagMutability: MUTABLE
+      LifecyclePolicy:
+        LifecyclePolicyText: |
+          {
+            "rules": [
+              {
+                "rulePriority": 1,
+                "description": "Expire untagged images after 30 days",
+                "selection": {
+                  "tagStatus": "untagged",
+                  "countType": "sinceImagePushed",
+                  "countUnit": "days",
+                  "countNumber": 30
+                },
+                "action": {
+                  "type": "expire"
+                }
+              }
+            ]
+          }
+
+  # Custom Resource to Trigger Lambda on Delete
+  ECRImageCleaner:
+    Type: Custom::DeleteECRImages
+    Properties:
+      ServiceToken:
+        Fn::ImportValue: !Sub ${AppName}-${Environment}-ecr-image-delete-function
+      RepositoryName: !Ref ECRRepository
+      AccountId: !Ref AWS::AccountId
+
+Outputs:
+  RepositoryUri:
+    Description: "ECR repository URI"
+    Value: !GetAtt ECRRepository.RepositoryUri
+    Export:
+      Name: !Sub ${AppName}-${Environment}-ecr-uri

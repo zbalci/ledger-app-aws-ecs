@@ -1,0 +1,30 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: ECR Repository Stack Template
+
+Parameters:
+  AppName:
+    Type: String
+    Description: App name
+
+  Environment:
+    Type: String
+    Description: Environment name
+
+Resources:
+  ECRImageCleanerStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/registry/ecr_image_cleaner.yaml
+      Parameters:
+        AppName: !Ref AppName
+        Environment: !Ref Environment
+
+  ECRStack:
+    Type: AWS::CloudFormation::Stack
+    DependsOn:
+      - ECRImageCleanerStack
+    Properties:
+      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/registry/web-image-ecr.yaml
+      Parameters:
+        AppName: !Ref AppName
+        Environment: !Ref Environment

@@ -1,0 +1,59 @@
+Parameters:
+  AppName:
+    Type: String
+    Description: App name
+
+  Environment:
+    Type: String
+    Description: Environment name
+
+  GithubConnectionArn:
+    Type: String
+    Description: Github Connection ARN
+
+  SourceRepo:
+    Type: String
+    Description: owner/repo biçiminde GitHub repo ID'si
+    
+  SourceBranch:
+    Type: String
+
+  BuildPurpose:
+    Type: String
+    Description: logical purpose of produced artifact
+    Default: db-init
+
+Resources:
+  DBInitECRStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/database-init/db-init-ecr.yaml
+      Parameters:
+        AppName: !Ref AppName
+        Environment: !Ref Environment
+        BuildPurpose: !Ref BuildPurpose
+
+  DBInitTaskDefStack:
+    Type: AWS::CloudFormation::Stack
+    DependsOn:
+      - DBInitECRStack
+    Properties:
+      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/database-init/db-init-taskdefinition.yaml
+      Parameters:
+        AppName: !Ref AppName
+        Environment: !Ref Environment
+        BuildPurpose: !Ref BuildPurpose
+
+  DBInitPipelineStack:
+    Type: AWS::CloudFormation::Stack
+    DependsOn:
+      - DBInitTaskDefStack
+    Properties:
+      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/database-init/db-init-pipeline.yaml
+      Parameters:
+        AppName: !Ref AppName
+        Environment: !Ref Environment
+        GithubConnectionArn: !Ref GithubConnectionArn
+        SourceRepo: !Ref SourceRepo
+        SourceBranch: !Ref SourceBranch
+        BuildPurpose: !Ref BuildPurpose
