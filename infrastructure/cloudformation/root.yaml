@@ -48,41 +48,41 @@ Parameters:
     Default: 8080
 
 Resources:
-  # NetworkStack:
-  #   Type: AWS::CloudFormation::Stack
-  #   Properties:
-  #     TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/network/vpc.yaml
-  #     Tags:
-  #       - Key: Application
-  #         Value: !Ref AppName
-  #       - Key: Environment
-  #         Value: !Ref Environment
-  #       - Key: ManagedBy
-  #         Value: CloudFormation
-  #     Parameters:
-  #       AppName: !Ref AppName
-  #       Environment: !Ref Environment
+  NetworkStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/network/vpc.yaml
+      Tags:
+        - Key: Application
+          Value: !Ref AppName
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: ManagedBy
+          Value: CloudFormation
+      Parameters:
+        AppName: !Ref AppName
+        Environment: !Ref Environment
 
-  # LoadbalanceStack:
-  #   Type: AWS::CloudFormation::Stack
-  #   DependsOn:
-  #     - NetworkStack
-  #   Properties:
-  #     TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/loadbalance/alb.yaml
-  #     Tags:
-  #       - Key: Application
-  #         Value: !Ref AppName
-  #       - Key: Environment
-  #         Value: !Ref Environment
-  #       - Key: ManagedBy
-  #         Value: CloudFormation
-  #     Parameters:
-  #       AppName: !Ref AppName
-  #       Environment: !Ref Environment
-  #       DeploymentType: !Ref DeploymentType
-  #       ContainerPort: !Ref ContainerPort
-  #       ListenerPort: !Ref ListenerPort
-  #       TestListenerPort: !Ref TestListenerPort
+  LoadbalanceStack:
+    Type: AWS::CloudFormation::Stack
+    DependsOn:
+      - NetworkStack
+    Properties:
+      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/loadbalance/alb.yaml
+      Tags:
+        - Key: Application
+          Value: !Ref AppName
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: ManagedBy
+          Value: CloudFormation
+      Parameters:
+        AppName: !Ref AppName
+        Environment: !Ref Environment
+        DeploymentType: !Ref DeploymentType
+        ContainerPort: !Ref ContainerPort
+        ListenerPort: !Ref ListenerPort
+        TestListenerPort: !Ref TestListenerPort
 
   RegistryStack:
     Type: AWS::CloudFormation::Stack
@@ -99,45 +99,42 @@ Resources:
         AppName: !Ref AppName
         Environment: !Ref Environment
 
-  # DatabaseStack:
-  #   Type: AWS::CloudFormation::Stack
-  #   Properties:
-  #     TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/database/root.yaml
-  #     Tags:
-  #       - Key: Application
-  #         Value: !Ref AppName
-  #       - Key: Environment
-  #         Value: !Ref Environment
-  #       - Key: ManagedBy
-  #         Value: CloudFormation
-  #     Parameters:
-  #       AppName: !Ref AppName
-  #       Environment: !Ref Environment
-  #       GithubConnectionArn: !Ref GithubConnectionArn
-  #       SourceRepo: !Ref SourceRepo
-  #       SourceBranch: !Ref SourceBranch
+  DatabaseStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/database/root.yaml
+      Tags:
+        - Key: Application
+          Value: !Ref AppName
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: ManagedBy
+          Value: CloudFormation
+      Parameters:
+        AppName: !Ref AppName
+        Environment: !Ref Environment
 
-  # EcsStack:
-  #   Type: AWS::CloudFormation::Stack
-  #   DependsOn:
-  #     - NetworkStack
-  #     - LoadbalanceStack
-  #     - RegistryStack
-  #     - DatabaseStack
-  #   Properties:
-  #     TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/ecs/root.yaml
-  #     Tags:
-  #       - Key: Application
-  #         Value: !Ref AppName
-  #       - Key: Environment
-  #         Value: !Ref Environment
-  #       - Key: ManagedBy
-  #         Value: CloudFormation
-  #     Parameters:
-  #       AppName: !Ref AppName
-  #       Environment: !Ref Environment
-  #       DeploymentType: !Ref DeploymentType
-  #       ContainerPort: !Ref ContainerPort
+  EcsStack:
+    Type: AWS::CloudFormation::Stack
+    DependsOn:
+      - NetworkStack
+      - LoadbalanceStack
+      - RegistryStack
+      - DatabaseStack
+    Properties:
+      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/ecs/root.yaml
+      Tags:
+        - Key: Application
+          Value: !Ref AppName
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: ManagedBy
+          Value: CloudFormation
+      Parameters:
+        AppName: !Ref AppName
+        Environment: !Ref Environment
+        DeploymentType: !Ref DeploymentType
+        ContainerPort: !Ref ContainerPort
 
   # CodePipelineStack:
   #   Type: AWS::CloudFormation::Stack

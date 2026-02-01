@@ -4,11 +4,11 @@ Parameters:
   AppName:
     Type: String
     Description: App name
-
+    Default: ledger-app
   Environment:
     Type: String
     Description: Environment name
-
+    Default: prod
   BuildPurpose:
     Type: String
     Description: logical purpose of produced artifact
@@ -74,27 +74,54 @@ Resources:
       ContainerDefinitions:
         - Name: !Sub ${AppName}-${Environment}-${BuildPurpose}
           Image: 
-            Fn::Sub:
-              - "${ECR_URI}/${BuildPurpose}:latest"
-              - ECR_URI:
-                  Fn::ImportValue: !Sub ${AppName}-${Environment}-ecr-uri
+            Fn::ImportValue: !Sub ${AppName}-${Environment}-${BuildPurpose}-ecr-uri
           Command:
-            - /bin/sh
-            - '-c'
             - |
-              aws s3 cp s3://$ASSET_BUCKET/db-init/sql/init.sql /tmp/init.sql && \
-              until mysql -h $DATABASE_HOST -u $DATABASE_USER -p$DATABASE_PASS -e "select 1"; do
-                sleep 5;
-              done && \
-              mysql -h $DATABASE_HOST -u $DATABASE_USER -p$DATABASE_PASS $DATABASE < /tmp/init.sql
+              set -e
+
+              echo "==== DB INIT START ===="
+
+              echo "Downloading SQL file from S3..."
+              aws s3 cp s3://$ASSET_BUCKET/db-init/sql/init.sql /tmp/init.sql
+              echo "SQL file downloaded"
+
+              echo "Waiting for database to be reachable..."
+              until mysql -h "$DATABASE_HOST" -u "$DATABASE_USER" -p"$DATABASE_PASS" -e "select 1"; do
+                echo "DB not ready yet..."
+                sleep 5
+              done
+
+              echo "DB is reachable"
+
+              echo "Running SQL file..."
+              mysql -h "$DATABASE_HOST" \
+                    -u "$DATABASE_USER" \
+                    -p"$DATABASE_PASS" \
+                    "$DATABASE" < /tmp/init.sql
+
+              echo "SQL execution finished"
+
+              echo "Listing tables:"
+              mysql -h "$DATABASE_HOST" \
+                    -u "$DATABASE_USER" \
+                    -p"$DATABASE_PASS" \
+                    "$DATABASE" \
+                    -e "SHOW TABLES;"
+
+              echo "==== DB INIT END ===="
 
           Cpu: 0
           Essential: true
-          Secrets:
+          Environment:
             - Name: ASSET_BUCKET
-              ValueFrom:
+              Value:
                 Fn::ImportValue:
                   Fn::Sub: "${AppName}-${Environment}-asset-bucket-name"
+            - Name: ECS_CLUSTER
+              Value: !Sub "${AppName}-${Environment}-ecs-cluster"
+            - Name: TASK_DEFINITION
+              Value: !Sub ${AppName}-${Environment}-${BuildPurpose}
+          Secrets:
             - Name: DATABASE
               ValueFrom: !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${AppName}/${Environment}/db/database
             - Name: DATABASE_HOST

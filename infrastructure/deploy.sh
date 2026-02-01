@@ -15,3 +15,9 @@ aws cloudformation create-stack \
 aws cloudformation create-stack --stack-name db-init-lambda-build --template-body file://infrastructure/cloudformation/pipeline/db-init.yaml --capabilities CAPABILITY_IAM --capabilities CAPABILITY_NAMED_IAM
 
 aws cloudformation create-stack --stack-name db-init-lambda-runtime --template-body file://infrastructure/cloudformation/database/db-init-runtime.yaml --capabilities CAPABILITY_IAM --capabilities CAPABILITY_NAMED_IAM
+
+
+ledger-app-prod-db-init-ecr-uri
+
+
+create log group: /ecs/ledger-app-prod

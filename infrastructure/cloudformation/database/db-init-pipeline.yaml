@@ -90,7 +90,7 @@ Resources:
           - Name: ECR_URI
             Value: 
               Fn::ImportValue:
-                Fn::Sub: ${AppName}-${Environment}-ecr-uri
+                Fn::Sub: ${AppName}-${Environment}-${BuildPurpose}-ecr-uri
             Type: PLAINTEXT
       Artifacts:
         Type: CODEPIPELINE 
