@@ -25,9 +25,4 @@ phases:
   post_build:
     commands:
       - echo Running DB init task
-      - echo Cluster -> $ECS_CLUSTER
-      - echo TASK_DEFINITION -> $TASK_DEFINITION
-      - aws ecs run-task \
-          --cluster $ECS_CLUSTER \
-          --task-definition $TASK_DEFINITION \
-          --launch-type EC2
+      - aws ecs run-task --cluster $ECS_CLUSTER --task-definition $TASK_DEFINITION --launch-type EC2
