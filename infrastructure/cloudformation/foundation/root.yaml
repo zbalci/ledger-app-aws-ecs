@@ -11,6 +11,12 @@ Parameters:
     Default: prod
 
 Resources:
+  EcsLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/ecs/${AppName}-${Environment}"
+      RetentionInDays: 7
+
   AssetBucket:
     Type: AWS::S3::Bucket
     DeletionPolicy: Retain

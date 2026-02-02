@@ -1,4 +1,4 @@
-aws cloudformation create-stack \
+aws cloudformation update-stack \
   --stack-name ledger-prod-foundation \
   --template-url https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/foundation/root.yaml \
   --disable-rollback \
