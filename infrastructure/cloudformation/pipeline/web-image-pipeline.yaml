@@ -26,9 +26,6 @@ Parameters:
     Type: String
     Default: main
 
-  ContainerPort:
-    Type: Number
-
 Conditions:
   IsRolling: !Equals [ !Ref DeploymentType, "rolling" ]
   IsBlueGreen: !Equals [ !Ref DeploymentType, "bluegreen" ]
