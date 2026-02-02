@@ -51,10 +51,15 @@ Resources:
                   - logs:PutLogEvents
                 Resource: !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/ecs/${AppName}-${Environment}:*"
 
+              # Auth token (zorunlu *)
+              - Effect: Allow
+                Action:
+                  - ecr:GetAuthorizationToken
+                Resource: "*"
+
               - Sid: AllowECRAccess
                 Effect: Allow
                 Action:
-                  - ecr:GetAuthorizationToken
                   - ecr:BatchCheckLayerAvailability
                   - ecr:GetDownloadUrlForLayer
                   - ecr:InitiateLayerUpload
@@ -62,7 +67,7 @@ Resources:
                   - ecr:CompleteLayerUpload
                   - ecr:BatchGetImage
                   - ecr:PutImage
-                Resource: "*"
+                Resource: !Sub "arn:aws:ecr:${AWS::Region}:${AWS::AccountId}:repository/${AppName}-${Environment}*"
 
               - Sid: AllowS3Access
                 Effect: Allow
@@ -95,6 +100,11 @@ Resources:
     Properties:
       Name: !Sub "${AppName}-${Environment}-build-project"
       ServiceRole: !GetAtt CodeBuildRole.Arn
+      LogsConfig:
+        CloudWatchLogs:
+          Status: ENABLED
+          GroupName: !Sub "/ecs/${AppName}-${Environment}"
+          StreamName: "codebuild-web-image"
       Environment:
         ComputeType: BUILD_GENERAL1_SMALL
         Image: aws/codebuild/standard:7.0

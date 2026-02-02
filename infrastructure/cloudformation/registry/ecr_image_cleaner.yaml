@@ -31,11 +31,7 @@ Resources:
                 Action:
                   - ecr:ListImages
                   - ecr:BatchDeleteImage
-                Resource:
-                  - Fn::ImportValue:
-                      Fn::Sub: ${AppName}-${Environment}-web-image-ecr-arn
-                  - Fn::ImportValue:
-                      Fn::Sub: ${AppName}-${Environment}-db-init-ecr-arn
+                Resource: !Sub "arn:aws:ecr:${AWS::Region}:${AWS::AccountId}:repository/${AppName}-${Environment}*"
               
               - Effect: Allow
                 Action:

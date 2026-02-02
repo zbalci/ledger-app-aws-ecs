@@ -62,4 +62,3 @@ Resources:
         SourceRepo: !Ref SourceRepo
         SourceBranch: !Ref SourceBranch
         GithubConnectionArn: !Ref GithubConnectionArn
-        ContainerPort: !Ref ContainerPort
