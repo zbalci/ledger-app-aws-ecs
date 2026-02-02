@@ -18,11 +18,6 @@ Parameters:
   SourceBranch:
     Type: String
 
-  BuildPurpose:
-    Type: String
-    Description: logical purpose of produced artifact
-    Default: db-init
-
 Resources:
   DBInitECRStack:
     Type: AWS::CloudFormation::Stack
@@ -31,7 +26,6 @@ Resources:
       Parameters:
         AppName: !Ref AppName
         Environment: !Ref Environment
-        BuildPurpose: !Ref BuildPurpose
 
   DBInitTaskDefStack:
     Type: AWS::CloudFormation::Stack
@@ -42,7 +36,6 @@ Resources:
       Parameters:
         AppName: !Ref AppName
         Environment: !Ref Environment
-        BuildPurpose: !Ref BuildPurpose
 
   DBInitPipelineStack:
     Type: AWS::CloudFormation::Stack
@@ -56,4 +49,3 @@ Resources:
         GithubConnectionArn: !Ref GithubConnectionArn
         SourceRepo: !Ref SourceRepo
         SourceBranch: !Ref SourceBranch
-        BuildPurpose: !Ref BuildPurpose

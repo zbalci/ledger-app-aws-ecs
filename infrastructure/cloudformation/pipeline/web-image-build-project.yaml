@@ -101,13 +101,13 @@ Resources:
             Type: PLAINTEXT
 
           - Name: REPO_NAME
-            Value: !Sub "${AppName}/${Environment}"
+            Value: !Sub "${AppName}-${Environment}-web-image"
             Type: PLAINTEXT
 
           - Name: ECR_URI
             Value: 
               Fn::ImportValue:
-                Fn::Sub: ${AppName}-${Environment}-ecr-uri
+                Fn::Sub: ${AppName}-${Environment}-web-image-ecr-uri
             Type: PLAINTEXT
 
           - Name: TASK_DEFINITION_ARN

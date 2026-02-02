@@ -14,7 +14,7 @@ Resources:
   ECRRepository:
     Type: AWS::ECR::Repository
     Properties:
-      RepositoryName: !Sub "${AppName}/${Environment}"
+      RepositoryName: !Sub "${AppName}-${Environment}-web-image"
       ImageTagMutability: MUTABLE
       LifecyclePolicy:
         LifecyclePolicyText: |
@@ -50,4 +50,10 @@ Outputs:
     Description: "ECR repository URI"
     Value: !GetAtt ECRRepository.RepositoryUri
     Export:
-      Name: !Sub ${AppName}-${Environment}-ecr-uri
+      Name: !Sub ${AppName}-${Environment}-web-image-ecr-uri
+
+  RepositoryArn:
+    Description: "ECR repository Arn"
+    Value: !GetAtt ECRRepository.Arn
+    Export:
+      Name: !Sub ${AppName}-${Environment}-web-image-ecr-arn

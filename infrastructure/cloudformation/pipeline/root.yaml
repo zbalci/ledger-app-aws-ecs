@@ -25,10 +25,6 @@ Parameters:
   ContainerPort:
     Type: Number
 
-Conditions:
-  IsRolling: !Equals [ !Ref DeploymentType, "rolling" ]
-  IsBlueGreen: !Equals [ !Ref DeploymentType, "bluegreen" ]
-
 Resources:
   CodeBuildStack:
     Type: AWS::CloudFormation::Stack

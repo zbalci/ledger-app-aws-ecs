@@ -31,13 +31,17 @@ Resources:
                 Action:
                   - ecr:ListImages
                   - ecr:BatchDeleteImage
-                Resource: "*"
+                Resource:
+                  - Fn::ImportValue:
+                      Fn::Sub: ${AppName}-${Environment}-web-image-ecr-arn
+                  - Fn::ImportValue:
+                      Fn::Sub: ${AppName}-${Environment}-db-init-ecr-arn                
               - Effect: Allow
                 Action:
                   - logs:CreateLogGroup
                   - logs:CreateLogStream
                   - logs:PutLogEvents
-                Resource: "*"
+                Resource: !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/ecs/${AppName}-${Environment}:*"
 
   # 2. Lambda Function
   DeleteECRImagesFunction:

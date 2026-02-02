@@ -7,15 +7,12 @@ Parameters:
   Environment:
     Type: String
     Description: Environment name
-  BuildPurpose:
-    Type: String
-    Description: logical purpose of produced artifact
 
 Resources:
   TaskExecutionRole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: !Sub ${AppName}-${Environment}-${BuildPurpose}-task-execution-role
+      RoleName: !Sub ${AppName}-${Environment}-db-init-task-execution-role
       AssumeRolePolicyDocument:
         Version: '2012-10-17'
         Statement:
@@ -61,7 +58,7 @@ Resources:
   TaskDefinition:
     Type: AWS::ECS::TaskDefinition
     Properties:
-      Family: !Sub ${AppName}-${Environment}-${BuildPurpose}
+      Family: !Sub ${AppName}-${Environment}-db-init
       Cpu: '200'
       Memory: '150'
       NetworkMode: bridge
@@ -70,9 +67,9 @@ Resources:
       ExecutionRoleArn: !Ref TaskExecutionRole
       TaskRoleArn: !Ref TaskExecutionRole
       ContainerDefinitions:
-        - Name: !Sub ${AppName}-${Environment}-${BuildPurpose}
+        - Name: !Sub ${AppName}-${Environment}-db-init
           Image: 
-            Fn::ImportValue: !Sub ${AppName}-${Environment}-${BuildPurpose}-ecr-uri
+            Fn::ImportValue: !Sub ${AppName}-${Environment}-db-init-ecr-uri
           Command:
             - |
               set -e

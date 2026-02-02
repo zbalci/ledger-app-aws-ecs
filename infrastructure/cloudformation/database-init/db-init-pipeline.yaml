@@ -21,15 +21,11 @@ Parameters:
   SourceBranch:
     Type: String
 
-  BuildPurpose:
-    Type: String
-    Description: logical purpose of produced artifact
-
 Resources:
   CodeBuildRole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: !Sub ${AppName}-${Environment}-${BuildPurpose}-build-role
+      RoleName: !Sub ${AppName}-${Environment}-db-init-build-role
       AssumeRolePolicyDocument:
         Version: '2012-10-17'
         Statement:
@@ -72,7 +68,7 @@ Resources:
   CodeBuildProject:
     Type: AWS::CodeBuild::Project
     Properties:
-      Name: !Sub "${AppName}-${Environment}-${BuildPurpose}-build-project"
+      Name: !Sub "${AppName}-${Environment}-db-init-build-project"
       ServiceRole: !GetAtt CodeBuildRole.Arn
       Environment:
         ComputeType: BUILD_GENERAL1_SMALL
@@ -87,20 +83,20 @@ Resources:
             Value: !Ref AWS::AccountId
             Type: PLAINTEXT
           - Name: REPO_NAME
-            Value: !Sub "${BuildPurpose}/${Environment}"
+            Value: !Sub "${AppName}-${Environment}-db-init"
             Type: PLAINTEXT
           - Name: BUILD_PURPOSE
-            Value: !Ref BuildPurpose
+            Value: db-init
             Type: PLAINTEXT
           - Name: ECR_URI
             Value: 
               Fn::ImportValue:
-                Fn::Sub: ${AppName}-${Environment}-${BuildPurpose}-ecr-uri
+                Fn::Sub: ${AppName}-${Environment}-db-init-ecr-uri
             Type: PLAINTEXT
           - Name: ECS_CLUSTER
             Value: !Sub "${AppName}-${Environment}-ecs-cluster"
           - Name: TASK_DEFINITION
-            Value: !Sub ${AppName}-${Environment}-${BuildPurpose}
+            Value: !Sub ${AppName}-${Environment}-db-init
       Artifacts:
         Type: CODEPIPELINE 
       Source:
@@ -112,7 +108,7 @@ Resources:
   CodePipelineRole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: !Sub ${AppName}-${Environment}-${BuildPurpose}-pipeline-role
+      RoleName: !Sub ${AppName}-${Environment}-db-init-pipeline-role
       AssumeRolePolicyDocument:
         Version: "2012-10-17"
         Statement:
@@ -124,7 +120,7 @@ Resources:
   CodePipelinePolicy:
     Type: AWS::IAM::Policy
     Properties:
-      PolicyName: !Sub ${AppName}-${Environment}-${BuildPurpose}-pipeline-policy
+      PolicyName: !Sub ${AppName}-${Environment}-db-init-pipeline-policy
       Roles:
         - !Ref CodePipelineRole
       PolicyDocument:
@@ -176,7 +172,7 @@ Resources:
   CodePipeline:
     Type: AWS::CodePipeline::Pipeline
     Properties:
-      Name: !Sub "${AppName}-${Environment}-${BuildPurpose}-pipeline"
+      Name: !Sub "${AppName}-${Environment}-db-init-pipeline"
       RoleArn: !GetAtt CodePipelineRole.Arn
 
       ArtifactStore:

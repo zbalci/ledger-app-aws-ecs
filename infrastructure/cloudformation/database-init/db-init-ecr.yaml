@@ -7,15 +7,11 @@ Parameters:
     Type: String
     Description: Environment name
 
-  BuildPurpose:
-    Type: String
-    Description: logical purpose of produced artifact
-
 Resources:
   ECRRepository:
     Type: AWS::ECR::Repository
     Properties:
-      RepositoryName: !Sub "${BuildPurpose}/${Environment}"
+      RepositoryName: !Sub "${AppName}-${Environment}-db-init"
       ImageTagMutability: MUTABLE
       LifecyclePolicy:
         LifecyclePolicyText: |
@@ -51,4 +47,10 @@ Outputs:
     Description: "ECR repository URI"
     Value: !GetAtt ECRRepository.RepositoryUri
     Export:
-      Name: !Sub ${AppName}-${Environment}-${BuildPurpose}-ecr-uri
+      Name: !Sub ${AppName}-${Environment}-db-init-ecr-uri
+
+  RepositoryArn:
+    Description: "ECR repository Arn"
+    Value: !GetAtt ECRRepository.Arn
+    Export:
+      Name: !Sub ${AppName}-${Environment}-db-init-ecr-arn
