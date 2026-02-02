@@ -48,11 +48,10 @@ Resources:
                   - logs:PutLogEvents
                 Resource: !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/${AppName}-${Environment}/codebuild:*"
 
-              # Auth token (zorunlu *)
               - Effect: Allow
                 Action:
                   - ecr:GetAuthorizationToken
-                Resource: "*"
+                Resource: "*" # Auth token (zorunlu *)
 
               - Sid: AllowECRAccess
                 Effect: Allow
@@ -72,14 +71,19 @@ Resources:
                 Action:
                   - ecs:RunTask
                   - ecs:DescribeTasks
-                Resource: "*"
-
+                Resource:
+                  - !Sub "arn:aws:ecs:${AWS::Region}:${AWS::AccountId}:task-definition/${AppName}-${Environment}-db-init:*"
+                  - !Sub "arn:aws:ecs:${AWS::Region}:${AWS::AccountId}:cluster/${AppName}-${Environment}-ecs-cluster"
               - Sid: AllowS3Access
                 Effect: Allow
                 Action:
                   - s3:PutObject
                   - s3:GetObject
-                Resource: "*"
+                Resource:
+                  - !Sub
+                      - "arn:aws:s3:::${BucketName}/*"
+                      - BucketName:
+                          Fn::ImportValue: !Sub "${AppName}-${Environment}-asset-bucket-name"
 
               - Sid: AllowSecretManagerAccess
                 Effect: Allow
@@ -203,7 +207,7 @@ Resources:
           - Sid: GitHubConnectionAccess
             Effect: Allow
             Action:
-              - codeconnections:UseConnection
+              - codestar-connections:UseConnection
             Resource:
               - !Ref GithubConnectionArn
 

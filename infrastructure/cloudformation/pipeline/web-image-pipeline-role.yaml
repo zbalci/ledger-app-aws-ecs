@@ -90,7 +90,7 @@ Resources:
           - Sid: GitHubConnectionAccess
             Effect: Allow
             Action:
-              - codeconnections:UseConnection
+              - codestar-connections:UseConnection
             Resource:
               - !Ref GithubConnectionArn
 
@@ -105,12 +105,12 @@ Resources:
       PolicyDocument:
         Version: "2012-10-17"
         Statement:
-          - Sid: TaskDefinitionPermissions
+          - Sid: DescribeTaskDefinition
             Effect: Allow
             Action:
               - ecs:DescribeTaskDefinition
-              - ecs:RegisterTaskDefinition
-            Resource: "*"
+            Resource:
+              - !Sub "arn:aws:ecs:${AWS::Region}:${AWS::AccountId}:task-definition/${AppName}-${Environment}-*"
 
           - Sid: ECSServicePermissions
             Effect: Allow
@@ -121,7 +121,7 @@ Resources:
               Fn::ImportValue:
                 Fn::Sub: ${AppName}-${Environment}-ecs-service-arn
 
-          - Sid: ECSTaskDefinitionRegistration
+          - Sid: RegisterTaskDefinitionWithTag
             Effect: Allow
             Action:
               - ecs:RegisterTaskDefinition
@@ -179,11 +179,16 @@ Resources:
               - codedeploy:GetDeploymentConfig
             Resource: "*"
 
-          - Sid: AllowECSRegisterTaskDefinition
+          - Sid: RegisterTaskDefinitionWithTag
             Effect: Allow
             Action:
               - ecs:RegisterTaskDefinition
+              - ecs:TagResource
             Resource: "*"
+            Condition:
+              StringEquals:
+                ecs:CreateAction:
+                  - RegisterTaskDefinition
 
           - Sid: AllowPassRoleToECS
             Effect: Allow

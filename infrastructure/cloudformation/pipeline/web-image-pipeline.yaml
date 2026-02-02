@@ -172,7 +172,6 @@ Resources:
                   - Name: BuildArtifact
                 RunOrder: 1
               - !Ref "AWS::NoValue"
-      PipelineType: V2
       Triggers:
         - ProviderType: CodeStarSourceConnection
           GitConfiguration:
