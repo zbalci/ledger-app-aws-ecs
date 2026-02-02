@@ -104,14 +104,6 @@ Resources:
       PolicyDocument:
         Version: "2012-10-17"
         Statement:
-          - Sid: TaskDefinitionPermissions
-            Effect: Allow
-            Action:
-              - ecs:DescribeTaskDefinition
-              - ecs:RegisterTaskDefinition
-              - ecs:TagResource
-            Resource: "*"
-
           - Sid: ECSServicePermissions
             Effect: Allow
             Action:
@@ -128,9 +120,9 @@ Resources:
               - ecs:TagResource
             Resource: "*"
             Condition:
-              StringEquals:
-                ecs:CreateAction:
-                  - RegisterTaskDefinition
+              StringLike:
+                ecs:TaskDefinitionFamily:
+                  - !Sub "${AppName}-${Environment}-*"
 
           - Sid: IamPassRolePermissions
             Effect: Allow
@@ -141,7 +133,6 @@ Resources:
             Condition:
               StringEquals:
                 iam:PassedToService:
-                  - ecs.amazonaws.com
                   - ecs-tasks.amazonaws.com
 
   ### BlueGreen Policy
@@ -183,7 +174,12 @@ Resources:
             Effect: Allow
             Action:
               - ecs:RegisterTaskDefinition
+              - ecs:TagResource
             Resource: "*"
+            Condition:
+              StringLike:
+                ecs:TaskDefinitionFamily:
+                  - !Sub "${AppName}-${Environment}-*"
 
           - Sid: AllowPassRoleToECS
             Effect: Allow
@@ -194,7 +190,6 @@ Resources:
             Condition:
               StringEquals:
                 iam:PassedToService:
-                  - ecs.amazonaws.com
                   - ecs-tasks.amazonaws.com
 
 Outputs:

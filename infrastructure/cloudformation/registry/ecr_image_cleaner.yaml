@@ -35,7 +35,8 @@ Resources:
                   - Fn::ImportValue:
                       Fn::Sub: ${AppName}-${Environment}-web-image-ecr-arn
                   - Fn::ImportValue:
-                      Fn::Sub: ${AppName}-${Environment}-db-init-ecr-arn                
+                      Fn::Sub: ${AppName}-${Environment}-db-init-ecr-arn
+              
               - Effect: Allow
                 Action:
                   - logs:CreateLogGroup

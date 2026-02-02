@@ -41,11 +41,17 @@ Resources:
           PolicyDocument:
             Version: '2012-10-17'
             Statement:
-              - Effect: Allow
+              - Sid: AllowLogging
+                Effect: Allow
                 Action:
                   - logs:CreateLogGroup
                   - logs:CreateLogStream
                   - logs:PutLogEvents
+                Resource: !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/ecs/${AppName}-${Environment}:*"
+              
+              - Sid: AllowECRAccess
+                Effect: Allow
+                Action:
                   - ecr:GetAuthorizationToken
                   - ecr:BatchCheckLayerAvailability
                   - ecr:GetDownloadUrlForLayer
@@ -54,12 +60,28 @@ Resources:
                   - ecr:CompleteLayerUpload
                   - ecr:BatchGetImage
                   - ecr:PutImage
+                Resource: "*"
+
+              - Sid: AllowECSTaskAccess
+                Effect: Allow
+                Action:
                   - ecs:RunTask
                   - ecs:DescribeTasks
+                Resource: "*"
+
+              - Sid: AllowS3Access
+                Effect: Allow
+                Action:
                   - s3:PutObject
                   - s3:GetObject
+                Resource: "*"
+
+              - Sid: AllowSecretManagerAccess
+                Effect: Allow
+                Action:
                   - secretsmanager:GetSecretValue
                 Resource: "*"
+    
               - Effect: Allow
                 Action:
                   - iam:PassRole
