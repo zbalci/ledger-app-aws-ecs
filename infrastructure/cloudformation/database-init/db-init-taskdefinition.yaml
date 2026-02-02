@@ -34,15 +34,19 @@ Resources:
                   - ssm:GetParameter
                 Resource:
                   - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${AppName}/${Environment}/db/*
-              - Effect: Allow
+ 
+              - Sid: AllowSecretManagerAccess
+                Effect: Allow
                 Action:
                   - secretsmanager:GetSecretValue
                 Resource: !ImportValue
                   Fn::Sub: ${AppName}-${Environment}-rds-master-secret-arn
+
               - Effect: Allow
                 Action:
                   - kms:Decrypt
                 Resource: '*'
+
         - PolicyName: S3Access
           PolicyDocument:
             Version: '2012-10-17'
@@ -129,7 +133,7 @@ Resources:
           LogConfiguration:
             LogDriver: awslogs
             Options:
-              awslogs-group: !Sub /ecs/${AppName}-${Environment}
+              awslogs-group: !Sub /${AppName}-${Environment}/ecs
               awslogs-create-group: 'true'
               awslogs-region: !Ref AWS::Region
-              awslogs-stream-prefix: ecs
+              awslogs-stream-prefix: db-init

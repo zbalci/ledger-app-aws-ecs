@@ -38,7 +38,9 @@ Resources:
                   - ssm:GetParameter
                 Resource: 
                   - !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${AppName}/${Environment}/db/*"
-              - Effect: Allow
+
+              - Sid: AllowSecretManagerAccess
+                Effect: Allow
                 Action:
                   - secretsmanager:GetSecretValue
                 Resource: 
@@ -88,10 +90,10 @@ Resources:
           LogConfiguration:
             LogDriver: awslogs
             Options:
-              awslogs-group: !Sub "/ecs/${AppName}-${Environment}"
+              awslogs-group: !Sub "/${AppName}-${Environment}/ecs"
               awslogs-create-group: "true"
               awslogs-region: !Ref AWS::Region
-              awslogs-stream-prefix: ecs
+              awslogs-stream-prefix: web-image
 
 Outputs:
   TaskExecutionRole:

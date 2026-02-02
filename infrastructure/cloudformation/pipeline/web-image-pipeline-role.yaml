@@ -86,10 +86,11 @@ Resources:
             Resource:
               Fn::ImportValue:
                 Fn::Sub: ${AppName}-${Environment}-build-project-arn
-          - Effect: Allow
+
+          - Sid: GitHubConnectionAccess
+            Effect: Allow
             Action:
               - codeconnections:UseConnection
-              - codestar-connections:UseConnection
             Resource:
               - !Ref GithubConnectionArn
 

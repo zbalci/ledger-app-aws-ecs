@@ -46,10 +46,9 @@ Resources:
               - Sid: AllowLogging
                 Effect: Allow
                 Action:
-                  - logs:CreateLogGroup
                   - logs:CreateLogStream
                   - logs:PutLogEvents
-                Resource: !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/ecs/${AppName}-${Environment}:*"
+                Resource: !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/${AppName}-${Environment}/ecs:*"
 
               # Auth token (zorunlu *)
               - Effect: Allow
@@ -74,13 +73,22 @@ Resources:
                 Action:
                   - s3:PutObject
                   - s3:GetObject
-                Resource: "*"
+                Resource:
+                  Fn::Sub:
+                    - "arn:aws:s3:::${ArtifactBucket}/*"
+                    - ArtifactBucket:
+                        Fn::ImportValue: !Sub "${AppName}-${Environment}-artifact-bucket-name"
 
               - Sid: AllowSecretManagerAccess
                 Effect: Allow
                 Action:
                   - secretsmanager:GetSecretValue
-                Resource: "*"
+                Resource:
+                  Fn::ImportValue: !Sub "${AppName}-${Environment}-rds-master-secret-arn"
+              - Effect: Allow
+                Action:
+                  - kms:Decrypt
+                Resource: '*'
 
         - PolicyName: GitHubConnectionAccess
           PolicyDocument:
@@ -88,10 +96,6 @@ Resources:
             Statement:
               - Effect: Allow
                 Action:
-                  - codestar-connections:GetConnectionToken
-                  - codestar-connections:GetConnection
-                  - codeconnections:GetConnectionToken
-                  - codeconnections:GetConnection
                   - codeconnections:UseConnection
                 Resource:
                   - !Ref GithubConnectionArn
@@ -103,8 +107,8 @@ Resources:
       LogsConfig:
         CloudWatchLogs:
           Status: ENABLED
-          GroupName: !Sub "/ecs/${AppName}-${Environment}"
-          StreamName: "codebuild-web-image"
+          GroupName: !Sub "/${AppName}-${Environment}/codebuild"
+          StreamName: "web-image"
       Environment:
         ComputeType: BUILD_GENERAL1_SMALL
         Image: aws/codebuild/standard:7.0

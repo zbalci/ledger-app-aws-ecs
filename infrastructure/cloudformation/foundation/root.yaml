@@ -11,10 +11,22 @@ Parameters:
     Default: prod
 
 Resources:
+  DbInitLambdaLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/${AppName}-${Environment}/lambda-db-init"
+      RetentionInDays: 7
+
+  CodeBuildLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/${AppName}-${Environment}/codebuild"
+      RetentionInDays: 7
+
   EcsLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: !Sub "/ecs/${AppName}-${Environment}"
+      LogGroupName: !Sub "/${AppName}-${Environment}/ecs"
       RetentionInDays: 7
 
   AssetBucket:

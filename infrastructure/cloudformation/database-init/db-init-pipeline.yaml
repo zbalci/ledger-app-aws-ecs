@@ -44,10 +44,9 @@ Resources:
               - Sid: AllowLogging
                 Effect: Allow
                 Action:
-                  - logs:CreateLogGroup
                   - logs:CreateLogStream
                   - logs:PutLogEvents
-                Resource: !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/ecs/${AppName}-${Environment}:*"
+                Resource: !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/${AppName}-${Environment}/codebuild:*"
 
               # Auth token (zorunlu *)
               - Effect: Allow
@@ -86,7 +85,12 @@ Resources:
                 Effect: Allow
                 Action:
                   - secretsmanager:GetSecretValue
-                Resource: "*"
+                Resource: !ImportValue
+                  Fn::Sub: ${AppName}-${Environment}-rds-master-secret-arn
+              - Effect: Allow
+                Action:
+                  - kms:Decrypt
+                Resource: '*'
     
               - Effect: Allow
                 Action:
@@ -101,8 +105,8 @@ Resources:
       LogsConfig:
         CloudWatchLogs:
           Status: ENABLED
-          GroupName: !Sub "/ecs/${AppName}-${Environment}"
-          StreamName: "codebuild-db-init"
+          GroupName: !Sub "/${AppName}-${Environment}/codebuild"
+          StreamName: "db-init"
       Environment:
         ComputeType: BUILD_GENERAL1_SMALL
         Image: aws/codebuild/standard:7.0
@@ -195,10 +199,11 @@ Resources:
               - codebuild:BatchGetBuilds
               - codebuild:StartBuild
             Resource: !GetAtt CodeBuildProject.Arn
-          - Effect: Allow
+
+          - Sid: GitHubConnectionAccess
+            Effect: Allow
             Action:
               - codeconnections:UseConnection
-              - codestar-connections:UseConnection
             Resource:
               - !Ref GithubConnectionArn
 

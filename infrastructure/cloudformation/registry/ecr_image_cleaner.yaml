@@ -35,10 +35,9 @@ Resources:
               
               - Effect: Allow
                 Action:
-                  - logs:CreateLogGroup
                   - logs:CreateLogStream
                   - logs:PutLogEvents
-                Resource: !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/ecs/${AppName}-${Environment}:*"
+                Resource: !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/${AppName}-${Environment}/lambda-db-init:*"
 
   # 2. Lambda Function
   DeleteECRImagesFunction:
@@ -48,6 +47,9 @@ Resources:
       Runtime: python3.12
       Timeout: 60
       Role: !GetAtt DeleteECRImagesRole.Arn
+      LoggingConfig:
+        LogGroup: !Sub "/${AppName}-${Environment}/lambda-db-init"
+        LogFormat: JSON
       Code:
         ZipFile: |
           import json

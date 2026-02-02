@@ -51,9 +51,3 @@ Outputs:
     Value: !GetAtt ECRRepository.RepositoryUri
     Export:
       Name: !Sub ${AppName}-${Environment}-web-image-ecr-uri
-
-  RepositoryArn:
-    Description: "ECR repository Arn"
-    Value: !GetAtt ECRRepository.Arn
-    Export:
-      Name: !Sub ${AppName}-${Environment}-web-image-ecr-arn
