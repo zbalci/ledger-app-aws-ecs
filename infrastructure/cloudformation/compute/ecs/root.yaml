@@ -11,7 +11,7 @@ Parameters:
     Type: String
     Description: Deployment tipi (bluegreen veya rolling)
 
-  ContainerPort:
+  AppPort:
     Type: Number
 
   InstanceType:
@@ -19,15 +19,10 @@ Parameters:
     Description: EC2 instance tipi
     Default: t3.micro
 
-  KeyName:
-    Type: String
-    Default: zekib
-    Description: Key-pair
-
   AmiId:
-    Type: AWS::EC2::Image::Id
+    Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
     Description: ECS-uyumlu AMI ID
-    Default: ami-0f3092a09bb5324c4
+    Default: /aws/service/ecs/optimized-ami/amazon-linux-2/recommended/image_id
 
 Resources:
   EcsTaskDefStack:
@@ -37,7 +32,7 @@ Resources:
       Parameters:
         AppName: !Ref AppName
         Environment: !Ref Environment
-        ContainerPort: !Ref ContainerPort
+        AppPort: !Ref AppPort
 
   EcsClusterStack:
     Type: AWS::CloudFormation::Stack
@@ -47,7 +42,6 @@ Resources:
         AppName: !Ref AppName
         Environment: !Ref Environment
         InstanceType: !Ref InstanceType
-        KeyName: !Ref KeyName
         AmiId: !Ref AmiId
 
   EcsServiceStack:
@@ -61,4 +55,4 @@ Resources:
         AppName: !Ref AppName
         Environment: !Ref Environment
         DeploymentType: !Ref DeploymentType
-        ContainerPort: !Ref ContainerPort
+        AppPort: !Ref AppPort

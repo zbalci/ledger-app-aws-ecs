@@ -22,7 +22,7 @@ Parameters:
   SourceBranch:
     Type: String
 
-  ContainerPort:
+  AppPort:
     Type: Number
 
 Resources:
@@ -35,7 +35,7 @@ Resources:
         Environment: !Ref Environment
         DeploymentType: !Ref DeploymentType
         GithubConnectionArn: !Ref GithubConnectionArn
-        ContainerPort: !Ref ContainerPort
+        AppPort: !Ref AppPort
 
   CodePipelineServiceRole:
     Type: AWS::CloudFormation::Stack

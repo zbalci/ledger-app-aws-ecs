@@ -7,18 +7,8 @@ Parameters:
     Type: String
     Description: Environment name
 
-  DBName:
-    Type: String
-    Description: Database Name
-    Default: ledger
-
-  DBUser:
-    Type: String
-    Description: Database User Name
-    Default: ledger
-
   DBPort:
-    Type: String
+    Type: Number
     Description: Database User Name
     Default: 3306
 
@@ -28,7 +18,7 @@ Resources:
     Properties:
       Name: !Sub "/${AppName}/${Environment}/db/database"
       Type: String
-      Value: !Ref DBName
+      Value: !Ref AppName
 
   DBPortSSMParam:
     Type: AWS::SSM::Parameter
@@ -42,7 +32,7 @@ Resources:
     Properties:
       Name: !Sub "/${AppName}/${Environment}/db/user"
       Type: String
-      Value: !Ref DBUser
+      Value: !Ref AppName
  
   RDSSubnetGroup:
     Type: AWS::RDS::DBSubnetGroup
@@ -57,11 +47,11 @@ Resources:
     Properties:
       AllocatedStorage: "10"
       DBInstanceIdentifier: !Sub "${AppName}-${Environment}-db-instance"
-      DBName: !Ref DBName
+      DBName: !Ref AppName
       DBInstanceClass: db.t4g.micro
       Engine: MySQL
       EngineVersion: "8.0.43"
-      MasterUsername: !Ref DBUser
+      MasterUsername: !Ref AppName
       ManageMasterUserPassword: true   # Create and store password in SecretManager
       PubliclyAccessible: false
       DBSubnetGroupName: !Ref RDSSubnetGroup

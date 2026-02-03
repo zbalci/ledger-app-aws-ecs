@@ -124,7 +124,6 @@ Resources:
           - Sid: RegisterTaskDefinitionWithTag
             Effect: Allow
             Action:
-              - ecs:RegisterTaskDefinition
               - ecs:TagResource
             Resource: "*"
             Condition:
@@ -179,16 +178,23 @@ Resources:
               - codedeploy:GetDeploymentConfig
             Resource: "*"
 
+          - Sid: DescribeTaskDefinition
+            Effect: Allow
+            Action:
+              - ecs:DescribeTaskDefinition
+              - ecs:RegisterTaskDefinition
+            Resource: "*"
+
           - Sid: RegisterTaskDefinitionWithTag
             Effect: Allow
             Action:
-              - ecs:RegisterTaskDefinition
               - ecs:TagResource
             Resource: "*"
             Condition:
               StringEquals:
                 ecs:CreateAction:
                   - RegisterTaskDefinition
+
 
           - Sid: AllowPassRoleToECS
             Effect: Allow

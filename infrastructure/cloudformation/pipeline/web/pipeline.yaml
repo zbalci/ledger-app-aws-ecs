@@ -24,7 +24,6 @@ Parameters:
 
   SourceBranch:
     Type: String
-    Default: main
 
 Conditions:
   IsRolling: !Equals [ !Ref DeploymentType, "rolling" ]

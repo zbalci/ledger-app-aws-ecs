@@ -14,10 +14,6 @@ Parameters:
     Type: String
     Description: EC2 instance tipi
 
-  KeyName:
-    Type: String
-    Description: Key-pair
-
   AmiId:
     Type: AWS::EC2::Image::Id
     Description: ECS-uyumlu AMI ID
@@ -62,7 +58,6 @@ Resources:
       LaunchTemplateData:
         ImageId: !Ref AmiId
         InstanceType: !Ref InstanceType
-        KeyName: !Ref KeyName
         IamInstanceProfile:
           Name: !Ref EC2InstanceProfile
         SecurityGroupIds:

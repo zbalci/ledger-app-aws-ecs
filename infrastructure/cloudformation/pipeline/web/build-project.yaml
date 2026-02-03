@@ -18,7 +18,7 @@ Parameters:
     Type: String
     Description: Github Connection ARN
 
-  ContainerPort:
+  AppPort:
     Type: Number
 
 Conditions:
@@ -162,7 +162,7 @@ Resources:
             Type: PLAINTEXT             
 
           - Name: CONTAINER_PORT
-            Value: !Ref ContainerPort
+            Value: !Ref AppPort
             Type: PLAINTEXT
 
           - Name: DATABASE_PASS

@@ -10,7 +10,7 @@ Parameters:
     Type: String
     Description: Environment name
 
-  ContainerPort:
+  AppPort:
     Type: Number
 
 Resources:
@@ -68,10 +68,10 @@ Resources:
           Cpu: 0
           Essential: true
           PortMappings:
-            - ContainerPort: !Ref ContainerPort
-              HostPort: !Ref ContainerPort
+            - AppPort: !Ref AppPort
+              HostPort: !Ref AppPort
               Protocol: tcp
-              Name: !Sub "${AppName}-${Environment}-${ContainerPort}-tcp"
+              Name: !Sub "${AppName}-${Environment}-${AppPort}-tcp"
               AppProtocol: http
           Secrets:
             - Name: DATABASE

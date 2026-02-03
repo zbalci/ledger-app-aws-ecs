@@ -14,13 +14,10 @@ Parameters:
     Type: String
     Description: Deployment tipi (bluegreen veya rolling)
 
-  ContainerPort:
+  AppPort:
     Type: Number
 
-  ListenerPort:
-    Type: Number
-
-  TestListenerPort:
+  TestPort:
     Type: Number
 
 Conditions:
@@ -50,7 +47,7 @@ Resources:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
     Properties:
       Name: !Sub "${AppName}-blue-tg"
-      Port: !Ref ContainerPort
+      Port: !Ref AppPort
       Protocol: HTTP
       VpcId:
         Fn::ImportValue:
@@ -66,7 +63,7 @@ Resources:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
     Properties:
       Name: !Sub "${AppName}-green-tg"
-      Port: !Ref ContainerPort
+      Port: !Ref AppPort
       Protocol: HTTP
       VpcId:
         Fn::ImportValue:
@@ -82,7 +79,7 @@ Resources:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
     Properties:
       Name: !Sub "${AppName}-rolling-tg"
-      Port: !Ref ContainerPort
+      Port: !Ref AppPort
       Protocol: HTTP
       VpcId:
         Fn::ImportValue:
@@ -103,7 +100,7 @@ Resources:
             - !Ref RollingTargetGroup
             - !Ref BlueTargetGroup
       LoadBalancerArn: !Ref ALB
-      Port: !Ref ListenerPort
+      Port: !Ref AppPort
       Protocol: HTTP
 
   # Test Listener (only bluegreen)
@@ -115,7 +112,7 @@ Resources:
         - Type: forward
           TargetGroupArn: !Ref GreenTargetGroup
       LoadBalancerArn: !Ref ALB
-      Port: !Ref TestListenerPort
+      Port: !Ref TestPort
       Protocol: HTTP
 
 Outputs:

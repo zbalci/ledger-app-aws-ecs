@@ -7,13 +7,10 @@ Parameters:
     Type: String
     Description: Environment name
 
-  ContainerPort:
+  AppPort:
     Type: Number
 
-  ListenerPort:
-    Type: Number
-
-  TestListenerPort:
+  TestPort:
     Type: Number
 
   DBPort:
@@ -31,12 +28,12 @@ Resources:
           Fn::Sub: ${AppName}-${Environment}-vpc-id
       SecurityGroupIngress:
         - IpProtocol: tcp
-          FromPort: !Ref ListenerPort
-          ToPort: !Ref ListenerPort
+          FromPort: !Ref AppPort
+          ToPort: !Ref AppPort
           CidrIp: 0.0.0.0/0
         - IpProtocol: tcp
-          FromPort: !Ref TestListenerPort
-          ToPort: !Ref TestListenerPort
+          FromPort: !Ref TestPort
+          ToPort: !Ref TestPort
           CidrIp: 0.0.0.0/0
       SecurityGroupEgress:
         - IpProtocol: -1
@@ -52,8 +49,8 @@ Resources:
           Fn::Sub: ${AppName}-${Environment}-vpc-id
       SecurityGroupIngress:
         - IpProtocol: tcp
-          FromPort: !Ref ContainerPort
-          ToPort: !Ref ContainerPort
+          FromPort: !Ref AppPort
+          ToPort: !Ref AppPort
           SourceSecurityGroupId: !GetAtt ALBSecurityGroup.GroupId
       SecurityGroupEgress:
         - IpProtocol: -1 # DNS (UDP 53) name resolution

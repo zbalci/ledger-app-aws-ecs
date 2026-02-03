@@ -1,7 +1,7 @@
 Parameters:
   AppName:
     Type: String
-    Default: ledger-app
+    Default: ledger
 
   Environment:
     Type: String
@@ -16,18 +16,39 @@ Resources:
     Properties:
       LogGroupName: !Sub "/${AppName}-${Environment}/lambda-db-init"
       RetentionInDays: 7
+      Tags:
+        - Key: Application
+          Value: !Ref AppName
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: ManagedBy
+          Value: CloudFormation
 
   CodeBuildLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
       LogGroupName: !Sub "/${AppName}-${Environment}/codebuild"
       RetentionInDays: 7
+      Tags:
+        - Key: Application
+          Value: !Ref AppName
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: ManagedBy
+          Value: CloudFormation
 
   EcsLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
       LogGroupName: !Sub "/${AppName}-${Environment}/ecs"
       RetentionInDays: 7
+      Tags:
+        - Key: Application
+          Value: !Ref AppName
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: ManagedBy
+          Value: CloudFormation
 
   AssetBucket:
     Type: AWS::S3::Bucket
@@ -35,6 +56,13 @@ Resources:
     UpdateReplacePolicy: Retain
     Properties:
       BucketName: !Sub "${AppName}-${Environment}-${AWS::AccountId}-assets"
+      Tags:
+        - Key: Application
+          Value: !Ref AppName
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: ManagedBy
+          Value: CloudFormation
 
   ArtifactBucket:
     Type: AWS::S3::Bucket
@@ -42,6 +70,13 @@ Resources:
     UpdateReplacePolicy: Retain
     Properties:
       BucketName: !Sub "${AppName}-${Environment}-${AWS::AccountId}-artifacts"
+      Tags:
+        - Key: Application
+          Value: !Ref AppName
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: ManagedBy
+          Value: CloudFormation
 
 Outputs:
   AssetBucketName:

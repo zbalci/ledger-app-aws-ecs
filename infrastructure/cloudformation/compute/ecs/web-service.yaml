@@ -14,7 +14,7 @@ Parameters:
     Type: String
     Description: Deployment Type (bluegreen or rolling)
 
-  ContainerPort:
+  AppPort:
     Type: Number
 
 Conditions:
@@ -50,7 +50,7 @@ Resources:
 
       LoadBalancers:
         - ContainerName: !Sub "${AppName}-${Environment}"
-          ContainerPort: !Ref ContainerPort
+          AppPort: !Ref AppPort
           TargetGroupArn: !If
             - IsBlueGreen
             - Fn::ImportValue:

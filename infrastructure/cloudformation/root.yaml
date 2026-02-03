@@ -3,7 +3,7 @@ Parameters:
   AppName:
     Type: String
     Description: App name
-    Default: ledger-app
+    Default: ledger
 
   Environment:
     Type: String
@@ -19,38 +19,38 @@ Parameters:
     AllowedValues:
       - bluegreen
       - rolling
-    Default: rolling
+    Default: bluegreen
 
   GithubConnectionArn:
     Type: String
     Description: Github Connection ARN
     Default: arn:aws:codeconnections:eu-north-1:253712034003:connection/2c02ecd9-b115-4cec-967f-a0e4445ecfaa
+    NoEcho: True
 
   SourceRepo:
     Type: String
     Description: owner/repo biçiminde GitHub repo ID'si
     Default: zbalci/ledger-app-aws-ecs
 
-  SourceBranch:
-    Type: String
-    Default: main
-
-  ContainerPort:
+  AppPort:
     Type: Number
     Default: 80
 
-  ListenerPort:
-    Type: Number
-    Default: 80
-
-  TestListenerPort:
+  TestPort:
     Type: Number
     Default: 8080
 
   DBPort:
-    Type: String
+    Type: Number
     Description: Database port
     Default: 3306
+
+Mappings:
+  EnvToBranch:
+    prod:
+      Branch: main
+    dev:
+      Branch: dev
 
 Resources:
   NetworkStack:
@@ -84,9 +84,8 @@ Resources:
       Parameters:
         AppName: !Ref AppName
         Environment: !Ref Environment
-        ContainerPort: !Ref ContainerPort
-        ListenerPort: !Ref ListenerPort
-        TestListenerPort: !Ref TestListenerPort
+        AppPort: !Ref AppPort
+        TestPort: !Ref TestPort
         DBPort: !Ref DBPort
   
   LoadbalanceStack:
@@ -107,9 +106,8 @@ Resources:
         AppName: !Ref AppName
         Environment: !Ref Environment
         DeploymentType: !Ref DeploymentType
-        ContainerPort: !Ref ContainerPort
-        ListenerPort: !Ref ListenerPort
-        TestListenerPort: !Ref TestListenerPort
+        AppPort: !Ref AppPort
+        TestPort: !Ref TestPort
 
   RegistryStack:
     Type: AWS::CloudFormation::Stack
@@ -164,7 +162,7 @@ Resources:
         AppName: !Ref AppName
         Environment: !Ref Environment
         DeploymentType: !Ref DeploymentType
-        ContainerPort: !Ref ContainerPort
+        AppPort: !Ref AppPort
 
   DatabaseInitStack:
     Type: AWS::CloudFormation::Stack
@@ -185,7 +183,7 @@ Resources:
         Environment: !Ref Environment
         GithubConnectionArn: !Ref GithubConnectionArn
         SourceRepo: !Ref SourceRepo
-        SourceBranch: !Ref SourceBranch
+        SourceBranch: !FindInMap [EnvToBranch, !Ref Environment, Branch]
 
   CodePipelineStack:
     Type: AWS::CloudFormation::Stack
@@ -210,6 +208,6 @@ Resources:
         Environment: !Ref Environment
         DeploymentType: !Ref DeploymentType
         SourceRepo: !Ref SourceRepo
-        SourceBranch: !Ref SourceBranch
+        SourceBranch: !FindInMap [EnvToBranch, !Ref Environment, Branch]
         GithubConnectionArn: !Ref GithubConnectionArn
-        ContainerPort: !Ref ContainerPort
+        AppPort: !Ref AppPort
