@@ -197,7 +197,7 @@ Resources:
       - DatabaseStack
       - DatabaseInitStack
     Properties:
-      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/pipeline/root.yaml
+      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/pipeline/web/root.yaml
       Tags:
         - Key: Application
           Value: !Ref AppName
