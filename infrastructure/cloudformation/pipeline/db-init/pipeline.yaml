@@ -71,9 +71,8 @@ Resources:
                 Action:
                   - ecs:RunTask
                   - ecs:DescribeTasks
-                Resource:
-                  - !Sub "arn:aws:ecs:${AWS::Region}:${AWS::AccountId}:task-definition/${AppName}-${Environment}-db-init:*"
-                  - !Sub "arn:aws:ecs:${AWS::Region}:${AWS::AccountId}:cluster/${AppName}-${Environment}-ecs-cluster"
+                Resource: "*"
+
               - Sid: AllowS3Access
                 Effect: Allow
                 Action:
@@ -81,9 +80,13 @@ Resources:
                   - s3:GetObject
                 Resource:
                   - !Sub
-                      - "arn:aws:s3:::${BucketName}/*"
-                      - BucketName:
+                      - "arn:aws:s3:::${ArtifactBucket}/*"
+                      - ArtifactBucket:
                           Fn::ImportValue: !Sub "${AppName}-${Environment}-artifact-bucket-name"
+                  - !Sub
+                      - "arn:aws:s3:::${AssetBucket}/*"
+                      - AssetBucket:
+                          Fn::ImportValue: !Sub "${AppName}-${Environment}-asset-bucket-name"
 
               - Sid: AllowSecretManagerAccess
                 Effect: Allow
@@ -100,7 +103,9 @@ Resources:
                 Action:
                   - iam:PassRole
                 Resource:
-                  - arn:aws:iam::253712034003:role/ledger-app-prod-db-init-task-execution-role        
+                  Fn::ImportValue:
+                     Fn::Sub: ${AppName}-${Environment}-db-init-ecs-task-executionrole-arn
+   
   CodeBuildProject:
     Type: AWS::CodeBuild::Project
     Properties:
@@ -126,8 +131,10 @@ Resources:
           - Name: REPO_NAME
             Value: !Sub "${AppName}-${Environment}-db-init"
             Type: PLAINTEXT
-          - Name: BUILD_PURPOSE
-            Value: db-init
+          - Name: ASSET_BUCKET
+            Value:
+              Fn::ImportValue:
+                Fn::Sub: "${AppName}-${Environment}-asset-bucket-name"
             Type: PLAINTEXT
           - Name: ECR_URI
             Value: 

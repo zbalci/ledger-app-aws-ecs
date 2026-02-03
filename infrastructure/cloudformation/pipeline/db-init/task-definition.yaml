@@ -137,3 +137,10 @@ Resources:
               awslogs-create-group: 'true'
               awslogs-region: !Ref AWS::Region
               awslogs-stream-prefix: db-init
+
+Outputs:
+  TaskExecutionRole:
+    Description: TaskExecutionRole Arn
+    Value: !GetAtt TaskExecutionRole.Arn
+    Export:
+      Name: !Sub ${AppName}-${Environment}-db-init-ecs-task-executionrole-arn

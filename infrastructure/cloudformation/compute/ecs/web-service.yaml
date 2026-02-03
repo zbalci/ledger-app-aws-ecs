@@ -50,7 +50,7 @@ Resources:
 
       LoadBalancers:
         - ContainerName: !Sub "${AppName}-${Environment}"
-          AppPort: !Ref AppPort
+          ContainerPort: !Ref AppPort
           TargetGroupArn: !If
             - IsBlueGreen
             - Fn::ImportValue:

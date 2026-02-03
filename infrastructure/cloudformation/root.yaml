@@ -11,7 +11,7 @@ Parameters:
     AllowedValues:
       - prod
       - dev
-    Default: prod
+    Default: dev
 
   DeploymentType:
     Type: String
@@ -19,7 +19,7 @@ Parameters:
     AllowedValues:
       - bluegreen
       - rolling
-    Default: bluegreen
+    Default: rolling
 
   GithubConnectionArn:
     Type: String

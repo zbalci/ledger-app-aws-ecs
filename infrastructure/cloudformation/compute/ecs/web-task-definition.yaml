@@ -68,7 +68,7 @@ Resources:
           Cpu: 0
           Essential: true
           PortMappings:
-            - AppPort: !Ref AppPort
+            - ContainerPort: !Ref AppPort
               HostPort: !Ref AppPort
               Protocol: tcp
               Name: !Sub "${AppName}-${Environment}-${AppPort}-tcp"
