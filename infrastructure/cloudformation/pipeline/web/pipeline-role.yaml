@@ -109,8 +109,8 @@ Resources:
             Effect: Allow
             Action:
               - ecs:DescribeTaskDefinition
-            Resource:
-              - !Sub "arn:aws:ecs:${AWS::Region}:${AWS::AccountId}:task-definition/${AppName}-${Environment}-*"
+              - ecs:RegisterTaskDefinition
+            Resource: "*"
 
           - Sid: ECSServicePermissions
             Effect: Allow
