@@ -22,7 +22,7 @@ Resources:
   DBInitECRStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/database-init/db-init-ecr.yaml
+      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/registry/db-init/repository.yaml
       Parameters:
         AppName: !Ref AppName
         Environment: !Ref Environment
@@ -32,7 +32,7 @@ Resources:
     DependsOn:
       - DBInitECRStack
     Properties:
-      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/database-init/db-init-taskdefinition.yaml
+      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/pipeline/db-init/task-definition.yaml
       Parameters:
         AppName: !Ref AppName
         Environment: !Ref Environment
@@ -42,7 +42,7 @@ Resources:
     DependsOn:
       - DBInitTaskDefStack
     Properties:
-      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/database-init/db-init-pipeline.yaml
+      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/pipeline/db-init/pipeline.yaml
       Parameters:
         AppName: !Ref AppName
         Environment: !Ref Environment

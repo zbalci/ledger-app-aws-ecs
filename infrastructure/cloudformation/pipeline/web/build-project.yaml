@@ -176,8 +176,8 @@ Resources:
         Type: CODEPIPELINE
         BuildSpec: !If
           - IsRolling
-          - infrastructure/cicd/web-image/rolling-update/buildspec.yml
-          - infrastructure/cicd/web-image/blue-green/buildspec.yml
+          - infrastructure/cicd/web/rolling-update/buildspec.yml
+          - infrastructure/cicd/web/blue-green/buildspec.yml
       TimeoutInMinutes: 5
 
 Outputs:

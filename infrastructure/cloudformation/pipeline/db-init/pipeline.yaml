@@ -142,7 +142,7 @@ Resources:
         Type: CODEPIPELINE 
       Source:
         Type: CODEPIPELINE
-        BuildSpec: infrastructure/cicd/db-init/ecs/buildspec.yml
+        BuildSpec: infrastructure/cicd/db-init/buildspec.yml
       TimeoutInMinutes: 5
 
   ### IAM Role for CodePipeline

@@ -14,7 +14,7 @@ Resources:
   ECRImageCleanerStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/registry/ecr_image_cleaner.yaml
+      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/registry/shared/ecr-repository-cleanup.yaml
       Parameters:
         AppName: !Ref AppName
         Environment: !Ref Environment
@@ -24,7 +24,7 @@ Resources:
     DependsOn:
       - ECRImageCleanerStack
     Properties:
-      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/registry/web-image-ecr.yaml
+      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/registry/web/repository.yaml
       Parameters:
         AppName: !Ref AppName
         Environment: !Ref Environment

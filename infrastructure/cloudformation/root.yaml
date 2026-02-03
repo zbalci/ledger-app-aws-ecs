@@ -95,7 +95,7 @@ Resources:
       - NetworkStack
       - SecurityStack
     Properties:
-      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/loadbalance/alb.yaml
+      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/loadbalancer/alb.yaml
       Tags:
         - Key: Application
           Value: !Ref AppName
@@ -152,7 +152,7 @@ Resources:
       - RegistryStack
       - DatabaseStack
     Properties:
-      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/ecs/root.yaml
+      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/compute/ecs/root.yaml
       Tags:
         - Key: Application
           Value: !Ref AppName
@@ -172,7 +172,7 @@ Resources:
       - DatabaseStack
       - EcsStack
     Properties:
-      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/database-init/root.yaml
+      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/pipeline/db-init/root.yaml
       Tags:
         - Key: Application
           Value: !Ref AppName

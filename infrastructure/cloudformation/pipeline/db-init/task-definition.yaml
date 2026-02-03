@@ -81,7 +81,7 @@ Resources:
               echo "==== DB INIT START ===="
 
               echo "Downloading SQL file from S3..."
-              aws s3 cp s3://$ASSET_BUCKET/db-init/sql/init.sql /tmp/init.sql
+              aws s3 cp s3://$ASSET_BUCKET/database/init.sql /tmp/init.sql
               echo "SQL file downloaded"
 
               echo "Waiting for database to be reachable..."

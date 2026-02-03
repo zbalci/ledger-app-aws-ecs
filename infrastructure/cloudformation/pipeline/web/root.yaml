@@ -29,7 +29,7 @@ Resources:
   CodeBuildStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/pipeline/web-image-build-project.yaml
+      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/pipeline/web/build-project.yaml
       Parameters:
         AppName: !Ref AppName
         Environment: !Ref Environment
@@ -42,7 +42,7 @@ Resources:
     DependsOn:
       - CodeBuildStack
     Properties:
-      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/pipeline/web-image-pipeline-role.yaml
+      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/pipeline/web/pipeline-role.yaml
       Parameters:
         AppName: !Ref AppName
         Environment: !Ref Environment
@@ -54,7 +54,7 @@ Resources:
     DependsOn:
       - CodePipelineServiceRole
     Properties:
-      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/pipeline/web-image-pipeline.yaml
+      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/pipeline/web/pipeline.yaml
       Parameters:
         AppName: !Ref AppName
         Environment: !Ref Environment
