@@ -7,11 +7,11 @@ Parameters:
 
   Environment:
     Type: String
-    Description: Environment name
     AllowedValues:
       - prod
       - dev
-    Default: dev
+      - stagging
+    Default: stagging
 
   DeploymentType:
     Type: String
