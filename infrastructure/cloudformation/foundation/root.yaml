@@ -8,8 +8,8 @@ Parameters:
     AllowedValues:
       - prod
       - dev
-      - stagging
-    Default: stagging
+      - staging
+    Default: staging
 
 Resources:
   DbInitLambdaLogGroup:
