@@ -83,7 +83,7 @@ Resources:
                   - !Sub
                       - "arn:aws:s3:::${BucketName}/*"
                       - BucketName:
-                          Fn::ImportValue: !Sub "${AppName}-${Environment}-asset-bucket-name"
+                          Fn::ImportValue: !Sub "${AppName}-${Environment}-artifact-bucket-name"
 
               - Sid: AllowSecretManagerAccess
                 Effect: Allow
