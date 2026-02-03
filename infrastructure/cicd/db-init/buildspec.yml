@@ -16,7 +16,7 @@ phases:
       - docker build -t $REPO_NAME -f infrastructure/assets/images/db-init/Dockerfile infrastructure/assets/images/db-init
       - docker tag $REPO_NAME:latest $ECR_URI:$IMAGE_TAG
       - echo Copiyng sql.init to S3
-      - aws s3 infrastructure/assets/database/init.sql s3://$ASSET_BUCKET/database/init.sql
+      - aws s3 cp infrastructure/assets/database/init.sql s3://$ASSET_BUCKET/database/init.sql
 
   post_build:
     commands:
