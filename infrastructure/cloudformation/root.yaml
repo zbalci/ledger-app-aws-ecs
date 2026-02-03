@@ -51,6 +51,8 @@ Mappings:
       Branch: main
     dev:
       Branch: dev
+    staging:
+      Branch: staging
 
 Resources:
   NetworkStack:
