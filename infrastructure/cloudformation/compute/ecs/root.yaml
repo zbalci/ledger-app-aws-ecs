@@ -14,6 +14,7 @@ Parameters:
   AppPort:
     Type: Number
 
+
   InstanceType:
     Type: String
     Description: EC2 instance tipi
@@ -23,6 +24,24 @@ Parameters:
     Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
     Description: ECS-uyumlu AMI ID
     Default: /aws/service/ecs/optimized-ami/amazon-linux-2/recommended/image_id
+
+  ASGMin:
+    Type: Number
+  
+  ASGMax:
+    Type: Number
+  
+  ASGDesired:
+    Type: Number
+  
+  ServiceDesired:
+    Type: Number
+  
+  MaxPercent:
+    Type: Number
+  
+  MinHealthy:
+    Type: Number
 
 Resources:
   EcsTaskDefStack:
@@ -43,6 +62,9 @@ Resources:
         Environment: !Ref Environment
         InstanceType: !Ref InstanceType
         AmiId: !Ref AmiId
+        ASGMin: !Ref ASGMin
+        ASGMax: !Ref ASGMax
+        ASGDesired: !Ref ASGDesired
 
   EcsServiceStack:
     Type: AWS::CloudFormation::Stack
@@ -56,3 +78,6 @@ Resources:
         Environment: !Ref Environment
         DeploymentType: !Ref DeploymentType
         AppPort: !Ref AppPort
+        ServiceDesired: !Ref ServiceDesired
+        MaxPercent: !Ref MaxPercent
+        MinHealthy: !Ref MinHealthy

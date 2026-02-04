@@ -17,6 +17,15 @@ Parameters:
   AppPort:
     Type: Number
 
+  ServiceDesired:
+    Type: Number
+  
+  MaxPercent:
+    Type: Number
+  
+  MinHealthy:
+    Type: Number
+
 Conditions:
   IsBlueGreen: !Equals [ !Ref DeploymentType, bluegreen ]
   IsRolling: !Equals [ !Ref DeploymentType, rolling ]
@@ -44,8 +53,8 @@ Resources:
       DeploymentConfiguration: !If
         - IsRolling
         - 
-          MaximumPercent: 200
-          MinimumHealthyPercent: 100
+          MaximumPercent: !Ref MaxPercent
+          MinimumHealthyPercent: !Ref MinHealthy
         - !Ref "AWS::NoValue"
 
       LoadBalancers:
@@ -65,7 +74,7 @@ Resources:
             Base: 0
             Weight: 1
         - !Ref "AWS::NoValue"
-      DesiredCount: 1
+      DesiredCount: !Ref ServiceDesired
 
 Outputs:
   EcsServiceArn:

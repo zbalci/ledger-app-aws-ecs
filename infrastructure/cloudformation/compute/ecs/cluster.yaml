@@ -18,6 +18,15 @@ Parameters:
     Type: AWS::EC2::Image::Id
     Description: ECS-uyumlu AMI ID
 
+  ASGMin:
+    Type: Number
+  
+  ASGMax:
+    Type: Number
+  
+  ASGDesired:
+    Type: Number
+
 Resources:
   ECSCluster:
     Type: AWS::ECS::Cluster
@@ -86,9 +95,9 @@ Resources:
       LaunchTemplate:
         LaunchTemplateId: !Ref ContainerInstances
         Version: !GetAtt ContainerInstances.LatestVersionNumber
-      MinSize: 1
-      MaxSize: 2
-      DesiredCapacity: 1
+      MinSize: !Ref ASGMin
+      MaxSize: !Ref ASGMax
+      DesiredCapacity: !Ref ASGDesired
       NewInstancesProtectedFromScaleIn: false
     UpdatePolicy:
       AutoScalingReplacingUpdate:
