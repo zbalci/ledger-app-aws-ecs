@@ -10,7 +10,6 @@ Parameters:
   DBPort:
     Type: Number
     Description: Database User Name
-    Default: 3306
 
 Resources:
   DBNameSSMParam:
@@ -27,13 +26,6 @@ Resources:
       Type: String
       Value: !Ref DBPort
 
-  DBUserSSMParam:
-    Type: AWS::SSM::Parameter
-    Properties:
-      Name: !Sub "/${AppName}/${Environment}/db/user"
-      Type: String
-      Value: !Ref AppName
- 
   RDSSubnetGroup:
     Type: AWS::RDS::DBSubnetGroup
     Properties:
@@ -53,6 +45,7 @@ Resources:
       EngineVersion: "8.0.43"
       MasterUsername: !Ref AppName
       ManageMasterUserPassword: true   # Create and store password in SecretManager
+      Port: !Ref DBPort
       PubliclyAccessible: false
       DBSubnetGroupName: !Ref RDSSubnetGroup
       VPCSecurityGroups:

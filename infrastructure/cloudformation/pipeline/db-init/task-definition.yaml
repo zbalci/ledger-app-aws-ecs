@@ -124,7 +124,10 @@ Resources:
             - Name: DATABASE_HOST_PORT
               ValueFrom: !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${AppName}/${Environment}/db/port
             - Name: DATABASE_USER
-              ValueFrom: !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${AppName}/${Environment}/db/user
+              ValueFrom: !Sub
+                - '${SecretArn}:username::'
+                - SecretArn: !ImportValue
+                    Fn::Sub: ${AppName}-${Environment}-rds-master-secret-arn
             - Name: DATABASE_PASS
               ValueFrom: !Sub
                 - '${SecretArn}:password::'

@@ -14,7 +14,7 @@ Parameters:
     Type: Number
 
   DBPort:
-    Type: String
+    Type: Number
     Description: Database port
 
 Resources:

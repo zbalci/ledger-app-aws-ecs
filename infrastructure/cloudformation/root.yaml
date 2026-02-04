@@ -141,6 +141,7 @@ Resources:
       Parameters:
         AppName: !Ref AppName
         Environment: !Ref Environment
+        DBPort: !Ref DBPort
 
   EcsStack:
     Type: AWS::CloudFormation::Stack
