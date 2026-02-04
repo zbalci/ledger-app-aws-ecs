@@ -7,9 +7,9 @@ Parameters:
     Type: String
     AllowedValues:
       - prod
-      - dev
       - staging
-    Default: staging
+      - dev
+    Default: prod
 
 Resources:
   DbInitLambdaLogGroup:

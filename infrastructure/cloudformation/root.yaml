@@ -9,9 +9,9 @@ Parameters:
     Type: String
     AllowedValues:
       - prod
-      - dev
       - staging
-    Default: staging
+      - dev
+    Default: prod
 
   DeploymentType:
     Type: String
@@ -49,11 +49,10 @@ Mappings:
   EnvToBranch:
     prod:
       Branch: main
-    dev:
-      Branch: dev
     staging:
       Branch: staging
-
+    dev:
+      Branch: dev
 Resources:
   NetworkStack:
     Type: AWS::CloudFormation::Stack
