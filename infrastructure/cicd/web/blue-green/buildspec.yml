@@ -68,6 +68,7 @@ phases:
             -e "s|_CONTAINER_NAME_|$APP_NAME-$ENVIRONMENT|g" \
             -e "s|_CONTAINER_PORT_|$CONTAINER_PORT|g" \
             -e "s|_IMAGE_URI_PLACEHOLDER_|$ECR_URI:$IMAGE_TAG|g" \
+            -e "s|_DATABASE_USER_|$DATABASE_USER|g" \
             -e "s|_DATABASE_PASS_|$DATABASE_PASS|g" \
             infrastructure/cicd/web/blue-green/taskdef.json > taskdef.json
 

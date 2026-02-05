@@ -40,10 +40,11 @@ Resources:
       TaskDefinition:
         Fn::ImportValue:
           Fn::Sub: ${AppName}-${Environment}-task-definition-arn
-      LaunchType: !If
-        - IsRolling
-        - !Ref "AWS::NoValue"
-        - EC2
+  
+      # LaunchType: !If
+      #   - IsRolling
+      #   - !Ref "AWS::NoValue"
+      #   - EC2
 
       DeploymentController: !If
         - IsBlueGreen
@@ -67,13 +68,19 @@ Resources:
             - Fn::ImportValue:
                 Fn::Sub: ${AppName}-${Environment}-alb-rolling-tg-arn
 
-      CapacityProviderStrategy: !If
-        - IsRolling
-        - 
-          - CapacityProvider: !Sub ${AppName}-${Environment}-capacity-provider
-            Base: 0
-            Weight: 1
-        - !Ref "AWS::NoValue"
+      # CapacityProviderStrategy: !If
+      #   - IsRolling
+      #   - 
+      #     - CapacityProvider: !Sub ${AppName}-${Environment}-capacity-provider
+      #       Base: 0
+      #       Weight: 1
+      #   - !Ref "AWS::NoValue"
+
+      CapacityProviderStrategy:
+        - CapacityProvider: !Sub ${AppName}-${Environment}-capacity-provider
+          Base: 0
+          Weight: 1
+
       DesiredCount: !Ref ServiceDesired
 
 Outputs:
