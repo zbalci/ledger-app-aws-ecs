@@ -80,16 +80,9 @@ Resources:
               ValueFrom: !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${AppName}/${Environment}/db/host"
             - Name: DATABASE_HOST_PORT
               ValueFrom: !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${AppName}/${Environment}/db/port"
-            - Name: DATABASE_USER
-              ValueFrom: !Sub
-                - "${SecretArn}:username::"
-                - SecretArn:
-                    Fn::ImportValue: !Sub "${AppName}-${Environment}-rds-master-secret-arn"              
-            - Name: DATABASE_PASS
-              ValueFrom: !Sub
-                - "${SecretArn}:password::"
-                - SecretArn:
-                    Fn::ImportValue: !Sub "${AppName}-${Environment}-rds-master-secret-arn"
+            - Name: RDS_SECRET_ARN
+              ValueFrom:
+                Fn::ImportValue: !Sub "${AppName}-${Environment}-rds-master-secret-arn"              
           LogConfiguration:
             LogDriver: awslogs
             Options:
