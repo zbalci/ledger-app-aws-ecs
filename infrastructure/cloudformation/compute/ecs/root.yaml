@@ -35,12 +35,6 @@ Parameters:
   
   ServiceDesired:
     Type: Number
-  
-  MaxPercent:
-    Type: Number
-  
-  MinHealthy:
-    Type: Number
 
 Resources:
   EcsTaskDefStack:
@@ -78,5 +72,3 @@ Resources:
         DeploymentType: !Ref DeploymentType
         AppPort: !Ref AppPort
         ServiceDesired: !Ref ServiceDesired
-        MaxPercent: !Ref MaxPercent
-        MinHealthy: !Ref MinHealthy

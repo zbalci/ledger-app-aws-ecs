@@ -50,22 +50,22 @@ Mappings:
     dev:
       DeploymentType: rolling
       Branch: dev
-      ServiceDesired: 1
+      #AutoScalingGroup
       ASGMin: 1
       ASGMax: 2
       ASGDesired: 1
-      MaxPercent: 200
-      MinHealthy: 0
+      #ECS Service
+      ServiceDesired: 1
 
     prod:
       DeploymentType: bluegreen
       Branch: main
-      ServiceDesired: 2
+      #AutoScalingGroup
       ASGMin: 1
       ASGMax: 2
       ASGDesired: 1
-      MaxPercent: 200
-      MinHealthy: 100
+      #ECS Service
+      ServiceDesired: 1
 
 Resources:
   NetworkStack:
@@ -186,26 +186,26 @@ Resources:
         MaxPercent: !FindInMap [EnvConfig, !Ref Environment, MaxPercent]
         MinHealthy: !FindInMap [EnvConfig, !Ref Environment, MinHealthy]
 
-  DatabaseInitStack:
-    Type: AWS::CloudFormation::Stack
-    DependsOn:
-      - DatabaseStack
-      - EcsStack
-    Properties:
-      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/pipeline/db-init/root.yaml
-      Tags:
-        - Key: Application
-          Value: !Ref AppName
-        - Key: Environment
-          Value: !Ref Environment
-        - Key: ManagedBy
-          Value: CloudFormation
-      Parameters:
-        AppName: !Ref AppName
-        Environment: !Ref Environment
-        GithubConnectionArn: !Ref GithubConnectionArn
-        SourceRepo: !Ref SourceRepo
-        SourceBranch: !FindInMap [EnvConfig, !Ref Environment, Branch]
+  # DatabaseInitStack:
+  #   Type: AWS::CloudFormation::Stack
+  #   DependsOn:
+  #     - DatabaseStack
+  #     - EcsStack
+  #   Properties:
+  #     TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/pipeline/db-init/root.yaml
+  #     Tags:
+  #       - Key: Application
+  #         Value: !Ref AppName
+  #       - Key: Environment
+  #         Value: !Ref Environment
+  #       - Key: ManagedBy
+  #         Value: CloudFormation
+  #     Parameters:
+  #       AppName: !Ref AppName
+  #       Environment: !Ref Environment
+  #       GithubConnectionArn: !Ref GithubConnectionArn
+  #       SourceRepo: !Ref SourceRepo
+  #       SourceBranch: !FindInMap [EnvConfig, !Ref Environment, Branch]
 
   CodePipelineStack:
     Type: AWS::CloudFormation::Stack
@@ -214,8 +214,8 @@ Resources:
       - LoadbalanceStack
       - RegistryStack
       - EcsStack
-      - DatabaseStack
-      - DatabaseInitStack
+      # - DatabaseStack
+      # - DatabaseInitStack
     Properties:
       TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/pipeline/web/root.yaml
       Tags:
