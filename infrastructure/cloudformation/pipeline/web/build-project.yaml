@@ -165,7 +165,7 @@ Resources:
             Value: !Ref AppPort
             Type: PLAINTEXT
 
-          - Name: DATABASE_PASS
+          - Name: RDS_SECRET_ARN
             Value:
               Fn::ImportValue: !Sub "${AppName}-${Environment}-rds-master-secret-arn"
 
