@@ -37,12 +37,12 @@
                     "valueFrom": "arn:aws:ssm:_AWS_REGION_:_ACCOUNT_ID_:parameter/_APP_NAME_/_ENVIRONMENT_/db/port"
                 },
                 {
-                "name": "DATABASE_USER",
-                "valueFrom": "_RDS_SECRET_ARN_:username::"
+                    "name": "DATABASE_USER",
+                    "valueFrom": "arn:aws:ssm:_AWS_REGION_:_ACCOUNT_ID_:parameter/_APP_NAME_/_ENVIRONMENT_/db/user"
                 },
-                {
-                "name": "DATABASE_PASS",
-                "valueFrom": "_RDS_SECRET_ARN_:password::"
+		        {
+		            "name": "DATABASE_PASS",
+                    "valueFrom": "_DATABASE_PASS_:password::"
                 }
             ],
             "dnsServers": [],

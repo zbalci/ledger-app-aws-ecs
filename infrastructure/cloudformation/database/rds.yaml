@@ -26,6 +26,13 @@ Resources:
       Type: String
       Value: !Ref DBPort
 
+  DBUserSSMParam:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub "/${AppName}/${Environment}/db/user"
+      Type: String
+      Value: !Ref AppName
+
   RDSSubnetGroup:
     Type: AWS::RDS::DBSubnetGroup
     Properties:

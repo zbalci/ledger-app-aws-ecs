@@ -52,31 +52,31 @@ Resources:
         Environment: !Ref Environment
         AppPort: !Ref AppPort
 
-  # EcsClusterStack:
-  #   Type: AWS::CloudFormation::Stack
-  #   Properties:
-  #     TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/compute/ecs/cluster.yaml
-  #     Parameters:
-  #       AppName: !Ref AppName
-  #       Environment: !Ref Environment
-  #       InstanceType: !Ref InstanceType
-  #       AmiId: !Ref AmiId
-  #       ASGMin: !Ref ASGMin
-  #       ASGMax: !Ref ASGMax
-  #       ASGDesired: !Ref ASGDesired
+  EcsClusterStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/compute/ecs/cluster.yaml
+      Parameters:
+        AppName: !Ref AppName
+        Environment: !Ref Environment
+        InstanceType: !Ref InstanceType
+        AmiId: !Ref AmiId
+        ASGMin: !Ref ASGMin
+        ASGMax: !Ref ASGMax
+        ASGDesired: !Ref ASGDesired
 
-  # EcsServiceStack:
-  #   Type: AWS::CloudFormation::Stack
-  #   DependsOn:
-  #     - EcsTaskDefStack
-  #     - EcsClusterStack
-  #   Properties:
-  #     TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/compute/ecs/web-service.yaml
-  #     Parameters:
-  #       AppName: !Ref AppName
-  #       Environment: !Ref Environment
-  #       DeploymentType: !Ref DeploymentType
-  #       AppPort: !Ref AppPort
-  #       ServiceDesired: !Ref ServiceDesired
-  #       MaxPercent: !Ref MaxPercent
-  #       MinHealthy: !Ref MinHealthy
+  EcsServiceStack:
+    Type: AWS::CloudFormation::Stack
+    DependsOn:
+      - EcsTaskDefStack
+      - EcsClusterStack
+    Properties:
+      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/compute/ecs/web-service.yaml
+      Parameters:
+        AppName: !Ref AppName
+        Environment: !Ref Environment
+        DeploymentType: !Ref DeploymentType
+        AppPort: !Ref AppPort
+        ServiceDesired: !Ref ServiceDesired
+        MaxPercent: !Ref MaxPercent
+        MinHealthy: !Ref MinHealthy
