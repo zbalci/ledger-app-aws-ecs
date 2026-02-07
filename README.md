@@ -250,6 +250,7 @@ The project includes **four architecture diagrams**:
 
 1. **Nested Stack Architecture** – Root and all dependent stacks
 2. **CI/CD Pipeline Flow** – Source → Build → Deploy
+   ![Pipeline Flow](docs/diagrams/02-pipeline-flow.png)  
 3. **Deployment Strategy Comparison** – Rolling vs Blue/Green (artifact level)
    Deployment Strategies (Rolling vs Blue/Green)
 
