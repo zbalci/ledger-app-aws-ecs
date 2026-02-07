@@ -20,11 +20,11 @@ The application consists of a small Python web service backed by a SQL database.
 
 ---
 
-## High‑Level Architecture
+### High‑Level Architecture
 
 The infrastructure is organized into **three logical layers**:
 
-### 1. Foundation Stack
+#### 1. Foundation Stack
 
 Shared resources that rarely change:
 
@@ -33,9 +33,7 @@ Shared resources that rarely change:
 
 These resources export ARNs and names that are later consumed by other stacks.
 
----
-
-### 2. Root Stack
+#### 2. Root Stack
 
 The **orchestrator stack**.
 It controls environment‑specific behavior using `Mappings` and deploys all nested stacks in the correct order.
@@ -47,9 +45,7 @@ Environment differences are handled centrally:
 | dev         | Rolling    | dev    | 1–2 | 1           |
 | prod        | Blue/Green | main   | 2–4 | 2           |
 
----
-
-### 3. Nested Stacks
+#### 3. Nested Stacks
 
 Each major concern is isolated into its own stack:
 
@@ -121,38 +117,13 @@ The database is **never publicly accessible**.
 ---
 
 ## Security Model
-
-* Separate Security Groups for:
-
-  * ALB
-  * ECS
-  * RDS
+Separate Security Groups for: ALB, ECS and RDS
 
 Rules are based on **Security Group references**, not CIDR blocks:
 
 * ALB → ECS
 * ECS → RDS
 * RDS only accepts traffic from ECS SG
-
----
-
-## Load Balancing & Deployment Strategies
-
-### Rolling Update (dev)
-
-* Single Target Group
-* Listener forwards traffic directly
-* ECS replaces tasks incrementally
-
-### Blue / Green (prod)
-
-* Two Target Groups (Blue & Green)
-* One Production Listener
-* One Test Listener (port 8080)
-* CodeDeploy manages traffic shifting
-
-Deployment behavior is selected **automatically** via environment mapping.
-
 ---
 
 ## Container Registry
@@ -256,6 +227,8 @@ The project includes **four architecture diagrams**:
 
    This diagram illustrates how the application is deployed using two different strategies, selected dynamically based on the environment.
 
+   Deployment behavior is selected **automatically** via environment mapping.
+
    ![Deployment Strategy](docs/diagrams/03-deployment-strategy.png)
 
    Build phase is shared:
@@ -286,7 +259,21 @@ The project includes **four architecture diagrams**:
 
 5. **Container Design** – Web app container & db-init container lifecycle
 
-These diagrams are intended to complement the code and explain design decisions.
+   This diagram shows how the application runtime and database initialization are deliberately separated while still sharing the same ECS environment.
+   
+   The application container runs as part of an ECS Service behind an ALB and retrieves all database credentials and connection details securely from AWS Secrets Manager and SSM Parameter Store.
+   
+   The database initialization is handled by a one-off ECS task (db-init) that runs only during environment bootstrap.
+   
+   The db-init image is built by CodeBuild, pushed to ECR, and executed via ecs run-task.
+   
+   During execution, the task pulls the SQL schema from S3 and initializes the RDS instance using the MySQL client.
+   
+   Once completed, the task exits and is never part of the steady-state application lifecycle.
+   
+   This approach avoids coupling schema creation with application startup and ensures the database is initialized in a controlled, repeatable, and auditable way.
+   
+   Database initialization is treated as infrastructure, not as application logic.
 
 ---
 
