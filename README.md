@@ -58,7 +58,7 @@ Each major concern is isolated into its own stack:
 * **Load Balancer** – ALB, listeners, target groups
 * **Registry** – ECR repositories
 * **Database** – RDS + Secrets Manager + SSM
-* **ECS** – Cluster, ASG, Capacity Provider, Services
+* **ECS** – Cluster, ASG, Capacity Provider, Service, Task Definiton
 * **Pipelines** – CI/CD for db‑init and web app
 
 ---
