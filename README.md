@@ -257,13 +257,13 @@ The project includes **four architecture diagrams**:
    
    Build phase is shared:
    
-   1. Source is fetched from GitHub
+   * Source is fetched from GitHub
    
-   2. Unit tests and static/code security scans are executed
+   * Unit tests and static/code security scans are executed
    
-   3. Docker image is built, scanned, and pushed to ECR
+   * Docker image is built, scanned, and pushed to ECR
    
-   4. Build artifacts are uploaded to S3
+   * Build artifacts are uploaded to S3
    
    Deployment phase diverges by strategy:
    
@@ -279,6 +279,8 @@ The project includes **four architecture diagrams**:
    This approach keeps the build process consistent while allowing environment-specific deployment behavior without duplicating pipeline logic.
    
    The same pipeline produces different deployment behaviors without changing application code.
+
+   ![Deployment Strategy](docs/diagrams/01-ledger-app.png)
 
 5. **Container Design** – Web app container & db-init container lifecycle
 
