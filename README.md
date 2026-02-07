@@ -251,7 +251,34 @@ The project includes **four architecture diagrams**:
 1. **Nested Stack Architecture** – Root and all dependent stacks
 2. **CI/CD Pipeline Flow** – Source → Build → Deploy
 3. **Deployment Strategy Comparison** – Rolling vs Blue/Green (artifact level)
-4. **Container Design** – Web app container & db-init container lifecycle
+   Deployment Strategies (Rolling vs Blue/Green)
+
+   This diagram illustrates how the application is deployed using two different strategies, selected dynamically based on the environment.
+   
+   Build phase is shared:
+   
+   Source is fetched from GitHub
+   
+   Unit tests and static/code security scans are executed
+   
+   Docker image is built, scanned, and pushed to ECR
+   
+   Build artifacts are uploaded to S3
+   
+   Deployment phase diverges by strategy:
+   
+   Rolling Update (dev)
+   The ECS service updates tasks in-place using a single target group.
+   New task definitions gradually replace old ones behind the same listener (port 80), ensuring minimal disruption with a simpler deployment flow.
+   
+   Blue / Green (prod)
+   CodeDeploy manages two separate target groups (Blue and Green).
+   A new task definition is deployed to the Green target group and exposed via a test listener (port 8080).
+   After validation, traffic is shifted from Blue to Green on the production listener (port 80), allowing safe releases and easy rollback.
+   
+   This approach keeps the build process consistent while allowing environment-specific deployment behavior without duplicating pipeline logic.
+
+5. **Container Design** – Web app container & db-init container lifecycle
 
 These diagrams are intended to complement the code and explain design decisions.
 
