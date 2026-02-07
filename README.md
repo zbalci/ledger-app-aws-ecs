@@ -276,11 +276,12 @@ The project includes **four architecture diagrams**:
    A new task definition is deployed to the Green target group and exposed via a test listener (port 8080).
    After validation, traffic is shifted from Blue to Green on the production listener (port 80), allowing safe releases and easy rollback.
    
+   ![Deployment Strategy](docs/diagrams/03-deployment-strategy.png)
+   
    This approach keeps the build process consistent while allowing environment-specific deployment behavior without duplicating pipeline logic.
    
    The same pipeline produces different deployment behaviors without changing application code.
 
-   ![Deployment Strategy](docs/diagrams/01-ledger-app.png)
 
 5. **Container Design** – Web app container & db-init container lifecycle
 
