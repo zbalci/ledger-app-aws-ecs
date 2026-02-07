@@ -112,10 +112,10 @@ Resources:
         ManagedScaling:
           InstanceWarmupPeriod: 60
           MinimumScalingStepSize: 1
-          MaximumScalingStepSize: 100
+          MaximumScalingStepSize: 5
           Status: ENABLED
-          TargetCapacity: 100
-        ManagedTerminationProtection: DISABLED
+          TargetCapacity: 80
+        ManagedTerminationProtection: ENABLED
 
   CapacityProviderAssociation:
     Type: AWS::ECS::ClusterCapacityProviderAssociations
@@ -124,6 +124,6 @@ Resources:
         - !Ref CapacityProvider
       Cluster: !Ref ECSCluster
       DefaultCapacityProviderStrategy:
-        - Base: 0
-          CapacityProvider: !Ref CapacityProvider
+        - CapacityProvider: !Ref CapacityProvider
+          Base: 0
           Weight: 1
