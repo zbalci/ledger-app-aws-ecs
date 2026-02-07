@@ -1,192 +1,273 @@
-# Ledger App
+# Ledger App – AWS ECS Portfolio Project
 
-Ledger App is a minimal transactional ledger service built as a **reference portfolio project** to demonstrate an end‑to‑end CI/CD workflow on Kubernetes. The focus of the project is not business complexity, but **clean separation of concerns**, **reproducible builds**, and **production‑grade delivery practices** using Jenkins, Helm, ArgoCD, and container security tooling.
+Ledger App is a minimal transactional ledger service built as a **reference portfolio project** to demonstrate an **end‑to‑end, production‑style AWS ECS architecture** built entirely with **CloudFormation (nested stacks)** and deployed via **CodePipeline**.
+The goal is to showcase how a containerized application can be deployed in **dev/prod environments** using **rolling update** and **blue/green deployment** strategies, while keeping infrastructure modular, secure, and reproducible.
 
 The application consists of a small Python web service backed by a SQL database. It supports basic CRUD operations and is intentionally kept simple so the infrastructure and pipeline design remain the primary point of interest.
 
 <img width="1140" height="311" alt="image" src="https://github.com/user-attachments/assets/818d81d7-6be7-406d-89cf-d750162c0a9d" />
 
-## Directory Layout
+---
 
-assets/        Runtime artifacts
-cicd/          Build & deploy logic
-cloudformation Infrastructure as Code
-src/      Application source
+## Project Goals
+
+* Demonstrate **Infrastructure as Code** using CloudFormation (root + nested stacks)
+* Implement **CI/CD pipelines** with CodePipeline, CodeBuild, and CodeDeploy
+* Support **multiple deployment strategies** (Rolling / Blue‑Green)
+* Run workloads on **Amazon ECS (EC2 launch type)** with Capacity Providers
+* Securely provision and initialize an **RDS database**
+* Separate **one‑time database initialization** from application runtime
 
 ---
 
 ## High‑Level Architecture
 
-* **Web Service**: Python Flask application providing CRUD endpoints and HTML views
-* **Database**: SQL server initialized via Kubernetes Job
-* **Containerization**: Separate images for web and SQL components
-* **CI**: Jenkins running on Kubernetes
-* **CD**: ArgoCD with Helm charts
-* **Security & Quality**: Unit/integration tests, Bandit, Trivy
+The infrastructure is organized into **three logical layers**:
 
-```
-Developer -> GitHub -> Jenkins (CI) -> Container Registry -> GitHub (Helm values) -> ArgoCD -> Kubernetes
-```
+### 1. Foundation Stack
 
-<img width="4142" height="1917" alt="cicd-diagram" src="https://github.com/user-attachments/assets/0578e6a7-eda7-4735-a6f7-ef7e53eeafd1" />
+Shared resources that rarely change:
 
-<img width="2943" height="1237" alt="kubernetes-diagram" src="https://github.com/user-attachments/assets/f02e9f1d-7506-4b2b-8dc5-6a19cccc77bf" />
+* S3 buckets (artifacts, assets)
+* CloudWatch Log Groups
+
+These resources export ARNs and names that are later consumed by other stacks.
+
+---
+
+### 2. Root Stack
+
+The **orchestrator stack**.
+It controls environment‑specific behavior using `Mappings` and deploys all nested stacks in the correct order.
+
+Environment differences are handled centrally:
+
+| Environment | Deployment | Branch | ASG | ECS Desired |
+| ----------- | ---------- | ------ | --- | ----------- |
+| dev         | Rolling    | dev    | 1–2 | 1           |
+| prod        | Blue/Green | main   | 2–4 | 2           |
+
+---
+
+### 3. Nested Stacks
+
+Each major concern is isolated into its own stack:
+
+* **Network** – VPC, public/private subnets
+* **Security** – Security Groups
+* **Load Balancer** – ALB, listeners, target groups
+* **Registry** – ECR repositories
+* **Database** – RDS + Secrets Manager + SSM
+* **ECS** – Cluster, ASG, Capacity Provider, Services
+* **Pipelines** – CI/CD for db‑init and web app
 
 ---
 
 ## Repository Structure
 
-```
+```text
 .
-├── charts/                 # Helm chart for Kubernetes deployment
-│   ├── templates/          # Deployments and Jobs
-│   ├── values-dev.yaml     # Dev environment values
-│   └── values-prod.yaml    # Prod environment values
-├── compose/                # Local development setup
-│   └── docker-compose.yml
-├── Jenkinsfile             # CI pipeline definition
-├── sql/                    # SQL image and initialization
-│   ├── Dockerfile
-│   └── init.sql
-└── web/                    # Web application
-    ├── app/                # Application source
-    ├── tests/              # Python unittest suite
-    ├── Dockerfile          # Production image (tests excluded)
-    └── requirements.txt
+├── infrastructure
+│   ├── assets
+│   │   ├── database
+│   │   │   └── init.sql                # Initial database schema
+│   │   └── images
+│   │       └── db-init
+│   │           └── Dockerfile          # db-init image
+│   ├── cicd
+│   │   ├── db-init
+│   │   │   └── buildspec.yml            # db-init CodeBuild spec
+│   │   └── web
+│   │       ├── blue-green
+│   │       │   ├── appspec.yaml
+│   │       │   ├── buildspec.yml
+│   │       │   └── taskdef.json
+│   │       └── rolling-update
+│   │           └── buildspec.yml
+│   ├── cloudformation
+│   │   ├── compute/ecs
+│   │   ├── database
+│   │   ├── foundation
+│   │   ├── loadbalancer
+│   │   ├── network
+│   │   ├── pipeline
+│   │   ├── registry
+│   │   └── security
+│   ├── deploy.sh
+│   └── local
+│       └── docker-compose.yml
+├── src
+│   └── web
+│       ├── app
+│       ├── Dockerfile
+│       └── tests
+└── README.md
 ```
 
 ---
 
-## Application Design Notes
+## Network Design
 
-* Tests live under `web/tests` and are **not included** in the runtime image
-* The production image only contains what is required to run the service
-* Database credentials are injected via Kubernetes Secrets
-* SQL schema is initialized through a Kubernetes Job
+* **Public subnets**
+
+  * Application Load Balancer
+* **Private subnets**
+
+  * ECS instances
+  * RDS database
+
+The database is **never publicly accessible**.
 
 ---
 
-## CI Pipeline (Jenkins)
+## Security Model
 
-The Jenkins pipeline is designed to be **branch‑aware** and **Kubernetes‑native**.
+* Separate Security Groups for:
 
-### Environment Resolution
+  * ALB
+  * ECS
+  * RDS
 
-```groovy
-def APP_NAME = "ledger-app-${env.BRANCH_NAME == 'main' ? 'prod' : env.BRANCH_NAME}"
+Rules are based on **Security Group references**, not CIDR blocks:
+
+* ALB → ECS
+* ECS → RDS
+* RDS only accepts traffic from ECS SG
+
+---
+
+## Load Balancing & Deployment Strategies
+
+### Rolling Update (dev)
+
+* Single Target Group
+* Listener forwards traffic directly
+* ECS replaces tasks incrementally
+
+### Blue / Green (prod)
+
+* Two Target Groups (Blue & Green)
+* One Production Listener
+* One Test Listener (port 8080)
+* CodeDeploy manages traffic shifting
+
+Deployment behavior is selected **automatically** via environment mapping.
+
+---
+
+## Container Registry
+
+* Separate ECR repositories for:
+
+  * `web` application image
+  * `db-init` image
+
+A lifecycle cleanup resource ensures repositories can be deleted without errors.
+
+---
+
+## Database Layer
+
+* Amazon RDS (MySQL)
+* Credentials stored in **AWS Secrets Manager**
+* Connection details stored in **SSM Parameter Store**
+* Runs in private subnets
+
+---
+
+## ECS Architecture
+
+### ECS Task Definitions
+
+* Application task receives database values via `valueFrom`
+* Uses Secrets Manager and SSM parameters
+* Initial deployment runs a **dummy container** (nginx) to allow pipeline bootstrapping
+
+### ECS Cluster
+
+* EC2 Auto Scaling Group
+* Capacity Provider with managed scaling
+
+### ECS Service
+
+* Configured dynamically for Rolling or Blue/Green deployment
+
+---
+
+## Database Initialization (db-init)
+
+Database initialization is handled **once**, separately from the application lifecycle.
+
+### Flow
+
+1. CodeBuild builds the `db-init` image (awscli + mysql client)
+2. SQL file is uploaded to S3
+3. ECS task is triggered via `aws ecs run-task`
+4. Task restores schema to RDS
+5. Task exits after completion
+
+This avoids coupling schema creation with application startup.
+
+---
+
+## CI/CD Pipelines
+
+### db-init Pipeline
+
+* Triggered manually or once during environment bootstrap
+* Builds db-init image
+* Runs ECS task to initialize database
+
+### Web Application Pipeline
+
+* Triggered on every Git push
+* Source: GitHub via CodeConnections
+* Build: CodeBuild
+* Deploy:
+
+  * Rolling update (dev)
+  * Blue/Green via CodeDeploy (prod)
+
+Buildspec selection:
+
+```yaml
+BuildSpec: !If
+  - IsRolling
+  - infrastructure/cicd/web/rolling-update/buildspec.yml
+  - infrastructure/cicd/web/blue-green/buildspec.yml
 ```
 
-* `main` branch maps to **prod**
-* Any other branch maps to its own environment name
-* Image names and Helm values are derived from this logic
+Pipeline succeeds only after:
+
+* Container starts
+* Database connection is successful
 
 ---
 
-### Jenkins Agent Model
+## Diagrams
 
-The pipeline runs entirely on Kubernetes using ephemeral Pods with multiple containers:
+The project includes **four architecture diagrams**:
 
-* **ledger-app-web-codeless**: Executes tests
-* **ledger-app-sql-test**: Provides a SQL backend for integration tests
-* **bandit**: Static security analysis for Python code
-* **kaniko**: Container image builder (Dockerless)
-* **trivy**: Container image vulnerability scanner
+1. **Nested Stack Architecture** – Root and all dependent stacks
+2. **CI/CD Pipeline Flow** – Source → Build → Deploy
+3. **Deployment Strategy Comparison** – Rolling vs Blue/Green (artifact level)
+4. **Container Design** – Web app container & db-init container lifecycle
 
-This design avoids privileged containers and keeps each responsibility isolated.
-
----
-
-### Pipeline Stages Overview
-
-#### 1. Init
-
-* Resolves runtime environment (dev / prod)
-* Constructs registry image names
-
-#### 2. Checkout
-
-* Pulls source code from GitHub
-
-#### 3. Integration Tests
-
-* Runs Python `unittest` suite
-* Executes full CRUD flows against a real SQL service
-* Ensures database connectivity and schema correctness
-
-```bash
-python -m unittest discover -s tests -t .
-```
-
-#### 4. Bandit
-
-* Static analysis of Python source
-* Fails pipeline on high‑severity findings
-
-```bash
-bandit -r . -lll
-```
-
-#### 5. Build Image (Kaniko)
-
-* Builds the production web image
-* Pushes versioned and `latest` tags
-* Does not require Docker daemon
-
-#### 6. Trivy Image Scan
-
-* Scans the built image for HIGH and CRITICAL vulnerabilities
-* Pipeline fails if thresholds are exceeded
-
-#### 7. Update Helm Values
-
-* Automatically updates the image tag in the corresponding Helm values file
-* Commits and pushes the change back to GitHub
-* This acts as the **handoff point** to CD
+These diagrams are intended to complement the code and explain design decisions.
 
 ---
 
-## Continuous Delivery (ArgoCD)
+## Summary
 
-* ArgoCD monitors the Helm chart repository
-* Any change to `values-dev.yaml` or `values-prod.yaml` triggers a sync
-* Kubernetes manifests are applied declaratively
-* No direct `kubectl apply` is performed from CI
+This project is designed as a **realistic AWS ECS portfolio**:
 
-This enforces a clean **CI / CD separation**:
+* Modular CloudFormation design
+* Environment‑aware deployments
+* Production‑grade CI/CD patterns
+* Clean separation of concerns
 
-* Jenkins: build, test, scan, publish
-* ArgoCD: deploy and reconcile
+It aims to reflect how ECS‑based systems are typically structured in real‑world environments rather than minimal demos.
 
----
-
-## Local Development
-
-For local testing and iteration, Docker Compose is provided:
-
-```bash
-docker-compose up --build
-```
-
-This setup mirrors the production topology closely enough to validate behavior before pushing changes.
-
----
-
-## Secrets & Configuration
-
-* Kubernetes Secrets are created **out of band** using `kubectl`
-* No external secret manager (Vault, SSM, etc.) is used in this project
-* TLS certificates and database credentials must exist before deployment
-
-This choice is intentional to keep the project focused on CI/CD mechanics rather than secret backends.
-
----
-
-## Purpose of This Project
-
-This repository is intentionally designed as a **showcase project**:
-
-* Demonstrates real‑world CI/CD patterns
-* Uses production‑grade tools and workflows
 * Keeps application logic simple and auditable
 * Emphasizes reproducibility, security, and clarity
 
