@@ -6,6 +6,7 @@ The goal is to showcase how a containerized application can be deployed in **dev
 The application consists of a small Python web service backed by a SQL database. It supports basic CRUD operations and is intentionally kept simple so the infrastructure and pipeline design remain the primary point of interest.
 
 <img width="1140" height="311" alt="image" src="https://github.com/user-attachments/assets/818d81d7-6be7-406d-89cf-d750162c0a9d" />
+(docs/diagrams/01-ledger-app.png)
 
 ---
 
