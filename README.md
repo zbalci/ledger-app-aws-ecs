@@ -7,59 +7,16 @@ The application consists of a small Python web service backed by a SQL database.
 
 ![Ledger App](docs/diagrams/01-ledger-app.png)
 
----
+### Project Goals
 
-## Project Goals
-
-* Demonstrate **Infrastructure as Code** using CloudFormation (root + nested stacks)
+* Demonstrate **Infrastructure as Code** using CloudFormation
 * Implement **CI/CD pipelines** with CodePipeline, CodeBuild, and CodeDeploy
 * Support **multiple deployment strategies** (Rolling / Blue‑Green)
 * Run workloads on **Amazon ECS (EC2 launch type)** with Capacity Providers
 * Securely provision and initialize an **RDS database**
 * Separate **one‑time database initialization** from application runtime
 
----
-
-### High‑Level Architecture
-
-The infrastructure is organized into **three logical layers**:
-
-#### 1. Foundation Stack
-
-Shared resources that rarely change:
-
-* S3 buckets (artifacts, assets)
-* CloudWatch Log Groups
-
-These resources export ARNs and names that are later consumed by other stacks.
-
-#### 2. Root Stack
-
-The **orchestrator stack**.
-It controls environment‑specific behavior using `Mappings` and deploys all nested stacks in the correct order.
-
-Environment differences are handled centrally:
-
-| Environment | Deployment | Branch | ASG | ECS Desired |
-| ----------- | ---------- | ------ | --- | ----------- |
-| dev         | Rolling    | dev    | 1–2 | 1           |
-| prod        | Blue/Green | main   | 2–4 | 2           |
-
-#### 3. Nested Stacks
-
-Each major concern is isolated into its own stack:
-
-* **Network** – VPC, public/private subnets
-* **Security** – Security Groups
-* **Load Balancer** – ALB, listeners, target groups
-* **Registry** – ECR repositories
-* **Database** – RDS + Secrets Manager + SSM
-* **ECS** – Cluster, ASG, Capacity Provider, Service, Task Definiton
-* **Pipelines** – CI/CD for db‑init and web app
-
----
-
-## Repository Structure
+### Repository Structure
 
 ```text
 .
@@ -100,184 +57,115 @@ Each major concern is isolated into its own stack:
 └── README.md
 ```
 
+### High‑Level Architecture
+
+The infrastructure is organized into **two logical layers**: Foundation and Root.
+![CloudFormation Stacks](docs/diagrams/02-cfn-stacks.png)  
+
+#### 1. Foundation Stack
+
+Shared resources that rarely change: S3 buckets (artifacts, assets) and CloudWatch Log Groups
+
+These resources export ARNs and names that are later consumed by other stacks.
+
+#### 2. Root Stack
+
+The **orchestrator stack**. It controls environment‑specific behavior using `Mappings` and deploys all nested stacks in the correct order.
+
+Environment differences are handled centrally:
+
+| Environment | Deployment | Branch | ASG | ECS Desired |
+| ----------- | ---------- | ------ | --- | ----------- |
+| dev         | Rolling    | dev    | 1–2 | 1           |
+| prod        | Blue/Green | main   | 2–4 | 2           |
+
+Each major concern is isolated into its own stack:
+
+* **Network** – VPC, public/private subnets, Internet Gateway, Nat Gateway...
+* **Security** – Security Groups for ALB, ECS and RDS
+* **Load Balance** – ALB, listeners, target groups
+* **Registry** – ECR repository and image cleanup lambda function (which is required for stack deletion)
+* **Database** – RDS + Secrets Manager + SSM
+* **ECS** – Cluster, ASG, Capacity Provider, Service, Task Definiton
+* **Database Init** - Image build, one-off ECS task for db-init
+* **Pipelines** – CI/CD for web app
+  
 ---
 
-## Network Design
-
-* **Public subnets**
-
-  * Application Load Balancer
-* **Private subnets**
-
-  * ECS instances
-  * RDS database
-
-The database is **never publicly accessible**.
-
+### CI/CD Pipeline Flow
+![Pipeline Flow](docs/diagrams/03-pipeline-flow.png)  
+  
 ---
 
-## Security Model
-Separate Security Groups for: ALB, ECS and RDS
+### Deployment Strategies (Rolling vs Blue/Green)
+This diagram illustrates how the application is deployed using two different strategies, selected dynamically based on the environment.
 
-Rules are based on **Security Group references**, not CIDR blocks:
-
-* ALB → ECS
-* ECS → RDS
-* RDS only accepts traffic from ECS SG
----
-
-## Container Registry
-
-* Separate ECR repositories for:
-
-  * `web` application image
-  * `db-init` image
-
-A lifecycle cleanup resource ensures repositories can be deleted without errors.
-
----
-
-## Database Layer
-
-* Amazon RDS (MySQL)
-* Credentials stored in **AWS Secrets Manager**
-* Connection details stored in **SSM Parameter Store**
-* Runs in private subnets
-
----
-
-## ECS Architecture
-
-### ECS Task Definitions
-
-* Application task receives database values via `valueFrom`
-* Uses Secrets Manager and SSM parameters
-* Initial deployment runs a **dummy container** (nginx) to allow pipeline bootstrapping
-
-### ECS Cluster
-
-* EC2 Auto Scaling Group
-* Capacity Provider with managed scaling
-
-### ECS Service
-
-* Configured dynamically for Rolling or Blue/Green deployment
-
----
-
-## Database Initialization (db-init)
-
-Database initialization is handled **once**, separately from the application lifecycle.
-
-### Flow
-
-1. CodeBuild builds the `db-init` image (awscli + mysql client)
-2. SQL file is uploaded to S3
-3. ECS task is triggered via `aws ecs run-task`
-4. Task restores schema to RDS
-5. Task exits after completion
-
-This avoids coupling schema creation with application startup.
-
----
-
-## CI/CD Pipelines
-
-### db-init Pipeline
-
-* Triggered manually or once during environment bootstrap
-* Builds db-init image
-* Runs ECS task to initialize database
-
-### Web Application Pipeline
-
-* Triggered on every Git push
-* Source: GitHub via CodeConnections
-* Build: CodeBuild
-* Deploy:
-
-  * Rolling update (dev)
-  * Blue/Green via CodeDeploy (prod)
-
-Buildspec selection:
-
-```yaml
-BuildSpec: !If
-  - IsRolling
-  - infrastructure/cicd/web/rolling-update/buildspec.yml
-  - infrastructure/cicd/web/blue-green/buildspec.yml
+Deployment behavior is selected **automatically** via environment mapping.
+```text
+Mappings:
+  EnvConfig:
+    dev:
+      DeploymentType: rolling
+      Branch: dev
+    prod:
+      DeploymentType: bluegreen
+      Branch: main
 ```
 
-Pipeline succeeds only after:
+![Deployment Strategy](docs/diagrams/04-deployment-strategy.png)
 
-* Container starts
-* Database connection is successful
+Build phase is shared:
 
----
+* Source is fetched from GitHub
 
-## Diagrams
+* Unit tests and static/code security scans are executed
 
-The project includes **four architecture diagrams**:
+* Docker image is built, scanned, and pushed to ECR
 
-1. **Nested Stack Architecture** – Root and all dependent stacks
-2. **CI/CD Pipeline Flow** – Source → Build → Deploy
-   ![Pipeline Flow](docs/diagrams/02-pipeline-flow.png)  
-3. **Deployment Strategy Comparison** – Rolling vs Blue/Green (artifact level)
-   Deployment Strategies (Rolling vs Blue/Green)
+* Build artifacts are uploaded to S3
 
-   This diagram illustrates how the application is deployed using two different strategies, selected dynamically based on the environment.
+Deployment phase diverges by strategy:
 
-   Deployment behavior is selected **automatically** via environment mapping.
+1.Rolling Update (dev)
+The ECS service updates tasks in-place using a single target group.
+New task definitions gradually replace old ones behind the same listener (port 80), ensuring minimal disruption with a simpler deployment flow.
 
-   ![Deployment Strategy](docs/diagrams/03-deployment-strategy.png)
+2.Blue / Green (prod)
+CodeDeploy manages two separate target groups (Blue and Green).
+A new task definition is deployed to the Green target group and exposed via a test listener (port 8080).
+After validation, traffic is shifted from Blue to Green on the production listener (port 80), allowing safe releases and easy rollback.
 
-   Build phase is shared:
-   
-   * Source is fetched from GitHub
-   
-   * Unit tests and static/code security scans are executed
-   
-   * Docker image is built, scanned, and pushed to ECR
-   
-   * Build artifacts are uploaded to S3
-   
-   Deployment phase diverges by strategy:
-   
-   1.Rolling Update (dev)
-   The ECS service updates tasks in-place using a single target group.
-   New task definitions gradually replace old ones behind the same listener (port 80), ensuring minimal disruption with a simpler deployment flow.
-   
-   2.Blue / Green (prod)
-   CodeDeploy manages two separate target groups (Blue and Green).
-   A new task definition is deployed to the Green target group and exposed via a test listener (port 8080).
-   After validation, traffic is shifted from Blue to Green on the production listener (port 80), allowing safe releases and easy rollback.
-   
-   This approach keeps the build process consistent while allowing environment-specific deployment behavior without duplicating pipeline logic.
-   
-   The same pipeline produces different deployment behaviors without changing application code.
+This approach keeps the build process consistent while allowing environment-specific deployment behavior without duplicating pipeline logic.
 
-
-5. **Container Design** – Web app container & db-init container lifecycle
-
-   This diagram shows how the application runtime and database initialization are deliberately separated while still sharing the same ECS environment.
-   
-   The application container runs as part of an ECS Service behind an ALB and retrieves all database credentials and connection details securely from AWS Secrets Manager and SSM Parameter Store.
-   
-   The database initialization is handled by a one-off ECS task (db-init) that runs only during environment bootstrap.
-   
-   The db-init image is built by CodeBuild, pushed to ECR, and executed via ecs run-task.
-   
-   During execution, the task pulls the SQL schema from S3 and initializes the RDS instance using the MySQL client.
-   
-   Once completed, the task exits and is never part of the steady-state application lifecycle.
-   
-   This approach avoids coupling schema creation with application startup and ensures the database is initialized in a controlled, repeatable, and auditable way.
-   
-   Database initialization is treated as infrastructure, not as application logic.
+The same pipeline produces different deployment behaviors without changing application code.
 
 ---
 
-## Summary
+### Web app container & db-init container lifecycle ##
+This diagram shows how the application runtime and database initialization are deliberately separated while still sharing the same ECS environment.
+![Container lifecycle](docs/diagrams/05-container-lifecycle.png)
+
+The application container runs as part of an ECS Service behind an ALB and retrieves all database credentials and connection details securely from AWS Secrets Manager and SSM Parameter Store.
+
+The database initialization is handled by a one-off ECS task (db-init) that runs only during environment bootstrap.
+
+The db-init image is built by CodeBuild, pushed to ECR, and executed via ecs run-task.
+
+During execution, the task pulls the SQL schema from S3 and initializes the RDS instance using the MySQL client.
+
+Once completed, the task exits and is never part of the steady-state application lifecycle.
+
+This approach avoids coupling schema creation with application startup and ensures the database is initialized in a controlled, repeatable, and auditable way.
+
+Database initialization is treated as infrastructure, not as application logic.
+  
+---
+
+### Network Design and Security Model
+  
+---
+
+### Summary
 
 This project is designed as a **realistic AWS ECS portfolio**:
 
@@ -291,4 +179,4 @@ It aims to reflect how ECS‑based systems are typically structured in real‑wo
 * Keeps application logic simple and auditable
 * Emphasizes reproducibility, security, and clarity
 
-It is not a framework or a product, but a **reference implementation** for Kubernetes‑based delivery pipelines.
+It is not a framework or a product, but a **reference implementation** for container‑based delivery pipelines.
