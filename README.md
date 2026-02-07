@@ -75,9 +75,9 @@ Each major concern is isolated into its own stack:
 │   │       └── db-init
 │   │           └── Dockerfile          # db-init image
 │   ├── cicd
-│   │   ├── db-init
-│   │   │   └── buildspec.yml            # db-init CodeBuild spec
-│   │   └── web
+│   │   ├── db-init                     # db-init build spec
+│   │   │   └── buildspec.yml           
+│   │   └── web                         # web-image build artfacts files
 │   │       ├── blue-green
 │   │       │   ├── appspec.yaml
 │   │       │   ├── buildspec.yml
@@ -94,13 +94,13 @@ Each major concern is isolated into its own stack:
 │   │   ├── registry
 │   │   └── security
 │   ├── deploy.sh
-│   └── local
+│   └── local                          # deployment for local development
 │       └── docker-compose.yml
-├── src
+├── src                                # app source code
 │   └── web
 │       ├── app
 │       ├── Dockerfile
-│       └── tests
+│       └── tests                      # app unit tests
 └── README.md
 ```
 
