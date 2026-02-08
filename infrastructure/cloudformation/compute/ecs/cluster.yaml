@@ -89,9 +89,9 @@ Resources:
     Properties:
       VPCZoneIdentifier:
         - Fn::ImportValue:
-            Fn::Sub: ${AppName}-${Environment}-public-subnet1-id
+            Fn::Sub: ${AppName}-${Environment}-private-subnet1-id
         - Fn::ImportValue:
-            Fn::Sub: ${AppName}-${Environment}-public-subnet2-id
+            Fn::Sub: ${AppName}-${Environment}-private-subnet2-id
       LaunchTemplate:
         LaunchTemplateId: !Ref ContainerInstances
         Version: !GetAtt ContainerInstances.LatestVersionNumber
