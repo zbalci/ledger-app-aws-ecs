@@ -38,12 +38,9 @@ Resources:
           ToPort: !Ref TestPort
           CidrIp: 0.0.0.0/0
 
-      # ALB only talks to ECS targets
       SecurityGroupEgress:
-        - IpProtocol: tcp
-          FromPort: !Ref AppPort
-          ToPort: !Ref AppPort
-          DestinationSecurityGroupId: !GetAtt ContainerHostSecurityGroup.GroupId
+        - IpProtocol: -1
+          CidrIp: 0.0.0.0/0
 
   ContainerHostSecurityGroup:
     Type: AWS::EC2::SecurityGroup
@@ -72,7 +69,7 @@ Resources:
         - IpProtocol: tcp
           FromPort: !Ref DBPort
           ToPort: !Ref DBPort
-          DestinationSecurityGroupId: !GetAtt RDSSecurityGroup.GroupId
+          CidrIp: 10.0.0.0/16   # or DB subnet CIDR
 
         # DNS resolution (required by ECS)
         - IpProtocol: udp
