@@ -115,7 +115,7 @@ Resources:
           MaximumScalingStepSize: 5
           Status: ENABLED
           TargetCapacity: 80
-        ManagedTerminationProtection: ENABLED
+        ManagedTerminationProtection: DISABLED
 
   CapacityProviderAssociation:
     Type: AWS::ECS::ClusterCapacityProviderAssociations
