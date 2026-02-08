@@ -161,8 +161,18 @@ Database initialization is treated as infrastructure, not as application logic.
   
 ---
 
-### Network Design and Security Model
-  
+### Security Model
+![Security Model](docs/diagrams/06-security-model.png)
+The network security model is primarily based on strict security group chaining, with limited CIDR-based rules applied only where necessary to avoid infrastructure dependency loops.
+
+The ALB is the only public entry point and accepts traffic on ports 80 and 8080.
+ECS tasks only accept inbound traffic from the ALB security group.
+The RDS instance allows inbound connections exclusively from the ECS security group.
+No direct internet access is allowed to ECS or RDS; all outbound access is routed through a NAT Gateway.
+Outbound traffic is intentionally restricted: ECS tasks are permitted DNS resolution, AWS API access, and database connectivity, while RDS has no outbound rules as it is a fully managed service.
+
+This design enforces least-privilege networking while remaining CloudFormation-friendly and production-ready.
+
 ---
 
 ### Summary
