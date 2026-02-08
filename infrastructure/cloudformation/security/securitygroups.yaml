@@ -21,57 +21,87 @@ Resources:
   ALBSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
-      GroupDescription: Allow HTTP inbound and all outbound
+      GroupDescription: Allow public HTTP inbound, restricted outbound to ECS
       GroupName: !Sub "${AppName}-${Environment}-alb-sg"
       VpcId:
         Fn::ImportValue:
           Fn::Sub: ${AppName}-${Environment}-vpc-id
+
       SecurityGroupIngress:
         - IpProtocol: tcp
           FromPort: !Ref AppPort
           ToPort: !Ref AppPort
           CidrIp: 0.0.0.0/0
+
         - IpProtocol: tcp
           FromPort: !Ref TestPort
           ToPort: !Ref TestPort
           CidrIp: 0.0.0.0/0
+
+      # ALB only talks to ECS targets
       SecurityGroupEgress:
-        - IpProtocol: -1
-          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: !Ref AppPort
+          ToPort: !Ref AppPort
+          DestinationSecurityGroupId: !GetAtt ContainerHostSecurityGroup.GroupId
 
   ContainerHostSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
-      GroupDescription: ECS container host security group
+      GroupDescription: ECS service security group
       GroupName: !Sub "${AppName}-${Environment}-ecs-sg"
       VpcId:
         Fn::ImportValue:
           Fn::Sub: ${AppName}-${Environment}-vpc-id
+
       SecurityGroupIngress:
+        # Only ALB can reach the service
         - IpProtocol: tcp
           FromPort: !Ref AppPort
           ToPort: !Ref AppPort
           SourceSecurityGroupId: !GetAtt ALBSecurityGroup.GroupId
+
       SecurityGroupEgress:
-        - IpProtocol: -1 # DNS (UDP 53) name resolution
+        # HTTPS for AWS APIs (Secrets Manager, SSM, ECR, CloudWatch)
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
           CidrIp: 0.0.0.0/0
+
+        # Database access
+        - IpProtocol: tcp
+          FromPort: !Ref DBPort
+          ToPort: !Ref DBPort
+          DestinationSecurityGroupId: !GetAtt RDSSecurityGroup.GroupId
+
+        # DNS resolution (required by ECS)
+        - IpProtocol: udp
+          FromPort: 53
+          ToPort: 53
+          CidrIp: 10.0.0.0/16
+
+        - IpProtocol: tcp
+          FromPort: 53
+          ToPort: 53
+          CidrIp: 10.0.0.0/16
 
   RDSSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
-      GroupDescription: RDS Security Group
+      GroupDescription: RDS access only from ECS, no outbound
       GroupName: !Sub "${AppName}-${Environment}-rds-sg"
       VpcId:
         Fn::ImportValue:
           Fn::Sub: ${AppName}-${Environment}-vpc-id
+
       SecurityGroupIngress:
         - IpProtocol: tcp
           FromPort: !Ref DBPort
           ToPort: !Ref DBPort
           SourceSecurityGroupId: !GetAtt ContainerHostSecurityGroup.GroupId
-      SecurityGroupEgress:
-        - IpProtocol: -1
-          CidrIp: 0.0.0.0/0
+
+      # No outbound traffic required for RDS
+      SecurityGroupEgress: []
 
 Outputs:
   ALBSecurityGroupId:
