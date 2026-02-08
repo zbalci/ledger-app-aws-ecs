@@ -1,4 +1,3 @@
-# main-stack.yaml
 Parameters:
   AppName:
     Type: String
@@ -10,15 +9,7 @@ Parameters:
     AllowedValues:
       - prod
       - dev
-    Default: prod
-
-  # DeploymentType:
-  #   Type: String
-  #   Description: Deployment tipi (bluegreen veya rolling)
-  #   AllowedValues:
-  #     - bluegreen
-  #     - rolling
-  #   Default: rolling
+    Default: dev
 
   GithubConnectionArn:
     Type: String
