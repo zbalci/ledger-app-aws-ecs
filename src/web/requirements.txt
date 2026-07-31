@@ -1,5 +1,4 @@
-msgpack==1.2.1
-setuptools==78.1.1 
+Flask===2.2.5
 Werkzeug==3.0.3
 mysql-connector-python
 unittest2
