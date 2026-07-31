@@ -63,6 +63,13 @@ Resources:
         - Key: ManagedBy
           Value: CloudFormation
 
+  AssetBucketS3Param:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub "/${AppName}/${Environment}/asset_bucket_s3"
+      Type: String
+      Value: !Sub "s3://${AssetBucket}"
+
   ArtifactBucket:
     Type: AWS::S3::Bucket
     DeletionPolicy: Delete
@@ -76,11 +83,18 @@ Resources:
         - Key: ManagedBy
           Value: CloudFormation
 
+  ArtifactBucketS3Param:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub "/${AppName}/${Environment}/artifact_bucket_s3"
+      Type: String
+      Value: !Sub "s3://${ArtifactBucket}"
+
   IaCBucket:
     Type: AWS::S3::Bucket
     DeletionPolicy: Delete
     Properties:
-      BucketName: !Sub "${AppName}-${AWS::AccountId}-ecs-iac"
+      BucketName: !Sub "${AppName}-${Environment}-${AWS::AccountId}-iac"
       PublicAccessBlockConfiguration:
         BlockPublicAcls: true
         BlockPublicPolicy: true

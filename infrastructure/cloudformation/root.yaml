@@ -13,13 +13,13 @@ Parameters:
 
   GithubConnectionArn:
     Type: String
-    Description: Github Connection ARN
+    Description: Github CodeConnection ARN
     Default: arn:aws:codeconnections:eu-north-1:253712034003:connection/2c02ecd9-b115-4cec-967f-a0e4445ecfaa
     NoEcho: True
 
   SourceRepo:
     Type: String
-    Description: owner/repo biçiminde GitHub repo ID'si
+    Description: owner/repo GitHub repository ID
     Default: zbalci/ledger-app-aws-ecs
 
   AppPort:

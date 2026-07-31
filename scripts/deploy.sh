@@ -10,15 +10,9 @@ APP_NAME="ledger"
 ENVIRONMENT="dev"
 AWS_REGION="eu-north-1"
 
-ROOT_DOMAIN="aws.zbalci.com"
-
 GITHUB_CONNECTION_ARN="arn:aws:codeconnections:eu-north-1:253712034003:connection/2c02ecd9-b115-4cec-967f-a0e4445ecfaa"
 
 SOURCE_REPO="zbalci/ledger-app-aws-ecs"
-SOURCE_BRANCH="main"
-
-REPOSITORY_URL="git@github.com:zbalci/ledger-app-aws-ecs.git"
-REPOSITORY_DIR="ledger-app-aws-ecs"
 
 ########################################
 # Colors
@@ -82,6 +76,93 @@ get_ssm_parameter() {
         --query "Parameter.Value" \
         --output text \
         --region "$AWS_REGION"
+}
+
+########################################
+# Deploy stack function
+########################################
+
+deploy_stack() {
+
+    local STACK_NAME="$1"
+    local TEMPLATE="$2"
+
+    shift 2
+
+    #
+    # Eğer kullanıcı "global", "foundation" veya "app"
+    # gibi bir klasör adı verdiyse TemplateURL oluştur.
+    #
+    if [[ "$TEMPLATE" != *.yaml ]]; then
+        TEMPLATE="$(get_ssm_parameter "/${APP_NAME}/iac_bucket_url")/stack.yaml"
+    fi
+
+    local TEMPLATE_OPTION
+
+    if [[ "$TEMPLATE" =~ ^https?:// ]]; then
+        TEMPLATE_OPTION="--template-url"
+    else
+        TEMPLATE_OPTION="--template-body"
+        TEMPLATE="file://${TEMPLATE}"
+    fi
+
+    info "Deploying stack: ${STACK_NAME}"
+
+    if aws cloudformation describe-stacks \
+        --stack-name "$STACK_NAME" \
+        --region "$AWS_REGION" \
+        >/dev/null 2>&1
+    then
+
+        info "Updating existing stack..."
+
+        if ! UPDATE_OUTPUT=$(
+            aws cloudformation update-stack \
+                --stack-name "$STACK_NAME" \
+                "$TEMPLATE_OPTION" "$TEMPLATE" \
+                --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM \
+                "$@" \
+                --region "$AWS_REGION" \
+                2>&1
+        ); then
+
+            if [[ "$UPDATE_OUTPUT" == *"No updates are to be performed."* ]]; then
+                info "No changes detected."
+            else
+                error "Update failed."
+                echo "$UPDATE_OUTPUT"
+                exit 1
+            fi
+
+        else
+
+            aws cloudformation wait stack-update-complete \
+                --stack-name "$STACK_NAME" \
+                --region "$AWS_REGION"
+
+            success "Stack updated."
+
+        fi
+
+    else
+
+        info "Creating new stack..."
+
+        aws cloudformation create-stack \
+            --stack-name "$STACK_NAME" \
+            "$TEMPLATE_OPTION" "$TEMPLATE" \
+            --disable-rollback \
+            --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM \
+            "$@" \
+            --region "$AWS_REGION"
+
+        aws cloudformation wait stack-create-complete \
+            --stack-name "$STACK_NAME" \
+            --region "$AWS_REGION"
+
+        success "Stack created."
+
+    fi
 }
 
 usage() {
@@ -162,12 +243,12 @@ main() {
     #
 
     if $DEPLOY_FOUNDATION; then
-        aws cloudformation create-stack \
-        --stack-name ledger-dev-foundation \
-        --template-body file://infrastructure/cloudformation/foundation/root.yaml \
-        --disable-rollback \
-        --capabilities CAPABILITY_IAM \
-        --capabilities CAPABILITY_NAMED_IAM
+        deploy_stack \
+            "${APP_NAME}-${ENVIRONMENT}-foundation"  \
+            infrastructure/cloudformation/foundation/root.yaml \
+            --parameters \
+                ParameterKey=AppName,ParameterValue="$APP_NAME" \
+                ParameterKey=Environment,ParameterValue="$ENVIRONMENT"
 
     fi
 
@@ -176,13 +257,15 @@ main() {
         
         IAC_HTTP_URL=$(get_ssm_parameter "/${APP_NAME}/${ENVIRONMENT}/iac_bucket_url")
 
-        aws cloudformation update-stack \
-        --stack-name ledger-app-dev-root \
-        --template-url "${IAC_HTTP_URL}/root.yaml" \
-        --disable-rollback \
-        --capabilities CAPABILITY_IAM \
-        --capabilities CAPABILITY_NAMED_IAM
-    fi
+        deploy_stack \
+            "${APP_NAME}-${ENVIRONMENT}-root" \
+            "${IAC_HTTP_URL}/root.yaml" \
+            --parameters \
+                ParameterKey=AppName,ParameterValue="$APP_NAME" \
+                ParameterKey=Environment,ParameterValue="$ENVIRONMENT" \
+                ParameterKey=GithubConnectionArn,ParameterValue="$GITHUB_CONNECTION_ARN" \
+                ParameterKey=SourceRepo,ParameterValue="$SOURCE_REPO" 
+        fi
 
 }
 
