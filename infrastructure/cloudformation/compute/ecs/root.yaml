@@ -40,7 +40,7 @@ Resources:
   EcsTaskDefStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/compute/ecs/web-task-definition.yaml
+      TemplateURL: !Sub '{{resolve:ssm:/${AppName}/${Environment}/iac_bucket_url}}/compute/ecs/web-task-definition.yaml'
       Parameters:
         AppName: !Ref AppName
         Environment: !Ref Environment
@@ -49,7 +49,7 @@ Resources:
   EcsClusterStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/compute/ecs/cluster.yaml
+      TemplateURL: !Sub '{{resolve:ssm:/${AppName}/${Environment}/iac_bucket_url}}/compute/ecs/cluster.yaml'
       Parameters:
         AppName: !Ref AppName
         Environment: !Ref Environment
@@ -65,7 +65,7 @@ Resources:
       - EcsTaskDefStack
       - EcsClusterStack
     Properties:
-      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/compute/ecs/web-service.yaml
+      TemplateURL: !Sub '{{resolve:ssm:/${AppName}/${Environment}/iac_bucket_url}}/compute/ecs/web-service.yaml'
       Parameters:
         AppName: !Ref AppName
         Environment: !Ref Environment

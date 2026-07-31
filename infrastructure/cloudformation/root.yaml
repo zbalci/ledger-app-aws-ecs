@@ -62,7 +62,7 @@ Resources:
   NetworkStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/network/vpc.yaml
+      TemplateURL: !Sub '{{resolve:ssm:/${AppName}/${Environment}/iac_bucket_url}}/network/vpc.yaml'
       Tags:
         - Key: Application
           Value: !Ref AppName
@@ -79,7 +79,7 @@ Resources:
     DependsOn:
       - NetworkStack
     Properties:
-      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/security/securitygroups.yaml
+      TemplateURL: !Sub '{{resolve:ssm:/${AppName}/${Environment}/iac_bucket_url}}/security/securitygroups.yaml'
       Tags:
         - Key: Application
           Value: !Ref AppName
@@ -100,7 +100,7 @@ Resources:
       - NetworkStack
       - SecurityStack
     Properties:
-      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/loadbalancer/alb.yaml
+      TemplateURL: !Sub '{{resolve:ssm:/${AppName}/${Environment}/iac_bucket_url}}/loadbalancer/alb.yaml'
       Tags:
         - Key: Application
           Value: !Ref AppName
@@ -118,7 +118,7 @@ Resources:
   RegistryStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/registry/root.yaml
+      TemplateURL: !Sub '{{resolve:ssm:/${AppName}/${Environment}/iac_bucket_url}}/registry/root.yaml'
       Tags:
         - Key: Application
           Value: !Ref AppName
@@ -135,7 +135,7 @@ Resources:
     DependsOn: 
       - SecurityStack
     Properties:
-      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/database/rds.yaml
+      TemplateURL: !Sub '{{resolve:ssm:/${AppName}/${Environment}/iac_bucket_url}}/database/rds.yaml'
       Tags:
         - Key: Application
           Value: !Ref AppName
@@ -157,7 +157,7 @@ Resources:
       - RegistryStack
       - DatabaseStack
     Properties:
-      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/compute/ecs/root.yaml
+      TemplateURL: !Sub '{{resolve:ssm:/${AppName}/${Environment}/iac_bucket_url}}/compute/ecs/root.yaml'
       Tags:
         - Key: Application
           Value: !Ref AppName
@@ -181,7 +181,7 @@ Resources:
       - DatabaseStack
       - EcsStack
     Properties:
-      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/pipeline/db-init/root.yaml
+      TemplateURL: !Sub '{{resolve:ssm:/${AppName}/${Environment}/iac_bucket_url}}/pipeline/db-init/root.yaml'
       Tags:
         - Key: Application
           Value: !Ref AppName
@@ -206,7 +206,7 @@ Resources:
       - DatabaseStack
       - DatabaseInitStack
     Properties:
-      TemplateURL: https://ledger-app-aws-iac.s3.eu-north-1.amazonaws.com/pipeline/web/root.yaml
+      TemplateURL: !Sub '{{resolve:ssm:/${AppName}/${Environment}/iac_bucket_url}}/pipeline/web/root.yaml'
       Tags:
         - Key: Application
           Value: !Ref AppName

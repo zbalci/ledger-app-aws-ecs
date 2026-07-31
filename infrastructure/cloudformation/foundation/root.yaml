@@ -52,8 +52,7 @@ Resources:
 
   AssetBucket:
     Type: AWS::S3::Bucket
-    DeletionPolicy: Retain
-    UpdateReplacePolicy: Retain
+    DeletionPolicy: Delete
     Properties:
       BucketName: !Sub "${AppName}-${Environment}-${AWS::AccountId}-assets"
       Tags:
@@ -66,8 +65,7 @@ Resources:
 
   ArtifactBucket:
     Type: AWS::S3::Bucket
-    DeletionPolicy: Retain
-    UpdateReplacePolicy: Retain
+    DeletionPolicy: Delete
     Properties:
       BucketName: !Sub "${AppName}-${Environment}-${AWS::AccountId}-artifacts"
       Tags:
@@ -77,6 +75,36 @@ Resources:
           Value: !Ref Environment
         - Key: ManagedBy
           Value: CloudFormation
+
+  IaCBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Delete
+    Properties:
+      BucketName: !Sub "${AppName}-${AWS::AccountId}-ecs-iac"
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        RestrictPublicBuckets: true
+        IgnorePublicAcls: true
+      Tags:
+        - Key: Application
+          Value: !Ref AppName
+        - Key: ManagedBy
+          Value: CloudFormation
+
+  IaCBucketURLParam:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub "/${AppName}/${Environment}/iac_bucket_url"
+      Type: String
+      Value: !Sub "https://${IaCBucket}.s3.${AWS::Region}.amazonaws.com"
+
+  IaCBucketS3Param:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub "/${AppName}/${Environment}/iac_bucket_s3"
+      Type: String
+      Value: !Sub "s3://${IaCBucket}"
 
 Outputs:
   AssetBucketName:
